@@ -25,3 +25,6 @@ yarn-error.log*
 
 # Docker
 docker-compose.override.yml
+
+# Scraped/reference site assets (not part of this project's source)
+drpong.com/
