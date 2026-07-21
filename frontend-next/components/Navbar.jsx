@@ -61,6 +61,9 @@ const LANGUAGES = [
   { code: 'my', short: 'MM', label: 'မြန်မာ' },
 ];
 
+const MEMBER_LOGIN_URL = 'https://member.skyonline99.com/login.asp';
+const MEMBER_REGISTER_URL = 'https://member.skyonline99.com/RegisMemQR/RegMemQR.asp?id=0000001';
+
 function LangToggle({ light }) {
   const locale = useLocale();
   const router = useRouter();
@@ -285,24 +288,24 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="ml-2 flex items-center gap-2 whitespace-nowrap">
-                <Link
-                  href="/login"
+                <a
+                  href={MEMBER_LOGIN_URL}
                   className={`flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     isOverHero ? 'text-gray-700 hover:text-gold-600 hover:bg-gray-100' : 'text-gray-300 hover:text-gold-400 hover:bg-navy-800'
                   }`}
                 >
                   <LogIn size={15} />
                   {t('nav.login')}
-                </Link>
-                <Link
-                  href="/register"
+                </a>
+                <a
+                  href={MEMBER_REGISTER_URL}
                   className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     isOverHero ? 'bg-navy-900 hover:bg-navy-800 text-white' : 'bg-white hover:bg-gray-100 text-navy-900'
                   }`}
                 >
                   <UserPlus size={15} />
                   {t('nav.register')}
-                </Link>
+                </a>
               </div>
             )}
             <CartIcon light={isOverHero} />
@@ -362,24 +365,24 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="mt-2 space-y-1">
-                <Link
-                  href="/login"
+                <a
+                  href={MEMBER_LOGIN_URL}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isOverHero ? 'text-gray-700 hover:text-gold-600 hover:bg-gray-100' : 'text-gray-300 hover:text-gold-400 hover:bg-navy-900'
                   }`}
                 >
                   <LogIn size={16} />
                   {t('nav.login')}
-                </Link>
-                <Link
-                  href="/register"
+                </a>
+                <a
+                  href={MEMBER_REGISTER_URL}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold rounded-lg transition-colors ${
                     isOverHero ? 'bg-navy-900 hover:bg-navy-800 text-white' : 'bg-white hover:bg-gray-100 text-navy-900'
                   }`}
                 >
                   <UserPlus size={16} />
                   {t('nav.register')}
-                </Link>
+                </a>
               </div>
             )}
           </div>
