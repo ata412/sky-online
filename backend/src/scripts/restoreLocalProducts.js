@@ -47,24 +47,25 @@ function decodeCopyValue(value) {
   });
 }
 
-function readProductsFromBackup() {
+function readTableFromBackup(tableName, expectedColumns) {
   if (!fs.existsSync(BACKUP_PATH)) throw new Error(`ไม่พบ backup: ${BACKUP_PATH}`);
 
   const command = findPgRestore();
-  const result = spawnSync(command, ['-a', '-t', 'products', '-f', '-', BACKUP_PATH], {
+  const result = spawnSync(command, ['-a', '-t', tableName, '-f', '-', BACKUP_PATH], {
     encoding: 'utf8',
     maxBuffer: 50 * 1024 * 1024,
   });
   if (result.status !== 0) throw new Error(result.stderr || 'pg_restore ทำงานไม่สำเร็จ');
 
   const lines = result.stdout.split(/\r?\n/);
-  const copyIndex = lines.findIndex((line) => line.startsWith('COPY public.products ('));
-  if (copyIndex === -1) throw new Error('ไม่พบข้อมูล products ใน backup');
+  const copyPrefix = `COPY public.${tableName} (`;
+  const copyIndex = lines.findIndex((line) => line.startsWith(copyPrefix));
+  if (copyIndex === -1) throw new Error(`ไม่พบข้อมูล ${tableName} ใน backup`);
 
-  const columnMatch = lines[copyIndex].match(/^COPY public\.products \((.+)\) FROM stdin;$/);
+  const columnMatch = lines[copyIndex].match(/^COPY public\.[a-z_]+ \((.+)\) FROM stdin;$/);
   const columns = columnMatch?.[1].split(', ').map((column) => column.trim());
-  if (!columns || EXPECTED_COLUMNS.some((column, index) => columns[index] !== column)) {
-    throw new Error(`รูปแบบคอลัมน์ products ใน backup ไม่ตรงกับที่รองรับ: ${columns?.join(', ')}`);
+  if (!columns || expectedColumns.some((column, index) => columns[index] !== column)) {
+    throw new Error(`รูปแบบคอลัมน์ ${tableName} ใน backup ไม่ตรงกับที่รองรับ: ${columns?.join(', ')}`);
   }
 
   const rows = [];
@@ -77,8 +78,12 @@ function readProductsFromBackup() {
     rows.push(Object.fromEntries(columns.map((column, valueIndex) => [column, values[valueIndex]])));
   }
 
-  if (rows.length === 0) throw new Error('backup ไม่มีรายการสินค้า');
+  if (rows.length === 0) throw new Error(`backup ไม่มีข้อมูล ${tableName}`);
   return rows;
+}
+
+function readProductsFromBackup() {
+  return readTableFromBackup('products', EXPECTED_COLUMNS);
 }
 
 function validateImageUrl(value) {
@@ -215,9 +220,19 @@ async function main() {
   console.log(`เสร็จสมบูรณ์: คืนสินค้าเดิม ${prepared.length} รายการพร้อมรูป local ครบ`);
 }
 
-main()
-  .catch((error) => {
-    console.error('กู้คืนสินค้าไม่สำเร็จ:', error.stack || error.message || error);
-    process.exitCode = 1;
-  })
-  .finally(() => pool.end());
+if (require.main === module) {
+  main()
+    .catch((error) => {
+      console.error('กู้คืนสินค้าไม่สำเร็จ:', error.stack || error.message || error);
+      process.exitCode = 1;
+    })
+    .finally(() => pool.end());
+}
+
+module.exports = {
+  PUBLIC_DIR,
+  downloadImage,
+  imageExtension,
+  readTableFromBackup,
+  slugify,
+};

@@ -7,6 +7,7 @@
     "dev": "nodemon src/index.js",
     "sync:promotions": "node src/scripts/syncPromotions.js",
     "restore:local-products": "node src/scripts/restoreLocalProducts.js",
+    "restore:local-promotions": "node src/scripts/restoreLocalPromotions.js",
     "migrate:video-studio": "node src/scripts/migrateVideoStudio.js"
   },
   "dependencies": {

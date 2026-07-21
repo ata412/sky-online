@@ -36,7 +36,11 @@ async function syncPromotions() {
          title = EXCLUDED.title,
          sale_price = EXCLUDED.sale_price,
          pv = EXCLUDED.pv,
-         image_url = EXCLUDED.image_url,
+         image_url = CASE
+           WHEN promotions.image_url IS NULL OR promotions.image_url LIKE 'http%'
+             THEN EXCLUDED.image_url
+           ELSE promotions.image_url
+         END,
          is_active = true`,
       [externalId, item.NameGroup, parseFloat(item.PriceNet), parseInt(item.PVNet, 10) || 0, `${IMAGE_BASE}/${externalId}.jpg`]
     );
