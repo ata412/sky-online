@@ -37,6 +37,24 @@ async function downloadPromotionImages(promotions) {
   return prepared;
 }
 
+async function useExistingPromotionImages(promotions) {
+  const filenames = await fsp.readdir(OUTPUT_DIR);
+
+  return promotions.map((promotion) => {
+    const prefix = `${promotion.id}-${slugify(promotion.external_id || promotion.title)}.`;
+    const matches = filenames.filter((filename) => filename.startsWith(prefix));
+    if (matches.length !== 1) {
+      throw new Error(
+        `หารูปของโปรโมชั่น ${promotion.id} ไม่ได้แบบแน่นอน (พบ ${matches.length} ไฟล์ที่ขึ้นต้นด้วย ${prefix})`
+      );
+    }
+    return {
+      ...promotion,
+      image_url: `/imported/promotions/${matches[0]}`,
+    };
+  });
+}
+
 function numberOrNull(value) {
   return value === null ? null : Number(value);
 }
@@ -82,9 +100,20 @@ async function replaceRailwayPromotions(promotions) {
 async function main() {
   console.log('อ่านโปรโมชั่นจาก local backup...');
   const promotions = readTableFromBackup('promotions', EXPECTED_COLUMNS);
-  console.log(`พบ ${promotions.length} โปรโมชั่น กำลังดาวน์โหลดรูป...`);
-  const prepared = await downloadPromotionImages(promotions);
-  console.log('ดาวน์โหลดครบ กำลังแทนข้อมูล promotions ใน Railway...');
+  const dbOnly = process.argv.includes('--db-only');
+  console.log(
+    dbOnly
+      ? `พบ ${promotions.length} โปรโมชั่น กำลังตรวจรูปที่ดาวน์โหลดไว้...`
+      : `พบ ${promotions.length} โปรโมชั่น กำลังดาวน์โหลดรูป...`
+  );
+  const prepared = dbOnly
+    ? await useExistingPromotionImages(promotions)
+    : await downloadPromotionImages(promotions);
+  console.log(
+    dbOnly
+      ? 'ตรวจรูปครบ กำลังอัปเดต promotions ใน Railway...'
+      : 'ดาวน์โหลดครบ กำลังแทนข้อมูล promotions ใน Railway...'
+  );
   await replaceRailwayPromotions(prepared);
   console.log(`เสร็จสมบูรณ์: คืนโปรโมชั่นเดิม ${prepared.length} รายการพร้อมรูป local ครบ`);
 }
