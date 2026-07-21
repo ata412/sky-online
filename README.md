@@ -1,4 +1,4 @@
-# Bualuang (Sky Online)
+# Sky Online
 
 E-commerce web application with a React frontend and an Express/PostgreSQL backend.
 
@@ -64,8 +64,8 @@ npm run dev              # http://localhost:5173
 Create a PostgreSQL database matching your `.env`, then run:
 
 ```bash
-psql -U postgres -d bualuang -f backend/src/db/schema.sql
-psql -U postgres -d bualuang -f backend/src/db/seed.sql
+psql -U postgres -d sky_online -f backend/src/db/schema.sql
+psql -U postgres -d sky_online -f backend/src/db/seed.sql
 ```
 
 ## Environment Variables

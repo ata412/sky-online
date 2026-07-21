@@ -22,9 +22,17 @@ yarn-error.log*
 # Editor/IDE
 .vscode/
 .idea/
+.claude/
+
+# Deployment CLI state
+.railway/
 
 # Docker
 docker-compose.override.yml
+
+# Database backups
+*.dump
+*.sql.gz
 
 # Scraped/reference site assets (not part of this project's source)
 drpong.com/
