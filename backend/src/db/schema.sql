@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS products (
   pv INTEGER DEFAULT 0,
   stock INTEGER DEFAULT 0,
   is_featured BOOLEAN DEFAULT false,
+  full_description TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
 

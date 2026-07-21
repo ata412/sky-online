@@ -23,12 +23,12 @@ INSERT INTO promotions (title, description, discount_percent, original_price, sa
 ('Flash Sale ทุกวันศุกร์', 'ลดสูงสุด 40% คัดเฉพาะสินค้าขายดี เฉพาะวันศุกร์เท่านั้น ของมีจำนวนจำกัด', 40, 1290, 774, '2026-07-04', '2026-07-31', true);
 
 INSERT INTO hall_of_fame (level, image_url) VALUES
-('Sky Star', 'https://skyonline99.com/hall_of_frame/Images/skyStar/1.jpg'),
-('Super Star', 'https://skyonline99.com/hall_of_frame/Images/superStar/535229_0.jpg'),
-('Manager', 'https://skyonline99.com/hall_of_frame/Images/manager/555908_0.jpg'),
-('Director', 'https://skyonline99.com/hall_of_frame/Images/director/537200_0.jpg'),
-('Vice President', 'https://skyonline99.com/hall_of_frame/Images/VIP/556839.jpg'),
-('President', 'https://skyonline99.com/hall_of_frame/Images/president/1.jpg');
+('Sky Star', '/imported/hall-of-fame/1-sky-star.jpg'),
+('Super Star', '/imported/hall-of-fame/2-super-star.jpg'),
+('Manager', '/imported/hall-of-fame/3-manager.jpg'),
+('Director', '/imported/hall-of-fame/4-director.jpg'),
+('Vice President', '/imported/hall-of-fame/5-vice-president.jpg'),
+('President', '/imported/hall-of-fame/6-president.jpg');
 
 INSERT INTO activities (title, description, activity_date, location) VALUES
 ('งานสัมมนาใหญ่ประจำปี 2026', 'สัมมนาและฝึกอบรมผู้แทนจำหน่ายทั่วประเทศกว่า 2,000 คน พร้อมพิธีมอบรางวัล Hall of Fame ประจำปี', '2026-06-15', 'ศูนย์การประชุมแห่งชาติสิริกิติ์ กรุงเทพฯ'),
