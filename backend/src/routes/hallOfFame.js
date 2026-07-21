@@ -5,32 +5,26 @@ const pool = require('../db');
 const LEVEL_ORDER = [
   'Sky Star',
   'Super Star',
-  'Manager Director',
+  'Manager',
+  'Director',
   'Vice President',
-  'President Black',
-  'Diamond Blue',
-  'Diamond Crown',
+  'President',
   'Diamond',
+  'Red Diamond',
+  'Black Diamond',
+  'Blue Diamond',
+  'Crown Diamond',
 ];
 
 router.get('/', async (req, res) => {
   try {
-    const { year, month } = req.query;
+    const { level } = req.query;
     let query = 'SELECT * FROM hall_of_fame';
     const params = [];
-    const conditions = [];
 
-    if (year) {
-      conditions.push(`year = $${params.length + 1}`);
-      params.push(parseInt(year));
-    }
-    if (month) {
-      conditions.push(`month = $${params.length + 1}`);
-      params.push(month);
-    }
-
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
+    if (level) {
+      query += ' WHERE level = $1';
+      params.push(level);
     }
 
     const result = await pool.query(query, params);

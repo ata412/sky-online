@@ -28,21 +28,40 @@ router.post('/', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const order_code = await generateOrderCode(client);
+
+    // Look up each product's real PV server-side (never trust client-supplied PV).
+    const productIds = items.map((i) => i.id);
+    const pvRes = await client.query(
+      'SELECT id, pv FROM products WHERE id = ANY($1::int[])',
+      [productIds]
+    );
+    const pvByProductId = Object.fromEntries(pvRes.rows.map((p) => [p.id, p.pv || 0]));
+
+    let total_pv = 0;
+    const orderCode = await generateOrderCode(client);
 
     const orderRes = await client.query(
       `INSERT INTO orders (order_code, member_id, member_code, total_amount, note)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [order_code, member_id || null, member_code || null, total_amount, note || null]
+      [orderCode, member_id || null, member_code || null, total_amount, note || null]
     );
     const order = orderRes.rows[0];
 
     for (const item of items) {
+      const itemPv = (pvByProductId[item.id] || 0) * item.quantity;
+      total_pv += itemPv;
       await client.query(
-        `INSERT INTO order_items (order_id, product_id, product_name, price, quantity, subtotal)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [order.id, item.id, item.name, item.price, item.quantity, Number(item.price) * item.quantity]
+        `INSERT INTO order_items (order_id, product_id, product_name, price, quantity, subtotal, pv)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [order.id, item.id, item.name, item.price, item.quantity, Number(item.price) * item.quantity, itemPv]
       );
+    }
+
+    await client.query('UPDATE orders SET total_pv = $1 WHERE id = $2', [total_pv, order.id]);
+    order.total_pv = total_pv;
+
+    if (member_id) {
+      await client.query('UPDATE members SET total_pv = total_pv + $1 WHERE id = $2', [total_pv, member_id]);
     }
 
     await client.query('COMMIT');

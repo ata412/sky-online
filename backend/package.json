@@ -1,10 +1,12 @@
 {
-  "name": "bualuang-backend",
+  "name": "sky-online-backend",
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "sync:promotions": "node src/scripts/syncPromotions.js",
+    "migrate:video-studio": "node src/scripts/migrateVideoStudio.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

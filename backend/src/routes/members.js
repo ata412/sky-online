@@ -81,7 +81,7 @@ router.post('/login', async (req, res) => {
   }
   try {
     const result = await pool.query(
-      'SELECT id, member_code, first_name, last_name, email, phone, province, status, password_hash FROM members WHERE email = $1',
+      'SELECT id, member_code, first_name, last_name, email, phone, province, status, total_pv, password_hash FROM members WHERE email = $1',
       [email.trim().toLowerCase()]
     );
     if (result.rows.length === 0) {

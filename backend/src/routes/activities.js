@@ -13,4 +13,16 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/:id/photos', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, image_url FROM activity_photos WHERE activity_id = $1 ORDER BY sort_order',
+      [req.params.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
