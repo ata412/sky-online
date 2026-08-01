@@ -1,112 +1,95 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter, usePathname } from '@/i18n/routing';
+import { useRouter } from '@/i18n/routing';
 import { Search } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 const BRANDS = [
-  {
-    key: 'BRAND LUCK',
-    banner: '/brands/brand-luck/banner.jpg',
-    alt: 'BRAND LUCK Banner',
-  },
-  {
-    key: 'Dietary Supplement',
-    banner: '/brands/dietary-supplement/banner.jpg',
-    alt: 'Dietary Supplement Banner',
-  },
-  {
-    key: 'BRAND Houluk Seam',
-    banner: '/brands/houluk-seam/banner.jpg',
-    alt: 'BRAND Houluk Seam Banner',
-  },
-  {
-    key: 'BRAND SD',
-    banner: '/brands/SD%20brand/banner.jpg',
-    alt: 'BRAND SD Banner',
-  },
+  { key: 'BRAND LUCK', banner: '/brands/brand-luck/banner.jpg', alt: 'BRAND LUCK Banner' },
+  { key: 'Dietary Supplement', banner: '/brands/dietary-supplement/banner.jpg', alt: 'Dietary Supplement Banner' },
+  { key: 'BRAND Houluk Seam', banner: '/brands/houluk-seam/banner.jpg', alt: 'BRAND Houluk Seam Banner' },
+  { key: 'BRAND SD', banner: '/brands/SD%20brand/banner.jpg', alt: 'BRAND SD Banner' },
 ];
 
 const categoryColors = {
-  'วิตามิน':    'from-blue-400 to-blue-600',
-  'โปรตีน':    'from-orange-400 to-orange-600',
-  'ความงาม':   'from-pink-400 to-pink-600',
-  'ย่อยอาหาร':  'from-green-400 to-green-600',
-  'กระดูก':    'from-purple-400 to-purple-600',
-  'ไฟเบอร์':   'from-yellow-400 to-lime-500',
-  'กาแฟ':     'from-amber-700 to-yellow-900',
+  'วิตามิน': 'from-blue-400 to-blue-600',
+  'โปรตีน': 'from-orange-400 to-orange-600',
+  'ความงาม': 'from-pink-400 to-pink-600',
+  'ย่อยอาหาร': 'from-green-400 to-green-600',
+  'กระดูก': 'from-purple-400 to-purple-600',
+  'ไฟเบอร์': 'from-yellow-400 to-lime-500',
+  'กาแฟ': 'from-amber-700 to-yellow-900',
   'ช็อกโกแลต': 'from-amber-800 to-brown-900',
 };
 const categoryEmojis = {
-  'วิตามิน':    '💊',
-  'โปรตีน':    '💪',
-  'ความงาม':   '✨',
-  'ย่อยอาหาร':  '🌱',
-  'กระดูก':    '🦴',
-  'ไฟเบอร์':   '🍍',
-  'กาแฟ':     '☕',
-  'ช็อกโกแลต': '🍫',
+  'วิตามิน': '💊', 'โปรตีน': '💪', 'ความงาม': '✨', 'ย่อยอาหาร': '🌱',
+  'กระดูก': '🦴', 'ไฟเบอร์': '🍍', 'กาแฟ': '☕', 'ช็อกโกแลต': '🍫',
 };
 
-function ProductCard({ p }) {
+function ProductCard({ product }) {
   const t = useTranslations();
   const { addToCart } = useCart();
   const router = useRouter();
   const [added, setAdded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const hasImage = product.image_url && !imgError;
 
   const handleAdd = () => {
-    addToCart(p);
+    addToCart(product);
     setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
+    window.setTimeout(() => setAdded(false), 1500);
   };
-
-  const hasImage = p.image_url && !imgError;
 
   return (
     <div className="card flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
       <div
-        className={`h-48 relative overflow-hidden cursor-pointer ${hasImage ? 'bg-white dark:bg-navy-800' : `bg-gradient-to-br ${categoryColors[p.category] || 'from-gray-400 to-gray-600'}`} flex items-center justify-center`}
-        onClick={() => router.push(`/products/${p.id}`)}
+        className={`relative flex h-48 cursor-pointer items-center justify-center overflow-hidden ${
+          hasImage
+            ? 'bg-white dark:bg-navy-800'
+            : `bg-gradient-to-br ${categoryColors[product.category] || 'from-gray-400 to-gray-600'}`
+        }`}
+        onClick={() => router.push(`/products/${product.id}`)}
       >
         {hasImage ? (
           <img
-            src={p.image_url}
-            alt={p.name}
-            className="w-full h-full object-contain p-3"
+            src={product.image_url}
+            alt={product.name}
+            className="h-full w-full object-contain p-3"
             onError={() => setImgError(true)}
           />
         ) : (
-          <span className="text-6xl">{categoryEmojis[p.category] || '🌿'}</span>
+          <span className="text-6xl">{categoryEmojis[product.category] || '🌿'}</span>
         )}
-        {p.pv > 0 && (
-          <span className="absolute top-2 right-2 bg-navy-900 text-gold-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {p.pv} PV
+        {product.pv > 0 && (
+          <span className="absolute right-2 top-2 rounded-full bg-navy-900 px-2 py-0.5 text-[10px] font-bold text-gold-400">
+            {product.pv} PV
           </span>
         )}
       </div>
 
-      <div className="p-5 flex flex-col flex-grow">
-        <span className="text-xs font-medium text-gold-600 dark:text-gold-400 bg-gold-50 dark:bg-navy-800 px-2 py-1 rounded-full w-fit">
-          {p.category}
+      <div className="flex flex-grow flex-col p-5">
+        <span className="w-fit rounded-full bg-gold-50 px-2 py-1 text-xs font-medium text-gold-600 dark:bg-navy-800 dark:text-gold-400">
+          {product.category}
         </span>
         <h3
-          className="font-semibold text-navy-900 dark:text-white mt-2 mb-1 cursor-pointer hover:text-gold-600 dark:hover:text-gold-400 transition-colors"
-          onClick={() => router.push(`/products/${p.id}`)}
+          className="mb-1 mt-2 cursor-pointer font-semibold text-navy-900 transition-colors hover:text-gold-600 dark:text-white dark:hover:text-gold-400"
+          onClick={() => router.push(`/products/${product.id}`)}
         >
-          {p.name}
+          {product.name}
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 flex-grow font-light">{p.description}</p>
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-navy-800">
+        <p className="line-clamp-3 flex-grow text-sm font-light text-gray-500 dark:text-gray-400">
+          {product.description}
+        </p>
+        <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-navy-800">
           <div>
-            <p className="text-xl font-bold text-navy-900 dark:text-white">฿{Number(p.price).toLocaleString()}</p>
-            <p className="text-xs text-gray-400">{t('products.stock', { count: p.stock })}</p>
+            <p className="text-xl font-bold text-navy-900 dark:text-white">฿{Number(product.price).toLocaleString()}</p>
+            <p className="text-xs text-gray-400">{t('products.stock', { count: product.stock })}</p>
           </div>
           <button
             onClick={handleAdd}
-            className={`py-2 px-4 text-sm rounded-lg font-semibold transition-all duration-200 ${
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
               added ? 'bg-green-500 text-white' : 'btn-gold'
             }`}
           >
@@ -119,39 +102,31 @@ function ProductCard({ p }) {
 }
 
 function BrandSection({ brand, products, search }) {
-  const t = useTranslations();
   const sectionRef = useRef(null);
-  const filtered = products.filter((p) =>
-    !search || p.name.toLowerCase().includes(search.toLowerCase())
+  const filtered = products.filter((product) =>
+    !search || product.name.toLowerCase().includes(search.toLowerCase())
   );
 
   if (filtered.length === 0) return null;
 
   return (
     <section ref={sectionRef} id={`brand-${brand.key.replace(/\s+/g, '-')}`}>
-      {/* Banner */}
       <div className="w-full overflow-hidden bg-navy-900">
         <img
           src={brand.banner}
           alt={brand.alt}
-          className="w-full object-cover max-h-[340px]"
-          onError={(e) => {
-            e.target.style.display = 'none';
+          className="max-h-[340px] w-full object-cover"
+          onError={(event) => {
+            event.currentTarget.style.display = 'none';
           }}
         />
       </div>
-
-      {/* Products */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {filtered.length === 0 ? (
-          <p className="text-center text-gray-400 py-10">{t('products.noProductsInBrand')}</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filtered.map((p) => (
-              <ProductCard key={p.id} p={p} />
-            ))}
-          </div>
-        )}
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {filtered.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -176,57 +151,51 @@ export default function ProductsClient({ products }) {
 
   const scrollToBrand = (brandKey) => {
     setActiveBrand(brandKey);
-    const el = document.getElementById(`brand-${brandKey.replace(/\s+/g, '-')}`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document
+      .getElementById(`brand-${brandKey.replace(/\s+/g, '-')}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
-
-  const byBrand = (brandKey) => products.filter((p) => p.brand === brandKey);
 
   return (
     <div>
-      {/* Sticky header: search + brand tabs */}
       <div
-        className="sticky top-16 z-30 bg-white dark:bg-navy-900 border-b border-gray-100 dark:border-navy-800 shadow-sm transition-transform duration-300"
+        className="sticky top-[var(--navbar-offset,4rem)] z-30 border-b border-gray-100 bg-white shadow-sm transition-[top,transform] duration-300 dark:border-navy-800 dark:bg-navy-900"
         style={{ transform: barHidden ? 'translateY(calc(-100% - 4rem))' : 'translateY(0)' }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row gap-3 items-center">
-          {/* Search */}
-          <div className="relative flex-grow w-full sm:max-w-sm">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-3 sm:flex-row sm:px-6 lg:px-8">
+          <div className="relative w-full flex-grow sm:max-w-sm">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder={t('products.searchPlaceholder')}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-navy-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 bg-white dark:bg-navy-800 dark:text-white"
+              onChange={(event) => setSearch(event.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500 dark:border-navy-700 dark:bg-navy-800 dark:text-white"
             />
           </div>
-
-          {/* Brand jump tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto">
-            {BRANDS.map((b) => (
+          <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 sm:w-auto sm:pb-0">
+            {BRANDS.map((brand) => (
               <button
-                key={b.key}
-                onClick={() => scrollToBrand(b.key)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
-                  activeBrand === b.key
-                    ? 'bg-navy-900 text-white border-navy-900'
-                    : 'bg-white dark:bg-navy-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-navy-700 hover:border-navy-900 dark:hover:border-gold-500 hover:text-navy-900 dark:hover:text-gold-400'
+                key={brand.key}
+                onClick={() => scrollToBrand(brand.key)}
+                className={`flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+                  activeBrand === brand.key
+                    ? 'border-navy-900 bg-navy-900 text-white'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-navy-900 hover:text-navy-900 dark:border-navy-700 dark:bg-navy-800 dark:text-gray-300 dark:hover:border-gold-500 dark:hover:text-gold-400'
                 }`}
               >
-                {b.key}
+                {brand.key}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Brand sections */}
-      {BRANDS.map((b) => (
+      {BRANDS.map((brand) => (
         <BrandSection
-          key={b.key}
-          brand={b}
-          products={byBrand(b.key)}
+          key={brand.key}
+          brand={brand}
+          products={products.filter((product) => product.brand === brand.key)}
           search={search}
         />
       ))}

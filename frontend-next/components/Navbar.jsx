@@ -143,6 +143,7 @@ export default function Navbar() {
   const navLinks = [
     { to: '/', label: t('nav.home') },
     { to: '/products', label: t('nav.products') },
+    { to: '/encyclopedia', label: t('nav.encyclopedia') },
     { to: '/promotions', label: t('nav.promotions') },
     { to: '/vision', label: t('nav.vision') },
     { to: '/activities', label: t('nav.activities') },
@@ -155,7 +156,7 @@ export default function Navbar() {
     ['/', '/products', '/promotions', '/chatbot', '/video-studio'].includes(link.to)
   );
   const moreLinks = navLinks.filter((link) =>
-    ['/vision', '/activities', '/hall-of-fame', '/contact'].includes(link.to)
+    ['/encyclopedia', '/vision', '/activities', '/hall-of-fame', '/contact'].includes(link.to)
   );
 
   const handleLogout = () => {
@@ -179,6 +180,13 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--navbar-offset', hidden ? '0px' : '4rem');
+    return () => {
+      document.documentElement.style.setProperty('--navbar-offset', '4rem');
+    };
+  }, [hidden]);
 
   useEffect(() => {
     setOpen(false);
