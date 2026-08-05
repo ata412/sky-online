@@ -9,6 +9,7 @@ const VEO_MODEL = process.env.VEO_MODEL || 'veo-3.1-generate-preview';
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png']);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const OPERATION_NAME_PATTERN = /^(?:models\/[A-Za-z0-9._-]+\/)?operations\/[A-Za-z0-9._-]+$/;
 const JOB_PROMPT = `Create an 8-second vertical premium social media product advertisement.
 Use the first reference image as the exact adult presenter and preserve their recognizable facial identity, natural skin tone, hairstyle, and appearance.
 Use the second reference image as the exact product and preserve its packaging, proportions, colors, logo, and label without redesigning it.
@@ -163,7 +164,7 @@ router.post('/jobs', asyncRoute(async (req, res) => {
       }),
     });
 
-    if (!operation.name || !operation.name.startsWith('operations/')) {
+    if (typeof operation.name !== 'string' || !OPERATION_NAME_PATTERN.test(operation.name)) {
       throw new Error('Video service returned an invalid operation');
     }
 
