@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, BookOpen, Bot, Star, Video } from 'lucide-react';
 
 function useTypewriter(lines, speed = 70) {
   const [lineIndex, setLineIndex] = useState(0);
@@ -80,6 +80,29 @@ export default function HeroContent() {
           </Link>
           <Link href="/contact" className="btn-outline-gold">
             {t('home.contactUs')}
+          </Link>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            href="/chatbot"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-400/70 hover:bg-gold-500/20 hover:text-gold-300 hover:shadow-md"
+          >
+            <Bot size={18} aria-hidden="true" />
+            {t('nav.chatbot')}
+          </Link>
+          <Link
+            href="/video-studio"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-400/70 hover:bg-gold-500/20 hover:text-gold-300 hover:shadow-md"
+          >
+            <Video size={18} aria-hidden="true" />
+            {t('nav.videoStudio')}
+          </Link>
+          <Link
+            href="/encyclopedia"
+            className="inline-flex items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-400/70 hover:bg-gold-500/20 hover:text-gold-300 hover:shadow-md"
+          >
+            <BookOpen size={18} aria-hidden="true" />
+            {t('nav.encyclopedia')}
           </Link>
         </div>
       </div>

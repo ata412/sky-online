@@ -137,11 +137,17 @@ router.post('/jobs', asyncRoute(async (req, res) => {
           prompt: JOB_PROMPT,
           referenceImages: [
             {
-              image: { inlineData: personImage },
+              image: {
+                bytesBase64Encoded: personImage.data,
+                mimeType: personImage.mimeType,
+              },
               referenceType: 'asset',
             },
             {
-              image: { inlineData: productImage },
+              image: {
+                bytesBase64Encoded: productImage.data,
+                mimeType: productImage.mimeType,
+              },
               referenceType: 'asset',
             },
           ],
