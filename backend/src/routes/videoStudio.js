@@ -154,7 +154,7 @@ router.post('/jobs', asyncRoute(async (req, res) => {
         }],
         parameters: {
           aspectRatio: '9:16',
-          durationSeconds: '8',
+          durationSeconds: 8,
           resolution: '720p',
           numberOfVideos: 1,
           personGeneration: 'allow_adult',
