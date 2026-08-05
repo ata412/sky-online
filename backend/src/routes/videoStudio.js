@@ -222,10 +222,29 @@ router.get('/jobs/:id', asyncRoute(async (req, res) => {
       return res.json({ job: publicJob(failed.rows[0]) });
     }
 
-    const videoUri = operation?.response?.generateVideoResponse
-      ?.generatedSamples?.[0]?.video?.uri;
+    const videoResponse = operation?.response?.generateVideoResponse || operation?.response;
+    const videoUri = videoResponse?.generatedSamples?.[0]?.video?.uri
+      || operation?.response?.generatedVideos?.[0]?.video?.uri
+      || videoResponse?.videos?.[0]?.uri;
     if (!videoUri) {
-      throw new Error('Completed video response did not contain a video');
+      const filterReasons = Array.isArray(videoResponse?.raiMediaFilteredReasons)
+        ? videoResponse.raiMediaFilteredReasons.filter(Boolean)
+        : [];
+      const message = filterReasons.length > 0
+        ? `Video was filtered by the provider: ${filterReasons.join('; ')}`
+        : 'Video generation completed without an output. The result may have been blocked by a safety filter.';
+      const failed = await pool.query(
+        `UPDATE video_generation_jobs
+         SET status = 'failed', error_message = $1, updated_at = NOW()
+         WHERE public_id = $2 RETURNING *`,
+        [message, job.public_id]
+      );
+      console.warn('[video-studio] completed without video', {
+        jobId: job.public_id,
+        filteredCount: videoResponse?.raiMediaFilteredCount || 0,
+        filterReasons,
+      });
+      return res.json({ job: publicJob(failed.rows[0]) });
     }
 
     const completed = await pool.query(
