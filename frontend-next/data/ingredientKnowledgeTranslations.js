@@ -349,12 +349,88 @@ const my = {
   },
 };
 
-const translations = { en, zh, lo, my };
+const vi = {
+  collagen: {
+    title: 'Collagen', summary: 'Một protein cấu trúc có trong da, xương, sụn, gân và mô liên kết.',
+    benefits: ['Giúp tạo cấu trúc, độ bền và độ đàn hồi cho các mô cơ thể.', 'Một số nghiên cứu cho thấy collagen thủy phân có thể hỗ trợ độ ẩm và đàn hồi của da, nhưng kết quả còn khác nhau.', 'Vitamin C cần thiết cho quá trình cơ thể tự sản xuất collagen.'],
+    sources: 'Có tự nhiên trong da cá, da gà, xương và mô liên kết động vật; cơ thể sẽ tiêu hóa collagen thành axit amin trước khi sử dụng.',
+    caution: 'Hãy kiểm tra nguồn gốc nếu bạn dị ứng với cá, hải sản, thịt bò hoặc thịt lợn. Collagen không phải là thuốc điều trị bệnh.', keywords: ['collagen', 'peptide collagen', 'tripeptide'],
+  },
+  inulin: {
+    title: 'Inulin', summary: 'Một loại chất xơ prebiotic hòa tan đi đến ruột già và nuôi dưỡng một số vi sinh vật có lợi.',
+    benefits: ['Bổ sung chất xơ và có thể hỗ trợ đi tiêu đều đặn.', 'Hoạt động như prebiotic, có thể thúc đẩy sự phát triển của một số lợi khuẩn đường ruột.', 'FDA công nhận inulin và fructan dạng inulin là chất xơ dựa trên bằng chứng sinh lý.'],
+    sources: 'Rễ rau diếp xoăn, hành tây, tỏi, măng tây, chuối và atisô Jerusalem.',
+    caution: 'Bắt đầu với lượng nhỏ và uống đủ nước. Có thể gây đầy hơi, đặc biệt ở người nhạy cảm với FODMAP.', keywords: ['inulin', 'prebiotic', 'chất xơ', 'rau diếp xoăn'],
+  },
+  fiber: {
+    title: 'Chất xơ', summary: 'Carbohydrate thực vật mà cơ thể không thể tiêu hóa hoàn toàn, gồm cả dạng hòa tan và không hòa tan.',
+    benefits: ['Tăng khối lượng phân và hỗ trợ đi tiêu đều đặn.', 'Một số chất xơ hòa tan làm chậm hấp thu và nuôi dưỡng vi sinh vật đường ruột.', 'Thực phẩm giàu chất xơ có thể giúp no lâu và là một phần của chế độ ăn lành mạnh.'],
+    sources: 'Rau củ, trái cây, các loại đậu, hạt, yến mạch và ngũ cốc nguyên hạt.',
+    caution: 'Tăng lượng chất xơ từ từ và uống đủ nước. Tăng quá nhanh có thể gây đầy hơi hoặc khó chịu ở bụng.', keywords: ['chất xơ', 'fiber', 'rau củ', 'ngũ cốc nguyên hạt'],
+  },
+  probiotics: {
+    title: 'Probiotic', summary: 'Các vi sinh vật sống có thể mang lại lợi ích sức khỏe khi đúng chủng và đủ lượng.',
+    benefits: ['Có thể hỗ trợ hệ vi sinh khỏe mạnh trong đường tiêu hóa.', 'Tác dụng phụ thuộc vào từng chủng và không thể áp dụng giống nhau cho mọi sản phẩm probiotic.', 'Có một số bằng chứng đối với tiêu chảy liên quan đến kháng sinh, nhưng nhiều công dụng khác vẫn chưa chắc chắn.'],
+    sources: 'Một số loại sữa chua, thực phẩm lên men và sản phẩm bổ sung ghi rõ chủng vi sinh.',
+    caution: 'Người suy giảm miễn dịch, bệnh nặng hoặc trẻ sinh non nên hỏi ý kiến bác sĩ trước khi sử dụng.', keywords: ['probiotic', 'lactobacillus', 'bifidobacterium', 'hệ vi sinh'],
+  },
+  'vitamin-c': {
+    title: 'Vitamin C', summary: 'Vitamin tan trong nước tham gia hình thành collagen, chức năng miễn dịch và hoạt động chống oxy hóa.',
+    benefits: ['Cần thiết để cơ thể tạo collagen và mô liên kết.', 'Hỗ trợ chức năng miễn dịch bình thường và hoạt động như chất chống oxy hóa sinh lý.', 'Cải thiện hấp thu sắt không heme từ thực phẩm thực vật.'],
+    sources: 'Ổi, cam, kiwi, ớt chuông, bông cải xanh, cà chua và các loại quả họ cam quýt.',
+    caution: 'Liều cao có thể gây tiêu chảy, buồn nôn hoặc co thắt. Người có tiền sử sỏi thận hoặc thừa sắt nên hỏi chuyên gia.', keywords: ['vitamin c', 'axit ascorbic', 'ascorbate'],
+  },
+  'omega-3': {
+    title: 'Omega-3', summary: 'Một nhóm chất béo không bão hòa đa; ALA là chất béo thiết yếu, còn EPA và DHA có nhiều trong cá và tảo.',
+    benefits: ['Là thành phần của màng tế bào khắp cơ thể.', 'DHA tập trung nhiều ở não và võng mạc, còn EPA tham gia tạo một số hợp chất truyền tín hiệu.', 'Sản phẩm omega-3 liều cao dùng cho triglyceride cần có hướng dẫn y tế.'],
+    sources: 'Cá hồi, cá mòi, cá thu, hạt lanh, hạt chia, quả óc chó và dầu tảo.',
+    caution: 'Sản phẩm bổ sung có thể gây vị tanh hoặc khó chịu tiêu hóa. Liều cao có thể tương tác với thuốc chống đông.', keywords: ['omega-3', 'dầu cá', 'dha', 'epa', 'ala'],
+  },
+  lutein: {
+    title: 'Lutein và zeaxanthin', summary: 'Các carotenoid tập trung ở võng mạc và thủy tinh thể, tham gia lọc ánh sáng và bảo vệ chống oxy hóa.',
+    benefits: ['Là thành phần của sắc tố điểm vàng ở trung tâm võng mạc.', 'Giúp hấp thu một phần ánh sáng năng lượng cao và hoạt động như chất chống oxy hóa trong mắt.', 'Lợi ích của AREDS2 chỉ áp dụng cho một số nhóm AMD trung gian hoặc giai đoạn muộn dưới hướng dẫn chuyên khoa mắt.'],
+    sources: 'Cải xoăn, rau bina, bông cải xanh, ngô, lòng đỏ trứng và rau lá xanh đậm.',
+    caution: 'Sản phẩm lutein thông thường không giống AREDS2 và chưa được chứng minh phòng bệnh mắt cho tất cả mọi người.', keywords: ['lutein', 'zeaxanthin', 'mắt', 'thị lực', 'areds2'],
+  },
+  'calcium-vitamin-d': {
+    title: 'Canxi và vitamin D', summary: 'Canxi là khoáng chất chính trong xương và răng; vitamin D giúp cơ thể hấp thu canxi bình thường.',
+    benefits: ['Canxi hỗ trợ cấu trúc xương, co cơ và truyền tín hiệu thần kinh.', 'Vitamin D hỗ trợ hấp thu canxi cùng chức năng cơ và miễn dịch bình thường.', 'Vận động chịu trọng lượng, đủ protein và chế độ ăn cân bằng cũng quan trọng cho xương.'],
+    sources: 'Sữa, sữa chua, cá nhỏ ăn cả xương, đậu phụ kết tủa bằng canxi, lòng đỏ trứng và cá béo.',
+    caution: 'Canxi có thể ảnh hưởng đến một số thuốc. Người mắc bệnh thận nên hỏi bác sĩ trước khi bổ sung.', keywords: ['canxi', 'vitamin d', 'd3', 'k2', 'xương'],
+  },
+  magnesium: {
+    title: 'Magiê', summary: 'Khoáng chất hỗ trợ nhiều enzyme liên quan đến năng lượng, cơ bắp, thần kinh và sản xuất protein.',
+    benefits: ['Hỗ trợ chức năng cơ và thần kinh bình thường.', 'Tham gia sản xuất năng lượng và tổng hợp protein, DNA.', 'Cũng góp phần vào cấu trúc xương và nhịp tim bình thường.'],
+    sources: 'Các loại hạt, ngũ cốc nguyên hạt, rau lá xanh và các loại đậu.',
+    caution: 'Lượng bổ sung cao có thể gây tiêu chảy và tương tác với một số kháng sinh. Người bệnh thận cần đặc biệt thận trọng.', keywords: ['magiê', 'magnesium', 'khoáng chất', 'cơ bắp'],
+  },
+  protein: {
+    title: 'Protein và axit amin', summary: 'Chất dinh dưỡng đa lượng dùng để xây dựng và sửa chữa cơ, mô, enzyme, hormone và protein miễn dịch.',
+    benefits: ['Cung cấp axit amin để duy trì mô và phục hồi sau vận động.', 'Phân bổ đủ protein trong các bữa ăn có thể hỗ trợ duy trì khối cơ.', 'Sản phẩm bổ sung là lựa chọn khi ăn uống không thuận tiện và không cần thiết cho tất cả mọi người.'],
+    sources: 'Trứng, sữa, cá, thịt nạc, đậu phụ, các loại đậu và sản phẩm protein.',
+    caution: 'Kiểm tra chất gây dị ứng. Người mắc bệnh thận, bệnh gan hoặc được chỉ định hạn chế protein nên hỏi chuyên gia.', keywords: ['protein', 'whey', 'axit amin', 'glutamine', 'cơ bắp'],
+  },
+  biotin: {
+    title: 'Biotin', summary: 'Vitamin B tan trong nước, hoạt động cùng các enzyme chuyển hóa carbohydrate, chất béo và protein.',
+    benefits: ['Cần thiết cho các enzyme giúp chuyển hóa dưỡng chất.', 'Thiếu hụt có thể liên quan đến phát ban và tóc mỏng, nhưng tình trạng thiếu hụt khá hiếm.', 'Bằng chứng về việc liều cao cải thiện tóc, da hoặc móng ở người không thiếu biotin còn hạn chế.'],
+    sources: 'Trứng chín, cá, thịt, hạt hướng dương, các loại hạt và một số loại rau.',
+    caution: 'Biotin liều cao có thể làm sai lệch một số xét nghiệm máu, gồm chỉ số tuyến giáp và tim. Hãy báo cho nhân viên y tế trước khi xét nghiệm.', keywords: ['biotin', 'vitamin b7', 'tóc', 'móng'],
+  },
+  antioxidants: {
+    title: 'Chất chống oxy hóa', summary: 'Các chất giúp kiểm soát quá trình oxy hóa; glutathione là chất chống oxy hóa được tế bào tạo ra tự nhiên.',
+    benefits: ['Giúp cân bằng các phân tử phản ứng với hệ thống bảo vệ tự nhiên của cơ thể.', 'Vitamin C, vitamin E, carotenoid và hợp chất thực vật có vai trò khác nhau, không thể thay thế cho nhau.', 'Ăn đa dạng rau quả nhiều màu cung cấp nhiều chất chống oxy hóa cùng chất xơ.'],
+    sources: 'Rau củ, trái cây, các loại hạt, trà, ca cao và thực phẩm giàu protein cung cấp axit amin.',
+    caution: '“Chống oxy hóa” không có nghĩa là điều trị bệnh hoặc dùng càng nhiều càng tốt. Bằng chứng về glutathione đường uống khác nhau theo công thức.', keywords: ['chất chống oxy hóa', 'glutathione', 'ca cao', 'oxy hóa'],
+  },
+};
+
+const translations = { en, zh, lo, my, vi };
 const sourceLabels = {
   en: 'Scientific reference',
   zh: '科学资料来源',
   lo: 'ແຫຼ່ງຂໍ້ມູນວິທະຍາສາດ',
   my: 'သိပ္ပံအချက်အလက်ရင်းမြစ်',
+  vi: 'Tài liệu tham khảo khoa học',
 };
 
 export function getIngredientKnowledge(locale) {

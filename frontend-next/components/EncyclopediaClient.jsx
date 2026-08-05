@@ -28,6 +28,7 @@ const speechLocales = {
   zh: 'zh-CN',
   lo: 'lo-LA',
   my: 'my-MM',
+  vi: 'vi-VN',
 };
 
 function detectSpeechLanguage(text, fallbackLocale) {

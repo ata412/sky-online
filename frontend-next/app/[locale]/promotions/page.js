@@ -24,7 +24,7 @@ export async function generateMetadata({ params }) {
 
 function formatDate(dateStr, locale) {
   if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString(locale === 'th' ? 'th-TH' : 'en-US', {
+  return new Date(dateStr).toLocaleDateString({ th: 'th-TH', vi: 'vi-VN' }[locale] || 'en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

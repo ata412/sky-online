@@ -56,7 +56,7 @@ export async function generateMetadata({ params }) {
     description: t('defaultDescription'),
     openGraph: {
       siteName: t('siteName'),
-      locale: { th: 'th_TH', en: 'en_US', zh: 'zh_CN', lo: 'lo_LA', my: 'my_MM' }[locale],
+      locale: { th: 'th_TH', en: 'en_US', zh: 'zh_CN', lo: 'lo_LA', my: 'my_MM', vi: 'vi_VN' }[locale],
       type: 'website',
     },
     alternates: {
@@ -66,6 +66,7 @@ export async function generateMetadata({ params }) {
         zh: '/zh',
         lo: '/lo',
         my: '/my',
+        vi: '/vi',
       },
     },
   };

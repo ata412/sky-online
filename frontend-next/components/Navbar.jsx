@@ -59,6 +59,7 @@ const LANGUAGES = [
   { code: 'zh', short: '中文', label: '中文' },
   { code: 'lo', short: 'ລາວ', label: 'ລາວ' },
   { code: 'my', short: 'MM', label: 'မြန်မာ' },
+  { code: 'vi', short: 'VI', label: 'Tiếng Việt' },
 ];
 
 const MEMBER_LOGIN_URL = 'https://member.skyonline99.com/login.asp';
