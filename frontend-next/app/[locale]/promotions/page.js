@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Tag, Calendar, ArrowRight, Zap } from 'lucide-react';
 import { getPromotionsServer } from '@/services/api';
+import { getSeoAlternates } from '@/lib/seo';
 
 const promoGradients = [
   'from-navy-800 to-navy-900',
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }) {
   return {
     title: t('promotionsTitle'),
     description: t('promotionsDescription'),
+    alternates: getSeoAlternates(locale, '/promotions'),
   };
 }
 

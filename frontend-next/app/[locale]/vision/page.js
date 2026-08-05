@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getSeoAlternates } from '@/lib/seo';
 
 export async function generateMetadata({ params }) {
   const { locale } = await params;
@@ -7,6 +8,7 @@ export async function generateMetadata({ params }) {
   return {
     title: t('visionTitle'),
     description: t('visionDescription'),
+    alternates: getSeoAlternates(locale, '/vision'),
   };
 }
 

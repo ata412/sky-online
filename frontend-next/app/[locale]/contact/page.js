@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import ContactForm from '@/components/ContactForm';
+import { getSeoAlternates } from '@/lib/seo';
 
 export async function generateMetadata({ params }) {
   const { locale } = await params;
@@ -8,6 +9,7 @@ export async function generateMetadata({ params }) {
   return {
     title: t('contactTitle'),
     description: t('contactDescription'),
+    alternates: getSeoAlternates(locale, '/contact'),
   };
 }
 

@@ -6,8 +6,19 @@ import HeroContent from '@/components/HeroContent';
 import BannerSlideshow from '@/components/BannerSlideshow';
 import FeaturesSection from '@/components/FeaturesSection';
 import HomeProductsGrid from '@/components/HomeProductsGrid';
+import { getSeoAlternates } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'meta' });
+
+  return {
+    description: t('defaultDescription'),
+    alternates: getSeoAlternates(locale),
+  };
+}
 
 export default async function HomePage({ params }) {
   const { locale } = await params;

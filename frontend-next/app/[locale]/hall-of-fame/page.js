@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Crown, Star, Trophy } from 'lucide-react';
 import { getHallOfFameServer } from '@/services/api';
 import HofCanvasWrapper from '@/components/HofCanvasWrapper';
+import { getSeoAlternates } from '@/lib/seo';
 
 const LEVELS = [
   'Sky Star',
@@ -95,6 +96,7 @@ export async function generateMetadata({ params }) {
   return {
     title: t('hallOfFameTitle'),
     description: t('hallOfFameDescription'),
+    alternates: getSeoAlternates(locale, '/hall-of-fame'),
   };
 }
 

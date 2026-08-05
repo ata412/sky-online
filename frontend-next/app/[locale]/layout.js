@@ -59,16 +59,6 @@ export async function generateMetadata({ params }) {
       locale: { th: 'th_TH', en: 'en_US', zh: 'zh_CN', lo: 'lo_LA', my: 'my_MM', vi: 'vi_VN' }[locale],
       type: 'website',
     },
-    alternates: {
-      languages: {
-        th: '/',
-        en: '/en',
-        zh: '/zh',
-        lo: '/lo',
-        my: '/my',
-        vi: '/vi',
-      },
-    },
   };
 }
 

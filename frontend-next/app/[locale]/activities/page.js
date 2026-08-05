@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Play } from 'lucide-react';
 import { getActivitiesServer } from '@/services/api';
 import ActivityGrid from '@/components/ActivityGrid';
+import { getSeoAlternates } from '@/lib/seo';
 
 const VIDEOS = [
   {
@@ -27,6 +28,7 @@ export async function generateMetadata({ params }) {
   return {
     title: t('activitiesTitle'),
     description: t('activitiesDescription'),
+    alternates: getSeoAlternates(locale, '/activities'),
   };
 }
 

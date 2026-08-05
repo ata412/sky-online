@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getProductsServer } from '@/services/api';
 import ProductsClient from '@/components/ProductsClient';
+import { getSeoAlternates } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,6 +12,7 @@ export async function generateMetadata({ params }) {
   return {
     title: t('productsTitle'),
     description: t('productsDescription'),
+    alternates: getSeoAlternates(locale, '/products'),
   };
 }
 

@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { getProductServer } from '@/services/api';
 import ProductDetailTop from '@/components/ProductDetailTop';
+import { getSeoAlternates } from '@/lib/seo';
 
 function renderDescription(text) {
   if (!text) return null;
@@ -59,13 +60,14 @@ function renderDescription(text) {
 }
 
 export async function generateMetadata({ params }) {
-  const { id } = await params;
+  const { locale, id } = await params;
   const product = await getProductServer(id);
   if (!product) return {};
 
   return {
     title: product.name,
     description: product.description,
+    alternates: getSeoAlternates(locale, `/products/${id}`),
     openGraph: {
       title: product.name,
       description: product.description,
