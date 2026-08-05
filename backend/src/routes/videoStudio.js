@@ -56,7 +56,9 @@ async function checkRateLimit(requesterHash) {
   const result = await pool.query(
     `SELECT COUNT(*)::int AS count
      FROM video_generation_jobs
-     WHERE requester_hash = $1 AND created_at > NOW() - INTERVAL '1 hour'`,
+     WHERE requester_hash = $1
+       AND created_at > NOW() - INTERVAL '1 hour'
+       AND (status = 'submitting' OR operation_name IS NOT NULL)`,
     [requesterHash]
   );
   return { allowed: result.rows[0].count < limit, limit };
