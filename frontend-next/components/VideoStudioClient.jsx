@@ -210,6 +210,11 @@ export default function VideoStudioClient() {
   const isWorking = submitting || ['submitting', 'processing'].includes(job?.status);
   const videoUrl = job?.status === 'completed' ? getVideoUrl(job.id) : '';
   const videoDownloadUrl = job?.status === 'completed' ? getVideoDownloadUrl(job.id) : '';
+  const jobError = job?.error_code === 'provider_audio_filtered'
+    ? t('audioFilterError')
+    : job?.error_code === 'provider_filtered'
+      ? t('providerFilterError')
+      : job?.error;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-navy-950">
@@ -299,7 +304,7 @@ export default function VideoStudioClient() {
 
             {(error || job?.status === 'failed') && (
               <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
-                {job?.error || error}
+                {jobError || error}
               </div>
             )}
 

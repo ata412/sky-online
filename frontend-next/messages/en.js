@@ -252,6 +252,8 @@ const en = {
     fileTooLarge: 'Each image must be no larger than 6 MB.',
     createError: 'Unable to create the video job. Please try again.',
     statusRetry: 'Status check was interrupted. The system will retry automatically.',
+    audioFilterError: 'The provider could not generate audio for this attempt. Please create the video again. You were not charged, and this filtered attempt does not count toward the website limit.',
+    providerFilterError: 'The provider filtered this result. Change an image or create the video again. This filtered attempt does not count toward the website limit.',
   },
 
   // Products

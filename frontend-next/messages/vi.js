@@ -252,6 +252,8 @@ const vi = {
     fileTooLarge: 'Mỗi ảnh không được lớn hơn 6 MB.',
     createError: 'Không thể tạo tác vụ video. Vui lòng thử lại.',
     statusRetry: 'Việc kiểm tra trạng thái bị gián đoạn. Hệ thống sẽ tự động thử lại.',
+    audioFilterError: 'Nhà cung cấp không thể tạo âm thanh trong lần này. Vui lòng tạo lại video. Bạn không bị tính phí và lần bị lọc này không được tính vào giới hạn của trang web.',
+    providerFilterError: 'Nhà cung cấp đã lọc kết quả này. Hãy đổi ảnh hoặc tạo lại video. Lần bị lọc này không được tính vào giới hạn của trang web.',
   },
 
   // Products

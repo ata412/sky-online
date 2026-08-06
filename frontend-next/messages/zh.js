@@ -252,6 +252,8 @@ const zh = {
     fileTooLarge: '每张图片不得超过 6 MB。',
     createError: '无法创建视频任务，请重试。',
     statusRetry: '状态检查中断，系统将自动重试。',
+    audioFilterError: '服务商本次无法生成音频，请再次创建视频。本次未收费，也不会计入网站使用次数。',
+    providerFilterError: '服务商过滤了本次结果。请更换图片或再次创建视频，本次不会计入网站使用次数。',
   },
 
   // Products

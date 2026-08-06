@@ -10,10 +10,12 @@ const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png']);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const OPERATION_NAME_PATTERN = /^(?:models\/[A-Za-z0-9._-]+\/)?operations\/[A-Za-z0-9._-]+$/;
+const PROVIDER_FILTER_PREFIX = 'Video was filtered by the provider:';
 const JOB_PROMPT = `Create an 8-second vertical premium social media product advertisement.
 Use the first reference image as the exact adult presenter and preserve their recognizable facial identity, natural skin tone, hairstyle, and appearance.
 Use the second reference image as the exact product and preserve its packaging, proportions, colors, logo, and label without redesigning it.
-The presenter confidently holds and naturally showcases the product toward the camera in a bright, elegant studio with warm golden accents. Use smooth cinematic camera movement, flattering commercial lighting, realistic hand placement, and an upbeat instrumental soundtrack.
+The presenter confidently holds and naturally showcases the product toward the camera in a bright, elegant studio with warm golden accents. Use smooth cinematic camera movement, flattering commercial lighting, and realistic hand placement.
+Audio contains only soft, neutral studio room ambience. Do not generate music, speech, dialogue, voice-over, singing, lyrics, slogans, brand names, or other vocal sounds.
 Do not add captions, floating text, new logos, medical claims, health claims, before-and-after imagery, or spoken claims. Do not alter the product label.`;
 
 function asyncRoute(handler) {
@@ -59,8 +61,15 @@ async function checkRateLimit(requesterHash) {
      FROM video_generation_jobs
      WHERE requester_hash = $1
        AND created_at > NOW() - INTERVAL '1 hour'
-       AND (status = 'submitting' OR operation_name IS NOT NULL)`,
-    [requesterHash]
+       AND (
+         status IN ('submitting', 'processing', 'completed')
+         OR (
+           status = 'failed'
+           AND operation_name IS NOT NULL
+           AND COALESCE(error_message, '') NOT LIKE $2
+         )
+       )`,
+    [requesterHash, `${PROVIDER_FILTER_PREFIX}%`]
   );
   return { allowed: result.rows[0].count < limit, limit };
 }
@@ -85,10 +94,19 @@ async function geminiRequest(path, init = {}) {
 }
 
 function publicJob(row) {
+  const errorMessage = row.error_message || null;
+  let errorCode = null;
+  if (errorMessage?.startsWith(PROVIDER_FILTER_PREFIX)) {
+    errorCode = /\baudio\b/i.test(errorMessage)
+      ? 'provider_audio_filtered'
+      : 'provider_filtered';
+  }
+
   return {
     id: row.public_id,
     status: row.status,
-    error: row.error_message || null,
+    error: errorMessage,
+    error_code: errorCode,
     created_at: row.created_at,
     updated_at: row.updated_at,
     video_url: row.status === 'completed'
@@ -231,7 +249,7 @@ router.get('/jobs/:id', asyncRoute(async (req, res) => {
         ? videoResponse.raiMediaFilteredReasons.filter(Boolean)
         : [];
       const message = filterReasons.length > 0
-        ? `Video was filtered by the provider: ${filterReasons.join('; ')}`
+        ? `${PROVIDER_FILTER_PREFIX} ${filterReasons.join('; ')}`
         : 'Video generation completed without an output. The result may have been blocked by a safety filter.';
       const failed = await pool.query(
         `UPDATE video_generation_jobs
