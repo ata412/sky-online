@@ -15,8 +15,9 @@ const JOB_PROMPT = `Create an 8-second vertical premium social media product adv
 Use the first reference image as the exact adult presenter and preserve their recognizable facial identity, natural skin tone, hairstyle, and appearance.
 Use the second reference image as the exact product and preserve its packaging, proportions, colors, logo, and label without redesigning it.
 The presenter confidently holds and naturally showcases the product toward the camera in a bright, elegant studio with warm golden accents. Use smooth cinematic camera movement, flattering commercial lighting, and realistic hand placement.
-Audio contains only soft, neutral studio room ambience. Do not generate music, speech, dialogue, voice-over, singing, lyrics, slogans, brand names, or other vocal sounds.
-Do not add captions, floating text, new logos, medical claims, health claims, before-and-after imagery, or spoken claims. Do not alter the product label.`;
+Audio: The presenter speaks clearly in a warm, professional, natural Thai voice and says exactly: "พบกับสินค้าจากสกายออนไลน์ เลือกสิ่งที่ใช่สำหรับคุณได้แล้ววันนี้"
+Keep the spoken Thai sentence clear and synchronized with natural lip movement. Use only subtle studio room ambience underneath the voice. Do not generate music, singing, extra dialogue, additional words, or other voices.
+Do not add captions, floating text, new logos, medical claims, health claims, or before-and-after imagery. Do not alter the product label.`;
 
 function asyncRoute(handler) {
   return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);

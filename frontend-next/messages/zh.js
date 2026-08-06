@@ -226,7 +226,7 @@ const zh = {
   videoStudio: {
     title: '使用 AI 创建产品视频',
     subtitle: '上传一张本人照片和一张产品照片，AI 将自动创建竖屏广告视频。',
-    format: '竖屏 9:16 · 8 秒 · 自带音频',
+    format: '竖屏 9:16 · 8 秒 · 泰语配音',
     personTitle: '1. 本人照片',
     personDescription: '请使用面部和上半身清晰、光线充足的照片。',
     productTitle: '2. 产品照片',

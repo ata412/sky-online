@@ -226,7 +226,7 @@ const vi = {
   videoStudio: {
     title: 'Tạo video sản phẩm bằng AI',
     subtitle: 'Thêm một ảnh của bạn và một ảnh sản phẩm. AI sẽ tự động tạo video quảng cáo dọc.',
-    format: 'Dọc 9:16 · 8 giây · Âm thanh tự nhiên',
+    format: 'Dọc 9:16 · 8 giây · Lồng tiếng Thái',
     personTitle: '1. Ảnh của bạn',
     personDescription: 'Sử dụng ảnh rõ nét, đủ sáng, thấy rõ khuôn mặt và phần thân trên.',
     productTitle: '2. Ảnh sản phẩm',

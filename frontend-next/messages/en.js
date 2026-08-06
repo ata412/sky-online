@@ -226,7 +226,7 @@ const en = {
   videoStudio: {
     title: 'Create a Product Video with AI',
     subtitle: 'Add one photo of yourself and one product photo. AI will automatically create a vertical advertisement.',
-    format: 'Vertical 9:16 · 8 seconds · Native audio',
+    format: 'Vertical 9:16 · 8 seconds · Thai voice-over',
     personTitle: '1. Your photo',
     personDescription: 'Use a clear, well-lit photo showing your face and upper body.',
     productTitle: '2. Product photo',
