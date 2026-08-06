@@ -1091,7 +1091,6 @@ export default function EncyclopediaClient({ products }) {
       productMeta: [
         { label: t('price'), value: `฿${Number(product.price).toLocaleString()}` },
         { label: 'PV', value: product.pv > 0 ? `${product.pv} PV` : '—' },
-        { label: t('productStock'), value: Number(product.stock).toLocaleString() },
       ],
       pageTitles: [
         t('productBookOverview'),

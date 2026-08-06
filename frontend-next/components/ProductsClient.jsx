@@ -86,7 +86,6 @@ function ProductCard({ product }) {
         <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-navy-800">
           <div>
             <p className="text-xl font-bold text-navy-900 dark:text-white">฿{Number(product.price).toLocaleString()}</p>
-            <p className="text-xs text-gray-400">{t('products.stock', { count: product.stock })}</p>
           </div>
           {COMMERCE_ENABLED && (
             <button

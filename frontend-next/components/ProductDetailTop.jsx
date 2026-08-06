@@ -94,8 +94,6 @@ export default function ProductDetailTop({ product }) {
             )}
           </div>
 
-          <p className="text-sm text-gray-400 mb-8">{t('productDetail.stock', { count: product.stock })}</p>
-
           {COMMERCE_ENABLED && (
             <button
               onClick={handleAdd}

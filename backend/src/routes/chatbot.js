@@ -6,10 +6,10 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite';
 
 async function buildProductContext() {
   const result = await pool.query(
-    'SELECT name, brand, category, price, description, stock FROM products ORDER BY category'
+    'SELECT name, brand, category, price, description FROM products ORDER BY category'
   );
   return result.rows
-    .map((p) => `- ${p.name} (${p.brand}, ${p.category}) ราคา ${p.price} บาท คงเหลือ ${p.stock} ชิ้น: ${p.description}`)
+    .map((p) => `- ${p.name} (${p.brand}, ${p.category}) ราคา ${p.price} บาท: ${p.description}`)
     .join('\n');
 }
 
@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
     const productContext = await buildProductContext();
     const systemInstruction = {
       parts: [{
-        text: `คุณเป็นผู้ช่วยตอบคำถามเกี่ยวกับสินค้าของร้าน Sky Online เท่านั้น ตอบเป็นภาษาไทย กระชับ สุภาพ ห้ามแต่งข้อมูลสินค้าที่ไม่มีในรายการ ถ้าลูกค้าถามนอกเรื่องสินค้า ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" แทน\n\nรายการสินค้าปัจจุบัน:\n${productContext}`,
+        text: `คุณเป็นผู้ช่วยตอบคำถามเกี่ยวกับสินค้าของร้าน Sky Online เท่านั้น ตอบเป็นภาษาไทย กระชับ สุภาพ ห้ามแต่งข้อมูลสินค้าที่ไม่มีในรายการ ห้ามระบุหรือคาดเดาจำนวนสินค้าคงเหลือ หากลูกค้าถามสต็อกหรือจำนวนคงเหลือ ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" ถ้าลูกค้าถามนอกเรื่องสินค้า ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" แทน\n\nรายการสินค้าปัจจุบัน:\n${productContext}`,
       }],
     };
 
