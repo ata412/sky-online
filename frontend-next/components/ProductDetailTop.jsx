@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { ArrowLeft, ShoppingCart, CheckCircle } from 'lucide-react';
 import { useRouter } from '@/i18n/routing';
 import { useCart } from '@/context/CartContext';
+import { COMMERCE_ENABLED } from '@/lib/features';
 
 const categoryEmojis = {
   'วิตามิน': '💊', 'โปรตีน': '💪', 'ความงาม': '✨',
@@ -95,20 +96,22 @@ export default function ProductDetailTop({ product }) {
 
           <p className="text-sm text-gray-400 mb-8">{t('productDetail.stock', { count: product.stock })}</p>
 
-          <button
-            onClick={handleAdd}
-            className={`flex items-center justify-center gap-2 py-3 px-8 rounded-xl text-base font-semibold transition-all duration-200 shadow-md ${
-              added
-                ? 'bg-green-500 text-white shadow-green-200'
-                : 'btn-gold'
-            }`}
-          >
-            {added ? (
-              <><CheckCircle size={20} /> {t('productDetail.addedToCart')}</>
-            ) : (
-              <><ShoppingCart size={20} /> {t('productDetail.addToCart')}</>
-            )}
-          </button>
+          {COMMERCE_ENABLED && (
+            <button
+              onClick={handleAdd}
+              className={`flex items-center justify-center gap-2 py-3 px-8 rounded-xl text-base font-semibold transition-all duration-200 shadow-md ${
+                added
+                  ? 'bg-green-500 text-white shadow-green-200'
+                  : 'btn-gold'
+              }`}
+            >
+              {added ? (
+                <><CheckCircle size={20} /> {t('productDetail.addedToCart')}</>
+              ) : (
+                <><ShoppingCart size={20} /> {t('productDetail.addToCart')}</>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </>

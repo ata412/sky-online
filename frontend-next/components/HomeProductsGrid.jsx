@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { useCart } from '@/context/CartContext';
+import { COMMERCE_ENABLED } from '@/lib/features';
 
 const categoryColors = {
   'วิตามิน': 'from-blue-400 to-blue-600',
@@ -61,13 +62,15 @@ function TiltCard({ p }) {
         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 font-light">{p.description}</p>
         <div className="flex items-center justify-between">
           <p className="text-xl font-bold text-navy-900 dark:text-white">฿{Number(p.price).toLocaleString()}</p>
-          <button
-            type="button"
-            onClick={handleAdd}
-            className={`text-sm py-2 px-4 rounded-lg font-semibold transition-all duration-200 ${added ? 'bg-green-500 text-white' : 'btn-gold'}`}
-          >
-            {added ? t('home.added') : t('home.addToCart')}
-          </button>
+          {COMMERCE_ENABLED && (
+            <button
+              type="button"
+              onClick={handleAdd}
+              className={`text-sm py-2 px-4 rounded-lg font-semibold transition-all duration-200 ${added ? 'bg-green-500 text-white' : 'btn-gold'}`}
+            >
+              {added ? t('home.added') : t('home.addToCart')}
+            </button>
+          )}
         </div>
       </div>
     </div>

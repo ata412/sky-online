@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { Search } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { COMMERCE_ENABLED } from '@/lib/features';
 
 const BRANDS = [
   { key: 'BRAND LUCK', banner: '/brands/brand-luck/banner.jpg', alt: 'BRAND LUCK Banner' },
@@ -87,14 +88,16 @@ function ProductCard({ product }) {
             <p className="text-xl font-bold text-navy-900 dark:text-white">฿{Number(product.price).toLocaleString()}</p>
             <p className="text-xs text-gray-400">{t('products.stock', { count: product.stock })}</p>
           </div>
-          <button
-            onClick={handleAdd}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-              added ? 'bg-green-500 text-white' : 'btn-gold'
-            }`}
-          >
-            {added ? t('products.added') : t('products.addToCart')}
-          </button>
+          {COMMERCE_ENABLED && (
+            <button
+              onClick={handleAdd}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                added ? 'bg-green-500 text-white' : 'btn-gold'
+              }`}
+            >
+              {added ? t('products.added') : t('products.addToCart')}
+            </button>
+          )}
         </div>
       </div>
     </div>

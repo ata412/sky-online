@@ -7,6 +7,7 @@ import { Menu, X, UserPlus, LogIn, LogOut, User, Sun, Moon, ChevronDown } from '
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
+import { COMMERCE_ENABLED } from '@/lib/features';
 
 function CartIcon({ light }) {
   const { count, setIsOpen } = useCart();
@@ -317,7 +318,7 @@ export default function Navbar() {
                 </a>
               </div>
             )}
-            <CartIcon light={isOverHero} />
+            {COMMERCE_ENABLED && <CartIcon light={isOverHero} />}
             <ThemeToggle light={isOverHero} />
             <LangToggle light={isOverHero} />
           </div>
@@ -325,7 +326,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 xl:hidden">
             <ThemeToggle light={isOverHero} />
             <LangToggle light={isOverHero} />
-            <CartIcon light={isOverHero} />
+            {COMMERCE_ENABLED && <CartIcon light={isOverHero} />}
             <button
               className={`p-2 rounded-md transition-colors ${isOverHero ? 'text-gray-700 hover:text-gold-600' : 'text-gray-300 hover:text-gold-400'}`}
               onClick={() => setOpen(!open)}

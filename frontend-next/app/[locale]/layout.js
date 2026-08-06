@@ -8,6 +8,7 @@ import Navbar from '@/components/Navbar';
 import CartDrawer from '@/components/CartDrawer';
 import Footer from '@/components/Footer';
 import SplashOverlay from '@/components/SplashOverlay';
+import { COMMERCE_ENABLED } from '@/lib/features';
 import '../globals.css';
 
 const notoSans = Noto_Sans({
@@ -90,7 +91,7 @@ export default async function LocaleLayout({ children, params }) {
             <SplashOverlay />
             <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-navy-950 transition-colors">
               <Navbar />
-              <CartDrawer />
+              {COMMERCE_ENABLED && <CartDrawer />}
               <main className="flex-grow">{children}</main>
               <Footer />
             </div>
