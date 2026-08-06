@@ -90,6 +90,8 @@ export default function VideoStudioClient() {
   const [productFile, setProductFile] = useState(null);
   const [personPreview, setPersonPreview] = useState('');
   const [productPreview, setProductPreview] = useState('');
+  const [productName, setProductName] = useState('');
+  const [productDetail, setProductDetail] = useState('');
   const [consent, setConsent] = useState(false);
   const [job, setJob] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -170,6 +172,8 @@ export default function VideoStudioClient() {
   const reset = () => {
     clearFile('person');
     clearFile('product');
+    setProductName('');
+    setProductDetail('');
     setConsent(false);
     setJob(null);
     setError('');
@@ -180,6 +184,10 @@ export default function VideoStudioClient() {
     event.preventDefault();
     if (!personFile || !productFile) {
       setError(t('imagesRequired'));
+      return;
+    }
+    if (!productName.trim()) {
+      setError(t('productNameRequired'));
       return;
     }
     if (!consent) {
@@ -197,6 +205,8 @@ export default function VideoStudioClient() {
       const response = await createVideoJob({
         person_image: personImage,
         product_image: productImage,
+        product_name: productName.trim(),
+        product_detail: productDetail.trim(),
         consent: true,
       });
       setJob(response.data.job);
@@ -283,6 +293,57 @@ export default function VideoStudioClient() {
             </div>
 
             <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 dark:border-navy-700 dark:bg-navy-900">
+              <div className="mb-4 flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-100 text-gold-700 dark:bg-gold-500/10 dark:text-gold-400">
+                  <Package size={21} />
+                </div>
+                <div>
+                  <h2 className="font-bold text-navy-900 dark:text-white">{t('productInfoTitle')}</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('productInfoDescription')}</p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-semibold text-navy-900 dark:text-white">
+                    {t('productNameLabel')}
+                  </span>
+                  <input
+                    type="text"
+                    value={productName}
+                    onChange={(event) => {
+                      setProductName(event.target.value);
+                      setError('');
+                    }}
+                    maxLength={60}
+                    disabled={isWorking}
+                    placeholder={t('productNamePlaceholder')}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-navy-900 outline-none transition placeholder:text-gray-400 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 disabled:opacity-60 dark:border-navy-700 dark:bg-navy-950 dark:text-white"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-semibold text-navy-900 dark:text-white">
+                    {t('productDetailLabel')}
+                  </span>
+                  <input
+                    type="text"
+                    value={productDetail}
+                    onChange={(event) => {
+                      setProductDetail(event.target.value);
+                      setError('');
+                    }}
+                    maxLength={100}
+                    disabled={isWorking}
+                    placeholder={t('productDetailPlaceholder')}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-navy-900 outline-none transition placeholder:text-gray-400 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 disabled:opacity-60 dark:border-navy-700 dark:bg-navy-950 dark:text-white"
+                  />
+                </label>
+              </div>
+              <p className="mt-3 text-xs text-gray-400">{t('productDetailHint')}</p>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 dark:border-navy-700 dark:bg-navy-900">
               <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="checkbox"
@@ -319,7 +380,7 @@ export default function VideoStudioClient() {
 
             <button
               type="submit"
-              disabled={isWorking || !personFile || !productFile || !consent}
+              disabled={isWorking || !personFile || !productFile || !productName.trim() || !consent}
               className="btn-gold mt-6 flex w-full items-center justify-center gap-2 py-4 text-base disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isWorking ? (
