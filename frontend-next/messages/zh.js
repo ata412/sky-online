@@ -332,6 +332,7 @@ const zh = {
     showing: '显示 {count} 款产品',
     price: '价格',
     viewDetails: '查看详情',
+    preparingBook: '准备中',
     readAloud: '朗读此产品',
     stopReading: '停止朗读',
     clearSearch: '清除搜索',

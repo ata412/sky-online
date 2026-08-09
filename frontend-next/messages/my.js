@@ -332,6 +332,7 @@ const my = {
     showing: 'ကုန်ပစ္စည်း {count} ခု ပြသထားသည်',
     price: 'ဈေးနှုန်း',
     viewDetails: 'အသေးစိတ်ကြည့်ရန်',
+    preparingBook: 'ပြင်ဆင်နေသည်',
     readAloud: 'ဤကုန်ပစ္စည်းကို အသံဖြင့်ဖတ်ရန်',
     stopReading: 'ဖတ်ခြင်းရပ်ရန်',
     clearSearch: 'ရှာဖွေမှုရှင်းရန်',

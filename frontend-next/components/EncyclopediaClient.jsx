@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ExternalLink,
   Info,
+  LoaderCircle,
   PackageSearch,
   Search,
   Square,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { getIngredientKnowledge } from '@/data/ingredientKnowledgeTranslations';
+import { getProductTranslation } from '@/services/api';
 
 const speechLocales = {
   th: 'th-TH',
@@ -761,7 +763,7 @@ function KnowledgeArticle({ article, products, speakingId, onSpeak, onOpen }) {
   );
 }
 
-function EncyclopediaEntry({ product, index, speakingId, onSpeak, onOpen }) {
+function EncyclopediaEntry({ product, index, speakingId, onSpeak, onOpen, isOpening }) {
   const t = useTranslations('encyclopedia');
   const [imgError, setImgError] = useState(false);
   const theme = categoryThemes[product.category] || defaultTheme;
@@ -841,10 +843,14 @@ function EncyclopediaEntry({ product, index, speakingId, onSpeak, onOpen }) {
             <button
               type="button"
               onClick={() => onOpen(product)}
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-[#2e4a3c] px-4 text-xs font-bold text-white transition hover:bg-[#8d312c]"
+              disabled={isOpening}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-[#2e4a3c] px-4 text-xs font-bold text-white transition hover:bg-[#8d312c] disabled:cursor-wait disabled:opacity-70"
             >
-              {t('viewDetails')}
-              <ArrowRight size={14} />
+              {isOpening ? (
+                <><LoaderCircle size={14} className="animate-spin" /> {t('preparingBook')}</>
+              ) : (
+                <>{t('viewDetails')} <ArrowRight size={14} /></>
+              )}
             </button>
           </div>
         </div>
@@ -864,6 +870,7 @@ export default function EncyclopediaClient({ products }) {
   const [knowledgeSearch, setKnowledgeSearch] = useState('');
   const [showAllKnowledge, setShowAllKnowledge] = useState(false);
   const [activeArticle, setActiveArticle] = useState(null);
+  const [openingProductId, setOpeningProductId] = useState(null);
   const speechSessionRef = useRef(0);
   const ingredientKnowledge = useMemo(() => getIngredientKnowledge(locale), [locale]);
 
@@ -1033,7 +1040,7 @@ export default function EncyclopediaClient({ products }) {
     );
   };
 
-  const openProductBook = (product) => {
+  const buildProductBook = (product, localizedProduct = product) => {
     const productText = [product.name, product.description, product.full_description]
       .filter(Boolean)
       .join(' ')
@@ -1064,13 +1071,18 @@ export default function EncyclopediaClient({ products }) {
       .filter((item) => item.id !== product.id && item.category === product.category)
       .slice(0, 6);
     const theme = categoryThemes[product.category] || defaultTheme;
-    const productSummaryLines = createProductSummaryLines(product.description, product.name);
+    const productSummaryLines = createProductSummaryLines(
+      localizedProduct.description,
+      localizedProduct.name
+    );
     const productSummary = productSummaryLines.join(' ') || t('productNoDescription');
 
-    setActiveArticle({
+    return {
       id: `product-${product.id}`,
-      title: cleanEncyclopediaText(product.name),
-      alias: cleanEncyclopediaText([product.brand, product.category].filter(Boolean).join(' · ')),
+      title: cleanEncyclopediaText(localizedProduct.name),
+      alias: cleanEncyclopediaText(
+        [product.brand, localizedProduct.category].filter(Boolean).join(' · ')
+      ),
       summary: productSummary,
       summaryLines: productSummaryLines.length
         ? productSummaryLines
@@ -1083,10 +1095,18 @@ export default function EncyclopediaClient({ products }) {
         ...new Set(knowledge.map((article) => article.caution)),
         t('healthDisclaimer'),
       ].filter(Boolean).join('\n\n'),
-      keywords: [product.name, product.category, product.brand].filter(Boolean),
+      keywords: [
+        product.name,
+        product.category,
+        localizedProduct.name,
+        localizedProduct.category,
+        product.brand,
+      ].filter(Boolean),
       heroImageUrl: product.image_url,
       artPosition: theme.artPosition,
-      fullDetails: cleanEncyclopediaText(product.full_description, { preserveLines: true }),
+      fullDetails: cleanEncyclopediaText(localizedProduct.full_description, {
+        preserveLines: true,
+      }),
       introHint: t('productBookIntroHint'),
       productMeta: [
         { label: t('price'), value: `฿${Number(product.price).toLocaleString()}` },
@@ -1106,7 +1126,25 @@ export default function EncyclopediaClient({ products }) {
       sourceUrl: `/products/${product.id}`,
       sourceLabel: t('viewOriginalProduct'),
       sourceExternal: false,
-    });
+    };
+  };
+
+  const openProductBook = async (product) => {
+    if (openingProductId !== null) return;
+    setOpeningProductId(product.id);
+    let localizedProduct = product;
+
+    if (locale !== 'th') {
+      try {
+        const response = await getProductTranslation(product.id, locale);
+        localizedProduct = { ...product, ...response.data };
+      } catch (error) {
+        console.warn('[encyclopedia] unable to load product translation', error);
+      }
+    }
+
+    setActiveArticle(buildProductBook(product, localizedProduct));
+    setOpeningProductId(null);
   };
 
   const clearFilters = () => {
@@ -1348,6 +1386,7 @@ export default function EncyclopediaClient({ products }) {
                   speakingId={speakingId}
                   onSpeak={speak}
                   onOpen={openProductBook}
+                  isOpening={openingProductId === product.id}
                 />
               ))}
             </div>

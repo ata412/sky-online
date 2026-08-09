@@ -332,6 +332,7 @@ const en = {
     showing: 'Showing {count} products',
     price: 'Price',
     viewDetails: 'View details',
+    preparingBook: 'Preparing',
     readAloud: 'Read this product aloud',
     stopReading: 'Stop reading',
     clearSearch: 'Clear search',

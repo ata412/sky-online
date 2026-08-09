@@ -332,6 +332,7 @@ const vi = {
     showing: 'Đang hiển thị {count} sản phẩm',
     price: 'Giá',
     viewDetails: 'Xem chi tiết',
+    preparingBook: 'Đang chuẩn bị',
     readAloud: 'Đọc sản phẩm này',
     stopReading: 'Dừng đọc',
     clearSearch: 'Xóa tìm kiếm',

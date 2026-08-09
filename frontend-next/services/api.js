@@ -10,6 +10,8 @@ export const createOrder = (data) => api.post('/orders', data);
 export const getMemberOrders = (memberCode) => api.get(`/orders/member/${memberCode}`);
 export const sendChatMessage = (data) => api.post('/chatbot', data);
 export const getActivityPhotos = (id) => api.get(`/activities/${id}/photos`);
+export const getProductTranslation = (id, locale) =>
+  api.get(`/products/${id}/translation`, { params: { locale } });
 export const createVideoJob = (data) => api.post('/video-studio/jobs', data);
 export const getVideoJob = (id) => api.get(`/video-studio/jobs/${id}`);
 export const getVideoUrl = (id) =>

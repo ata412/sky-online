@@ -5,7 +5,7 @@ const pool = require('../db');
 const router = express.Router();
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
-const VEO_MODEL = process.env.VEO_MODEL || 'veo-3.1-generate-preview';
+const VEO_MODEL = process.env.VEO_MODEL || 'veo-3.1-lite-generate-preview';
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png']);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

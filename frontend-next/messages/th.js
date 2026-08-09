@@ -332,6 +332,7 @@ const th = {
     showing: 'แสดง {count} รายการ',
     price: 'ราคา',
     viewDetails: 'ดูรายละเอียด',
+    preparingBook: 'กำลังเตรียม',
     readAloud: 'อ่านข้อมูลสินค้านี้',
     stopReading: 'หยุดอ่าน',
     clearSearch: 'ล้างคำค้นหา',

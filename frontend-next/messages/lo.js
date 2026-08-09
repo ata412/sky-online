@@ -332,6 +332,7 @@ const lo = {
     showing: 'ສະແດງ {count} ລາຍການ',
     price: 'ລາຄາ',
     viewDetails: 'ເບິ່ງລາຍລະອຽດ',
+    preparingBook: 'ກຳລັງກະກຽມ',
     readAloud: 'ອ່ານຂໍ້ມູນສິນຄ້ານີ້',
     stopReading: 'ຢຸດອ່ານ',
     clearSearch: 'ລ້າງຄຳຄົ້ນຫາ',
