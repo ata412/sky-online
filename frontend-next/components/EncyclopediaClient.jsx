@@ -47,11 +47,48 @@ function detectSpeechLanguage(text, fallbackLocale) {
 
 function selectVoice(language) {
   const voices = window.speechSynthesis.getVoices();
-  const exact = voices.find((voice) => voice.lang.toLowerCase() === language.toLowerCase());
-  if (exact) return exact;
-
   const languageCode = language.split('-')[0].toLowerCase();
-  return voices.find((voice) => voice.lang.toLowerCase().startsWith(languageCode)) || null;
+  const matchingVoices = voices.filter(
+    (voice) => voice.lang.toLowerCase().split('-')[0] === languageCode
+  );
+
+  return matchingVoices
+    .map((voice, index) => {
+      const name = voice.name.toLowerCase();
+      let score = voice.lang.toLowerCase() === language.toLowerCase() ? 25 : 0;
+      if (/natural|neural|premium|enhanced/.test(name)) score += 80;
+      if (/google|samantha|ava|aria|jenny|zira|david|guy/.test(name)) score += 45;
+      if (voice.default) score += 10;
+      if (/compact|espeak/.test(name)) score -= 80;
+      return { voice, score, index };
+    })
+    .sort((a, b) => b.score - a.score || a.index - b.index)[0]?.voice || null;
+}
+
+function splitSpeechChunks(text, maxLength = 260) {
+  const sentences = String(text || '')
+    .replace(/\r/g, '')
+    .split(/(?<=[.!?。！？])\s+|\n+/u)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  return sentences.flatMap((sentence) => {
+    if (sentence.length <= maxLength) return [sentence];
+    const words = sentence.split(/\s+/u);
+    const chunks = [];
+    let chunk = '';
+    words.forEach((word) => {
+      const next = chunk ? `${chunk} ${word}` : word;
+      if (chunk && next.length > maxLength) {
+        chunks.push(chunk);
+        chunk = word;
+      } else {
+        chunk = next;
+      }
+    });
+    if (chunk) chunks.push(chunk);
+    return chunks;
+  });
 }
 
 function createPhrasePattern(phrase) {
@@ -101,9 +138,9 @@ function joinSpeechParts(parts, repeatedPhrase = '') {
 
 function createUtterance(text, language, voice) {
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = language;
-  utterance.voice = voice;
-  utterance.rate = language.startsWith('th') ? 0.9 : 0.94;
+  utterance.lang = voice?.lang || language;
+  if (voice) utterance.voice = voice;
+  utterance.rate = language.startsWith('en') ? 0.86 : language.startsWith('th') ? 0.9 : 0.92;
   utterance.pitch = 1;
   utterance.volume = 1;
   return utterance;
@@ -115,10 +152,7 @@ function speakMultilingual(text, locale, isActive, onFinish) {
   // sentence separately makes the browser alternate between unrelated voices.
   const readingLanguage = detectSpeechLanguage(text, locale);
   const readingVoice = selectVoice(readingLanguage);
-  const chunks = text
-    .split(/(?<=[.!?。！？])\s*|\n+/u)
-    .map((chunk) => chunk.trim())
-    .filter(Boolean);
+  const chunks = splitSpeechChunks(text);
   let index = 0;
 
   const speakNext = () => {
