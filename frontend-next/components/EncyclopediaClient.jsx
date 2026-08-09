@@ -766,7 +766,7 @@ function KnowledgeArticle({ article, products, speakingId, onSpeak, onOpen }) {
 function EncyclopediaEntry({ product, index, speakingId, onSpeak, onOpen, isOpening }) {
   const t = useTranslations('encyclopedia');
   const [imgError, setImgError] = useState(false);
-  const theme = categoryThemes[product.category] || defaultTheme;
+  const theme = categoryThemes[product.source_category || product.category] || defaultTheme;
   const isSpeaking = speakingId === product.id;
   const hasImage = product.image_url && !imgError;
   const displayName = cleanEncyclopediaText(product.name);
@@ -859,7 +859,7 @@ function EncyclopediaEntry({ product, index, speakingId, onSpeak, onOpen, isOpen
   );
 }
 
-export default function EncyclopediaClient({ products }) {
+export default function EncyclopediaClient({ products, productTranslations = [] }) {
   const t = useTranslations('encyclopedia');
   const locale = useLocale();
   const [search, setSearch] = useState('');
@@ -873,6 +873,25 @@ export default function EncyclopediaClient({ products }) {
   const [openingProductId, setOpeningProductId] = useState(null);
   const speechSessionRef = useRef(0);
   const ingredientKnowledge = useMemo(() => getIngredientKnowledge(locale), [locale]);
+  const localizedProducts = useMemo(() => {
+    const translationsById = new Map(
+      productTranslations.map((translation) => [Number(translation.product_id), translation])
+    );
+    return products.map((product) => {
+      const translation = translationsById.get(Number(product.id));
+      if (!translation) return product;
+      return {
+        ...product,
+        source_name: product.name,
+        source_category: product.category,
+        source_description: product.description,
+        source_full_description: product.full_description,
+        name: translation.name || product.name,
+        category: translation.category || product.category,
+        description: translation.description || product.description,
+      };
+    });
+  }, [productTranslations, products]);
 
   const stopSpeech = useCallback(() => {
     speechSessionRef.current += 1;
@@ -888,19 +907,27 @@ export default function EncyclopediaClient({ products }) {
   }, [stopSpeech]);
 
   const categories = useMemo(
-    () => [...new Set(products.map((product) => product.category).filter(Boolean))],
-    [products]
+    () => [...new Set(localizedProducts.map((product) => product.category).filter(Boolean))],
+    [localizedProducts]
   );
   const brands = useMemo(
-    () => [...new Set(products.map((product) => product.brand).filter(Boolean))],
-    [products]
+    () => [...new Set(localizedProducts.map((product) => product.brand).filter(Boolean))],
+    [localizedProducts]
   );
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    return products.filter((product) => {
+    return localizedProducts.filter((product) => {
       const matchesQuery =
         !query ||
-        [product.name, product.description, product.category, product.brand]
+        [
+          product.name,
+          product.description,
+          product.category,
+          product.brand,
+          product.source_name,
+          product.source_description,
+          product.source_category,
+        ]
           .filter(Boolean)
           .some((value) => value.toLocaleLowerCase().includes(query));
       return (
@@ -909,7 +936,7 @@ export default function EncyclopediaClient({ products }) {
         (activeBrand === 'all' || product.brand === activeBrand)
       );
     });
-  }, [activeBrand, activeCategory, products, search]);
+  }, [activeBrand, activeCategory, localizedProducts, search]);
   const filteredKnowledge = useMemo(() => {
     const query = knowledgeSearch.trim().toLocaleLowerCase();
     if (!query) return ingredientKnowledge;
@@ -1067,8 +1094,11 @@ export default function EncyclopediaClient({ products }) {
         ? [fallbackArticle]
         : [];
     const benefits = [...new Set(knowledge.flatMap((article) => article.benefits))].slice(0, 6);
-    const relatedProducts = products
-      .filter((item) => item.id !== product.id && item.category === product.category)
+    const relatedProducts = localizedProducts
+      .filter((item) => (
+        item.id !== product.id &&
+        (item.source_category || item.category) === product.category
+      ))
       .slice(0, 6);
     const theme = categoryThemes[product.category] || defaultTheme;
     const productSummaryLines = createProductSummaryLines(
@@ -1132,6 +1162,13 @@ export default function EncyclopediaClient({ products }) {
   const openProductBook = async (product) => {
     if (openingProductId !== null) return;
     setOpeningProductId(product.id);
+    const sourceProduct = {
+      ...product,
+      name: product.source_name || product.name,
+      category: product.source_category || product.category,
+      description: product.source_description || product.description,
+      full_description: product.source_full_description || product.full_description,
+    };
     let localizedProduct = product;
 
     if (locale !== 'th') {
@@ -1143,7 +1180,7 @@ export default function EncyclopediaClient({ products }) {
       }
     }
 
-    setActiveArticle(buildProductBook(product, localizedProduct));
+    setActiveArticle(buildProductBook(sourceProduct, localizedProduct));
     setOpeningProductId(null);
   };
 
@@ -1179,7 +1216,7 @@ export default function EncyclopediaClient({ products }) {
                 <h2 className="mt-3 text-2xl font-bold leading-tight text-[#30271b] dark:text-[#f3ead7] lg:text-3xl">{t('collectionTitle')}</h2>
                 <div className="mt-7 space-y-4 lg:mt-9">
                   {[
-                    [products.length, t('productsCount')],
+                    [localizedProducts.length, t('productsCount')],
                     [categories.length, t('categoriesCount')],
                     [brands.length, t('brandsCount')],
                   ].map(([value, label], index) => (
@@ -1256,7 +1293,7 @@ export default function EncyclopediaClient({ products }) {
               <KnowledgeArticle
                 key={article.id}
                 article={article}
-                products={products}
+                products={localizedProducts}
                 speakingId={speakingId}
                 onSpeak={speakKnowledge}
                 onOpen={setActiveArticle}
@@ -1288,7 +1325,7 @@ export default function EncyclopediaClient({ products }) {
       {activeArticle && (
         <BookReader
           article={activeArticle}
-          products={products}
+          products={localizedProducts}
           speakingId={speakingId}
           onSpeak={speakKnowledge}
           onStopSpeech={stopSpeech}

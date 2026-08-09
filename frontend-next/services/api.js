@@ -39,6 +39,8 @@ async function serverFetch(path, { params, ...init } = {}) {
 }
 
 export const getProductsServer = (params) => serverFetch('/products', { params, next: { revalidate: 60 } });
+export const getProductTranslationsServer = (locale) =>
+  serverFetch('/products/translations', { params: { locale }, cache: 'no-store' });
 export const getProductServer = (id) => serverFetch(`/products/${id}`, { next: { revalidate: 60 } });
 export const getCategoriesServer = () => serverFetch('/products/categories', { next: { revalidate: 60 } });
 export const getPromotionsServer = () => serverFetch('/promotions', { next: { revalidate: 60 } });

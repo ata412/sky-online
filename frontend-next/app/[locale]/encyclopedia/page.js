@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { getProductsServer } from '@/services/api';
+import { getProductsServer, getProductTranslationsServer } from '@/services/api';
 import EncyclopediaClient from '@/components/EncyclopediaClient';
 import { getSeoAlternates } from '@/lib/seo';
 
@@ -19,7 +19,15 @@ export async function generateMetadata({ params }) {
 export default async function EncyclopediaPage({ params }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const products = (await getProductsServer()) ?? [];
+  const [products, productTranslations] = await Promise.all([
+    getProductsServer(),
+    locale === 'th' ? Promise.resolve([]) : getProductTranslationsServer(locale),
+  ]);
 
-  return <EncyclopediaClient products={products} />;
+  return (
+    <EncyclopediaClient
+      products={products ?? []}
+      productTranslations={productTranslations ?? []}
+    />
+  );
 }
