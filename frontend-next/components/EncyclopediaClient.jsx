@@ -382,10 +382,15 @@ function IngredientArtwork({ position, className = '' }) {
   );
 }
 
-function cleanEncyclopediaText(value, { preserveLines = false } = {}) {
+function cleanEncyclopediaText(
+  value,
+  { preserveLines = false, removeBeautySupplement = false } = {}
+) {
   if (!value) return '';
-  const cleanedLines = String(value)
-    .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '')
+  let text = String(value).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '');
+  if (removeBeautySupplement) text = text.replace(/เสริม\s*ความงาม/gu, '');
+
+  const cleanedLines = text
     .replace(/\r/g, '')
     .split('\n')
     .map((line) =>
@@ -400,7 +405,10 @@ function cleanEncyclopediaText(value, { preserveLines = false } = {}) {
 }
 
 function createSummaryLines(value) {
-  const cleaned = cleanEncyclopediaText(value, { preserveLines: true });
+  const cleaned = cleanEncyclopediaText(value, {
+    preserveLines: true,
+    removeBeautySupplement: true,
+  });
   if (!cleaned) return [];
 
   const lines = cleaned
@@ -968,7 +976,9 @@ function EncyclopediaEntry({ product, index, speakingId, onSpeak, onOpen, isOpen
   const isSpeaking = speakingId === product.id;
   const hasImage = product.image_url && !imgError;
   const displayName = cleanEncyclopediaText(product.name);
-  const displayDescription = cleanEncyclopediaText(product.description);
+  const displayDescription = cleanEncyclopediaText(product.description, {
+    removeBeautySupplement: true,
+  });
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden border border-[#d8c9aa] bg-[#fffdf6] shadow-[0_12px_32px_-22px_rgba(65,45,20,0.6)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_42px_-24px_rgba(65,45,20,0.65)] dark:border-[#544a3c] dark:bg-[#201d18]">
@@ -1294,7 +1304,10 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     speechSessionRef.current = speechSession;
     setSpeechError('');
     ensureAudioContext();
-    const productDescription = removeSpeechPhrase(product.description, product.name);
+    const productDescription = removeSpeechPhrase(
+      cleanEncyclopediaText(product.description, { removeBeautySupplement: true }),
+      product.name
+    );
     const speechDescription = locale === 'en'
       ? prepareEnglishCardDescription(productDescription)
       : productDescription;
@@ -1450,6 +1463,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       artPosition: theme.artPosition,
       fullDetails: cleanEncyclopediaText(localizedProduct.full_description, {
         preserveLines: true,
+        removeBeautySupplement: true,
       }),
       introHint: t('productBookIntroHint'),
       productMeta: [
