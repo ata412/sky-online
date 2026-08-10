@@ -32,7 +32,7 @@ const speechLocales = {
   my: 'my-MM',
   vi: 'vi-VN',
 };
-const SPEECH_CACHE_NAME = 'sky-online-gemini-tts-v1';
+const SPEECH_CACHE_NAME = 'sky-online-edge-tts-v2';
 const CLOUD_SPEECH_FIRST_CHUNK_LENGTH = 180;
 const CLOUD_SPEECH_CHUNK_LENGTH = 400;
 
@@ -70,7 +70,11 @@ async function getCloudSpeechAudio(text, locale, signal) {
   if (cache && cacheRequest) {
     cache.put(
       cacheRequest,
-      new Response(audio.slice(0), { headers: { 'Content-Type': 'audio/wav' } })
+      new Response(audio.slice(0), {
+        headers: {
+          'Content-Type': response.headers['content-type'] || 'application/octet-stream',
+        },
+      })
     ).catch((error) => console.warn('[speech] unable to cache audio', error));
   }
   return audio;

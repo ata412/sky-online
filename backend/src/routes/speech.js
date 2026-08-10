@@ -1,11 +1,14 @@
 const crypto = require('crypto');
 const express = require('express');
+const { EdgeTTS } = require('@seepine/edge-tts');
 
 const router = express.Router();
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 const TTS_MODEL = process.env.TTS_MODEL || 'gemini-2.5-flash-preview-tts';
 const TTS_VOICE = process.env.TTS_VOICE || 'Sulafat';
+const EDGE_TTS_ENABLED = process.env.EDGE_TTS_ENABLED !== 'false';
+const EDGE_TTS_TIMEOUT_MS = 8000;
 const MAX_TEXT_LENGTH = 1600;
 const CACHE_MAX_ITEMS = 80;
 const CACHE_MAX_BYTES = 64 * 1024 * 1024;
@@ -17,6 +20,22 @@ const SUPPORTED_LOCALES = {
   lo: 'Lao',
   my: 'Burmese',
   vi: 'Vietnamese',
+};
+const EDGE_TTS_VOICES = {
+  th: 'th-TH-PremwadeeNeural',
+  en: 'en-US-AriaNeural',
+  zh: 'zh-CN-XiaoxiaoNeural',
+  lo: 'lo-LA-KeomanyNeural',
+  my: 'my-MM-NilarNeural',
+  vi: 'vi-VN-HoaiMyNeural',
+};
+const EDGE_TTS_LOCALES = {
+  th: 'th-TH',
+  en: 'en-US',
+  zh: 'zh-CN',
+  lo: 'lo-LA',
+  my: 'my-MM',
+  vi: 'vi-VN',
 };
 
 const audioCache = new Map();
@@ -36,7 +55,7 @@ function normalizeText(value) {
 function createCacheKey(text, locale) {
   return crypto
     .createHash('sha256')
-    .update(`${TTS_MODEL}\0${TTS_VOICE}\0${locale}\0${text}`)
+    .update(`edge-mp3-v1\0${EDGE_TTS_ENABLED}\0${EDGE_TTS_VOICES[locale]}\0${TTS_MODEL}\0${TTS_VOICE}\0${locale}\0${text}`)
     .digest('hex');
 }
 
@@ -45,23 +64,23 @@ function getCachedAudio(key) {
   if (!entry) return null;
   audioCache.delete(key);
   audioCache.set(key, entry);
-  return entry.audio;
+  return entry.result;
 }
 
-function cacheAudio(key, audio) {
+function cacheAudio(key, result) {
   const previous = audioCache.get(key);
   if (previous) {
-    cachedBytes -= previous.audio.length;
+    cachedBytes -= previous.result.audio.length;
     audioCache.delete(key);
   }
-  audioCache.set(key, { audio });
-  cachedBytes += audio.length;
+  audioCache.set(key, { result });
+  cachedBytes += result.audio.length;
 
   while (audioCache.size > CACHE_MAX_ITEMS || cachedBytes > CACHE_MAX_BYTES) {
     const oldestKey = audioCache.keys().next().value;
     if (!oldestKey) break;
     const oldest = audioCache.get(oldestKey);
-    cachedBytes -= oldest.audio.length;
+    cachedBytes -= oldest.result.audio.length;
     audioCache.delete(oldestKey);
   }
 }
@@ -112,6 +131,19 @@ function pcmToWav(pcm, sampleRate = 24000) {
 function buildPrompt(text, locale) {
   const language = SUPPORTED_LOCALES[locale];
   return `Generate speech that reads the transcript below exactly as written in ${language}. Use a clear, warm, natural product encyclopedia narration at a moderate pace. Do not translate, add, omit, summarize, or describe the transcript.\n\nTranscript:\n${text}`;
+}
+
+async function requestEdgeAudio(text, locale) {
+  const tts = new EdgeTTS({
+    voice: EDGE_TTS_VOICES[locale],
+    lang: EDGE_TTS_LOCALES[locale],
+    outputFormat: 'audio-24khz-48kbitrate-mono-mp3',
+    timeout: EDGE_TTS_TIMEOUT_MS,
+  });
+  const response = await tts.call(text);
+  const audio = Buffer.from(response.data);
+  if (!audio.length) throw new Error('Edge speech generation returned empty audio');
+  return { audio, mimeType: 'audio/mpeg', provider: 'edge' };
 }
 
 async function performGeminiAudioRequest(text, locale) {
@@ -175,18 +207,35 @@ async function generateAudio(text, locale, key) {
   const existing = pendingAudio.get(key);
   if (existing) return existing;
 
-  const generation = requestGeminiAudio(text, locale)
-    .then((audio) => {
-      cacheAudio(key, audio);
-      return audio;
-    })
+  const generation = (async () => {
+    let result;
+    if (EDGE_TTS_ENABLED) {
+      try {
+        result = await requestEdgeAudio(text, locale);
+      } catch (error) {
+        console.warn(
+          '[speech] Edge TTS unavailable; using Gemini fallback',
+          error?.message || String(error)
+        );
+      }
+    }
+    if (!result) {
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error('Gemini speech fallback is not configured');
+      }
+      const audio = await requestGeminiAudio(text, locale);
+      result = { audio, mimeType: 'audio/wav', provider: 'gemini' };
+    }
+    cacheAudio(key, result);
+    return result;
+  })()
     .finally(() => pendingAudio.delete(key));
   pendingAudio.set(key, generation);
   return generation;
 }
 
 router.post('/', async (req, res) => {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!EDGE_TTS_ENABLED && !process.env.GEMINI_API_KEY) {
     return res.status(503).json({ error: 'Speech generation is not configured' });
   }
 
@@ -206,9 +255,10 @@ router.post('/', async (req, res) => {
   const cached = getCachedAudio(key);
   if (cached) {
     res.setHeader('X-TTS-Cache', 'HIT');
+    res.setHeader('X-TTS-Provider', cached.provider);
     res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
-    res.type('audio/wav');
-    return res.send(cached);
+    res.type(cached.mimeType);
+    return res.send(cached.audio);
   }
 
   const rateLimit = consumeRateLimit(req);
@@ -219,11 +269,12 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const audio = await generateAudio(text, locale, key);
+    const result = await generateAudio(text, locale, key);
     res.setHeader('X-TTS-Cache', 'MISS');
+    res.setHeader('X-TTS-Provider', result.provider);
     res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
-    res.type('audio/wav');
-    return res.send(audio);
+    res.type(result.mimeType);
+    return res.send(result.audio);
   } catch (error) {
     console.error('[speech] generation error', error.message);
     const status = error.status === 429 ? 429 : 502;
