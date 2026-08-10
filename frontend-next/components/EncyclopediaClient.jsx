@@ -65,12 +65,79 @@ function selectVoice(language) {
     .sort((a, b) => b.score - a.score || a.index - b.index)[0]?.voice || null;
 }
 
-function splitSpeechChunks(text, maxLength = 260) {
+function prepareSpeechText(text, locale) {
+  let prepared = String(text || '')
+    .replace(/\r/g, '')
+    .replace(/[•●▪◦\p{Extended_Pictographic}\u2600-\u27BF\uFE0F\u200D]+/gu, '. ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (locale !== 'en') return prepared;
+
+  const headings = [
+    'Properties',
+    'Benefits(?!\\s+include)',
+    'Important Ingredients',
+    'Key Ingredients',
+    'Main Ingredients',
+    'Ingredients',
+    'Directions',
+    'How to Use',
+    'Suggested Use',
+    'Storage',
+    'Package Size',
+    'Packaging',
+    'Warnings?',
+    'FDA Registration(?: Number)?',
+  ].join('|');
+
+  return prepared
+    .replace(/&/g, ' and ')
+    .replace(new RegExp(`\\s*\\b(${headings})\\b\\s*:?\\s*`, 'gi'), '. $1. ')
+    .replace(
+      /(?<=[a-z0-9)%])\s+(?=(?:Because|Contains|Made with|Formulated with|Designed to|Helps|Supports|Suitable for)\b)/g,
+      '. '
+    )
+    .replace(/\bFDA\b/gi, 'F D A')
+    .replace(/\bPV\b/g, 'P V points')
+    .replace(/(\d+(?:\.\d+)?)\s*mg\b/gi, '$1 milligrams')
+    .replace(/(\d+(?:\.\d+)?)\s*ml\b/gi, '$1 milliliters')
+    .replace(/(\d+(?:\.\d+)?)\s*g\b/gi, '$1 grams')
+    .replace(/\.\s*\)/g, ')')
+    .replace(/\s*\.\s*\./g, '. ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function prepareEnglishCardDescription(text) {
+  const prepared = prepareSpeechText(text, 'en');
+  const sectionStart = prepared.search(
+    /\.\s+(?:Properties|Benefits|Important Ingredients|Key Ingredients|Main Ingredients|Ingredients|Directions|How to Use|Suggested Use|Storage|Package Size|Packaging|Warnings?|F D A Registration)\./i
+  );
+  const summary = sectionStart >= 80 ? prepared.slice(0, sectionStart) : prepared;
+  return limitSpeechText(summary);
+}
+
+function limitSpeechText(text, maxLength = 460) {
+  if (text.length <= maxLength) return text;
+  const excerpt = text.slice(0, maxLength + 1);
+  const sentenceEnd = Math.max(
+    excerpt.lastIndexOf('. '),
+    excerpt.lastIndexOf('! '),
+    excerpt.lastIndexOf('? ')
+  );
+  const cutAt = sentenceEnd >= Math.floor(maxLength * 0.55)
+    ? sentenceEnd + 1
+    : excerpt.lastIndexOf(' ');
+  return `${excerpt.slice(0, cutAt > 0 ? cutAt : maxLength).trim().replace(/[,:;]$/, '')}.`;
+}
+
+function splitSpeechChunks(text, maxLength = 190) {
   const sentences = String(text || '')
     .replace(/\r/g, '')
     .split(/(?<=[.!?。！？])\s+|\n+/u)
     .map((sentence) => sentence.trim())
-    .filter(Boolean);
+    .filter((sentence) => /[\p{L}\p{N}]/u.test(sentence));
 
   return sentences.flatMap((sentence) => {
     if (sentence.length <= maxLength) return [sentence];
@@ -140,8 +207,8 @@ function createUtterance(text, language, voice) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = voice?.lang || language;
   if (voice) utterance.voice = voice;
-  utterance.rate = language.startsWith('en') ? 0.86 : language.startsWith('th') ? 0.9 : 0.92;
-  utterance.pitch = 1;
+  utterance.rate = language.startsWith('en') ? 0.78 : language.startsWith('th') ? 0.9 : 0.92;
+  utterance.pitch = language.startsWith('en') ? 0.96 : 1;
   utterance.volume = 1;
   return utterance;
 }
@@ -150,9 +217,10 @@ function speakMultilingual(text, locale, isActive, onFinish) {
   // Select one dominant language and one voice for the whole reading session.
   // Product and brand names often contain another script; detecting every
   // sentence separately makes the browser alternate between unrelated voices.
-  const readingLanguage = detectSpeechLanguage(text, locale);
+  const preparedText = prepareSpeechText(text, locale);
+  const readingLanguage = detectSpeechLanguage(preparedText, locale);
   const readingVoice = selectVoice(readingLanguage);
-  const chunks = splitSpeechChunks(text);
+  const chunks = splitSpeechChunks(preparedText);
   let index = 0;
 
   const speakNext = () => {
@@ -1013,10 +1081,14 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
     window.speechSynthesis.cancel();
+    const productDescription = removeSpeechPhrase(product.description, product.name);
+    const speechDescription = locale === 'en'
+      ? prepareEnglishCardDescription(productDescription)
+      : productDescription;
     const speechText = t('speechText', {
       name: product.name,
       category: product.category || '',
-      description: removeSpeechPhrase(product.description, product.name),
+      description: speechDescription,
       price: Number(product.price).toLocaleString(),
     });
     setSpeakingId(product.id);
@@ -1066,11 +1138,14 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       locale === 'th' ? t('importantNotes') : '',
       article.caution,
     ];
+    const overviewSummaryLines = locale === 'en' && article.productMeta
+      ? [prepareEnglishCardDescription(article.summary)]
+      : (article.summaryLines?.length ? article.summaryLines : [article.summary]);
     const pageSpeechText = [
       [
         pageTitles[0],
         article.title,
-        ...(article.summaryLines?.length ? article.summaryLines : [article.summary]),
+        ...overviewSummaryLines,
         ...(article.productMeta || []).flatMap((item) => [item.label, item.value]),
       ],
       [pageTitles[1], ...article.benefits],
