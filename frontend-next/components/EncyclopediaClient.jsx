@@ -71,6 +71,8 @@ function prepareSpeechText(text, locale) {
   let prepared = String(text || '')
     .replace(/\r/g, '')
     .replace(/[•●▪◦\p{Extended_Pictographic}\u2600-\u27BF\uFE0F\u200D]+/gu, '. ')
+    .replace(/(?:\s*\.{2,}\s*|\s*…+\s*)/gu, '. ')
+    .replace(/(?:\s+\.){2,}/g, '.')
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -215,7 +217,14 @@ function createUtterance(text, language, voice) {
   return utterance;
 }
 
-function speakMultilingual(text, locale, isActive, onFinish, getAvailableVoices) {
+function speakMultilingual(
+  text,
+  locale,
+  isActive,
+  onFinish,
+  getAvailableVoices,
+  onVoiceUnavailable
+) {
   // Keep the selected page language for the whole session. Product names and
   // ingredient names often contain another script and must not switch voices.
   const preparedText = prepareSpeechText(text, locale);
@@ -229,6 +238,13 @@ function speakMultilingual(text, locale, isActive, onFinish, getAvailableVoices)
     const readingVoice = selectVoice(readingLanguage, availableVoices);
     if (!readingVoice && voiceLoadAttempt < 15) {
       window.setTimeout(() => startSpeaking(voiceLoadAttempt + 1), 100);
+      return;
+    }
+    // Never send Lao (or another selected language) to the device's default
+    // voice. A Thai/English fallback skips the letters and speaks punctuation.
+    if (!readingVoice && availableVoices.length > 0) {
+      onVoiceUnavailable?.();
+      onFinish();
       return;
     }
 
@@ -986,6 +1002,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
   const [activeBrand, setActiveBrand] = useState('all');
   const [speakingId, setSpeakingId] = useState(null);
   const [speechSupported, setSpeechSupported] = useState(true);
+  const [speechError, setSpeechError] = useState('');
   const [knowledgeSearch, setKnowledgeSearch] = useState('');
   const [showAllKnowledge, setShowAllKnowledge] = useState(false);
   const [activeArticle, setActiveArticle] = useState(null);
@@ -1105,6 +1122,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
 
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
+    setSpeechError('');
     window.speechSynthesis.cancel();
     const productDescription = removeSpeechPhrase(product.description, product.name);
     const speechDescription = locale === 'en'
@@ -1122,7 +1140,8 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       locale,
       () => speechSessionRef.current === speechSession,
       () => setSpeakingId(null),
-      () => speechVoicesRef.current
+      () => speechVoicesRef.current,
+      () => setSpeechError(t('voiceUnavailable'))
     );
   };
 
@@ -1138,6 +1157,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
 
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
+    setSpeechError('');
     window.speechSynthesis.cancel();
     const pageTitles = article.pageTitles || [
       t('bookIntroduction'),
@@ -1199,7 +1219,8 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       locale,
       () => speechSessionRef.current === speechSession,
       () => setSpeakingId(null),
-      () => speechVoicesRef.current
+      () => speechVoicesRef.current,
+      () => setSpeechError(t('voiceUnavailable'))
     );
   };
 
@@ -1328,6 +1349,23 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
 
   return (
     <div className="min-h-screen bg-[#e9dfca] text-[#2d251a] dark:bg-[#15130f]">
+      {speechError && (
+        <div
+          role="alert"
+          className="fixed inset-x-4 bottom-4 z-[130] mx-auto flex max-w-xl items-start gap-3 rounded-xl border border-[#c8a96b] bg-[#fff8e8] px-4 py-3 text-sm leading-6 text-[#584524] shadow-xl dark:border-[#806a42] dark:bg-[#292318] dark:text-[#f0dfba]"
+        >
+          <Info size={18} className="mt-0.5 shrink-0" />
+          <span className="flex-1">{speechError}</span>
+          <button
+            type="button"
+            onClick={() => setSpeechError('')}
+            className="rounded-full p-1 transition hover:bg-black/10 dark:hover:bg-white/10"
+            aria-label="Close"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
       <section className="relative overflow-hidden border-b border-[#c8b796] bg-[#233c32] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="absolute inset-0 opacity-10 [background-image:repeating-linear-gradient(90deg,transparent,transparent_3px,#fff_4px)]" />
         <div className="relative mx-auto w-full max-w-[900px] [perspective:1200px] md:w-[min(100%,calc((100dvh-7rem)*1.422))]">

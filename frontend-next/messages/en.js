@@ -318,6 +318,7 @@ const en = {
     explore: 'Explore products',
     speechReady: 'Tap the speaker icon to listen',
     speechUnavailable: 'Read aloud is unavailable in this browser',
+    voiceUnavailable: 'This device has no voice for the selected language. Add that language in your device speech settings or try another device.',
     productsCount: 'products in the encyclopedia',
     categoriesCount: 'categories',
     brandsCount: 'brands',

@@ -318,6 +318,7 @@ const zh = {
     explore: '开始探索产品',
     speechReady: '点击扬声器图标收听',
     speechUnavailable: '此浏览器不支持朗读',
+    voiceUnavailable: '此设备没有所选语言的语音。请在设备的语音设置中添加该语言，或尝试其他设备。',
     productsCount: '百科产品',
     categoriesCount: '分类',
     brandsCount: '品牌',

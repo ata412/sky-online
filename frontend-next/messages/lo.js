@@ -318,6 +318,7 @@ const lo = {
     explore: 'ເລີ່ມສຳຫຼວດສິນຄ້າ',
     speechReady: 'ແຕະໄອຄອນລຳໂພງເພື່ອຟັງ',
     speechUnavailable: 'ບຣາວເຊີນີ້ບໍ່ຮອງຮັບການອ່ານສຽງ',
+    voiceUnavailable: 'ອຸປະກອນນີ້ບໍ່ມີສຽງພາສາລາວ. ກະລຸນາເພີ່ມສຽງພາສາລາວໃນການຕັ້ງຄ່າ ຫຼື ລອງໃຊ້ອຸປະກອນອື່ນ.',
     productsCount: 'ສິນຄ້າໃນສາລານຸກົມ',
     categoriesCount: 'ໝວດໝູ່',
     brandsCount: 'ແບຣນ',

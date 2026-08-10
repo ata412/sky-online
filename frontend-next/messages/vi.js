@@ -318,6 +318,7 @@ const vi = {
     explore: 'Khám phá sản phẩm',
     speechReady: 'Nhấn biểu tượng loa để nghe',
     speechUnavailable: 'Trình duyệt này không hỗ trợ đọc thành tiếng',
+    voiceUnavailable: 'Thiết bị này không có giọng đọc cho ngôn ngữ đã chọn. Hãy thêm ngôn ngữ đó trong cài đặt giọng nói hoặc thử thiết bị khác.',
     productsCount: 'sản phẩm trong bách khoa',
     categoriesCount: 'danh mục',
     brandsCount: 'thương hiệu',
