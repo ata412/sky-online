@@ -22,7 +22,7 @@ const lo = {
     chatbotTitle: 'ຜູ້ຊ່ວຍແນະນຳສິນຄ້າ',
     chatbotDescription: 'ສອບຖາມຂໍ້ມູນສິນຄ້າກັບຜູ້ຊ່ວຍ AI ຂອງ Sky Online.',
     videoStudioTitle: 'ສ້າງວິດີໂອສິນຄ້າດ້ວຍ AI',
-    videoStudioDescription: 'ສ້າງວິດີໂອຈາກຮູບບຸກຄົນ ແລະ ຮູບສິນຄ້າ.',
+    videoStudioDescription: 'ສ້າງວິດີໂອສິນຄ້າຈາກຮູບດຽວທີ່ທ່ານຖ່າຍຄູ່ກັບສິນຄ້າ.',
   },
 
   // Navbar
@@ -225,13 +225,11 @@ const lo = {
 
   videoStudio: {
     title: 'ສ້າງວິດີໂອຂາຍສິນຄ້າດ້ວຍ AI',
-    subtitle: 'ໃສ່ຮູບຂອງທ່ານ, ຮູບສິນຄ້າ ແລະ ຂໍ້ມູນສັ້ນໆ. AI ຈະສ້າງໂຄສະນາທີ່ແຕກຕ່າງກັນໃນແຕ່ລະຄັ້ງ.',
+    subtitle: 'ໃສ່ຮູບດຽວທີ່ທ່ານຖື ຫຼື ຖ່າຍຄູ່ກັບສິນຄ້າ ແລະ ຂໍ້ມູນສັ້ນໆ. AI ຈະສ້າງໂຄສະນາທີ່ແຕກຕ່າງກັນໃນແຕ່ລະຄັ້ງ.',
     format: 'ແນວຕັ້ງ 9:16 · 8 ວິນາທີ · ສຽງພາກພາສາໄທ',
-    personTitle: '1. ຮູບຂອງທ່ານ',
-    personDescription: 'ໃຊ້ຮູບທີ່ໃບໜ້າ ແລະ ຊ່ວງເທິງຊັດເຈນ.',
-    productTitle: '2. ຮູບສິນຄ້າ',
-    productDescription: 'ໃຊ້ຮູບດ້ານໜ້າທີ່ບັນຈຸພັນ ແລະ ສະຫຼາກຊັດເຈນ.',
-    productInfoTitle: '3. ຂໍ້ມູນສິນຄ້າ',
+    personTitle: '1. ຮູບທ່ານຖ່າຍຄູ່ກັບສິນຄ້າ',
+    personDescription: 'ໃຊ້ຮູບດຽວທີ່ເຫັນໃບໜ້າ, ຊ່ວງເທິງ ແລະ ສະຫຼາກສິນຄ້າຊັດເຈນ.',
+    productInfoTitle: '2. ຂໍ້ມູນສິນຄ້າ',
     productInfoDescription: 'ລະບົບຈະໃຊ້ຂໍ້ມູນນີ້ສ້າງສຽງພາກພາສາໄທແບບສັ້ນ.',
     productNameLabel: 'ຊື່ສິນຄ້າ *',
     productNamePlaceholder: 'ຕົວຢ່າງ: Luck Coffee',
@@ -254,7 +252,7 @@ const lo = {
     createAnother: 'ສ້າງໃໝ່',
     retentionNotice: 'ຄວນບັນທຶກທັນທີ ເພາະໄຟລ໌ອາດໝົດອາຍຸພາຍໃນ 2 ມື້.',
     safetyNotice: 'AI ອາດຜິດພາດ. ກວດສອບສະຫຼາກ, ໂລໂກ້ ແລະ ຂໍ້ຄວາມກ່ອນເຜີຍແຜ່.',
-    imagesRequired: 'ກະລຸນາເລືອກທັງຮູບບຸກຄົນ ແລະ ຮູບສິນຄ້າ.',
+    imagesRequired: 'ກະລຸນາເລືອກຮູບດຽວທີ່ທ່ານຖ່າຍຄູ່ກັບສິນຄ້າ.',
     consentRequired: 'ກະລຸນາຢືນຢັນສິດ ແລະ ຄວາມຍິນຍອມ.',
     invalidType: 'ຮອງຮັບສະເພາະ JPEG ແລະ PNG.',
     fileTooLarge: 'ແຕ່ລະຮູບຕ້ອງບໍ່ເກີນ 6 MB.',

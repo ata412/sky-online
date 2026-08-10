@@ -22,7 +22,7 @@ const vi = {
     chatbotTitle: 'Trợ lý sản phẩm',
     chatbotDescription: 'Hỏi trợ lý AI của Sky Online về các sản phẩm của chúng tôi.',
     videoStudioTitle: 'Studio video sản phẩm AI',
-    videoStudioDescription: 'Tạo video sản phẩm từ ảnh chân dung và ảnh sản phẩm.',
+    videoStudioDescription: 'Tạo video sản phẩm từ một ảnh bạn chụp cùng sản phẩm.',
   },
 
   // Navbar
@@ -225,13 +225,11 @@ const vi = {
 
   videoStudio: {
     title: 'Tạo video sản phẩm bằng AI',
-    subtitle: 'Thêm ảnh của bạn, ảnh sản phẩm và thông tin ngắn. AI sẽ tạo một quảng cáo khác nhau mỗi lần.',
+    subtitle: 'Thêm một ảnh bạn cầm hoặc chụp cùng sản phẩm và thông tin ngắn. AI sẽ tạo một quảng cáo khác nhau mỗi lần.',
     format: 'Dọc 9:16 · 8 giây · Lồng tiếng Thái',
-    personTitle: '1. Ảnh của bạn',
-    personDescription: 'Sử dụng ảnh rõ nét, đủ sáng, thấy rõ khuôn mặt và phần thân trên.',
-    productTitle: '2. Ảnh sản phẩm',
-    productDescription: 'Sử dụng ảnh chụp chính diện với bao bì và nhãn rõ ràng.',
-    productInfoTitle: '3. Thông tin sản phẩm',
+    personTitle: '1. Ảnh bạn chụp cùng sản phẩm',
+    personDescription: 'Dùng một ảnh rõ khuôn mặt, phần thân trên và nhãn sản phẩm.',
+    productInfoTitle: '2. Thông tin sản phẩm',
     productInfoDescription: 'Thông tin này được dùng để tạo lời thoại ngắn bằng tiếng Thái.',
     productNameLabel: 'Tên sản phẩm *',
     productNamePlaceholder: 'Ví dụ: Luck Coffee',
@@ -254,7 +252,7 @@ const vi = {
     createAnother: 'Tạo video khác',
     retentionNotice: 'Hãy lưu video sớm. Tệp do nhà cung cấp lưu trữ có thể hết hạn trong vòng 2 ngày.',
     safetyNotice: 'AI có thể mắc lỗi. Hãy kiểm tra nhãn, logo và nội dung tuyên bố trước khi đăng.',
-    imagesRequired: 'Vui lòng chọn cả ảnh người và ảnh sản phẩm.',
+    imagesRequired: 'Vui lòng chọn một ảnh bạn chụp cùng sản phẩm.',
     consentRequired: 'Vui lòng xác nhận quyền sử dụng và sự đồng ý trước khi tạo video.',
     invalidType: 'Chỉ hỗ trợ tệp JPEG và PNG.',
     fileTooLarge: 'Mỗi ảnh không được lớn hơn 6 MB.',

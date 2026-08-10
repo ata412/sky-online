@@ -84,12 +84,9 @@ function UploadCard({ icon: Icon, title, description, file, preview, onSelect, o
 
 export default function VideoStudioClient() {
   const t = useTranslations('videoStudio');
-  const personInputRef = useRef(null);
-  const productInputRef = useRef(null);
-  const [personFile, setPersonFile] = useState(null);
-  const [productFile, setProductFile] = useState(null);
-  const [personPreview, setPersonPreview] = useState('');
-  const [productPreview, setProductPreview] = useState('');
+  const combinedInputRef = useRef(null);
+  const [combinedFile, setCombinedFile] = useState(null);
+  const [combinedPreview, setCombinedPreview] = useState('');
   const [productName, setProductName] = useState('');
   const [productDetail, setProductDetail] = useState('');
   const [consent, setConsent] = useState(false);
@@ -99,12 +96,8 @@ export default function VideoStudioClient() {
   const [pollWarning, setPollWarning] = useState('');
 
   useEffect(() => () => {
-    if (personPreview) URL.revokeObjectURL(personPreview);
-  }, [personPreview]);
-
-  useEffect(() => () => {
-    if (productPreview) URL.revokeObjectURL(productPreview);
-  }, [productPreview]);
+    if (combinedPreview) URL.revokeObjectURL(combinedPreview);
+  }, [combinedPreview]);
 
   useEffect(() => {
     if (!job?.id || !['submitting', 'processing'].includes(job.status)) return undefined;
@@ -135,7 +128,7 @@ export default function VideoStudioClient() {
     };
   }, [job?.id, job?.status, t]);
 
-  const selectFile = (file, kind) => {
+  const selectFile = (file) => {
     setError('');
     if (!file) return;
     if (!ALLOWED_TYPES.has(file.type)) {
@@ -148,30 +141,18 @@ export default function VideoStudioClient() {
     }
 
     const preview = URL.createObjectURL(file);
-    if (kind === 'person') {
-      setPersonFile(file);
-      setPersonPreview(preview);
-    } else {
-      setProductFile(file);
-      setProductPreview(preview);
-    }
+    setCombinedFile(file);
+    setCombinedPreview(preview);
   };
 
-  const clearFile = (kind) => {
-    if (kind === 'person') {
-      setPersonFile(null);
-      setPersonPreview('');
-      if (personInputRef.current) personInputRef.current.value = '';
-    } else {
-      setProductFile(null);
-      setProductPreview('');
-      if (productInputRef.current) productInputRef.current.value = '';
-    }
+  const clearFile = () => {
+    setCombinedFile(null);
+    setCombinedPreview('');
+    if (combinedInputRef.current) combinedInputRef.current.value = '';
   };
 
   const reset = () => {
-    clearFile('person');
-    clearFile('product');
+    clearFile();
     setProductName('');
     setProductDetail('');
     setConsent(false);
@@ -182,7 +163,7 @@ export default function VideoStudioClient() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!personFile || !productFile) {
+    if (!combinedFile) {
       setError(t('imagesRequired'));
       return;
     }
@@ -198,13 +179,9 @@ export default function VideoStudioClient() {
     setSubmitting(true);
     setError('');
     try {
-      const [personImage, productImage] = await Promise.all([
-        readAsDataUrl(personFile),
-        readAsDataUrl(productFile),
-      ]);
+      const combinedImage = await readAsDataUrl(combinedFile);
       const response = await createVideoJob({
-        person_image: personImage,
-        product_image: productImage,
+        combined_image: combinedImage,
         product_name: productName.trim(),
         product_detail: productDetail.trim(),
         consent: true,
@@ -269,26 +246,16 @@ export default function VideoStudioClient() {
           </section>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="mx-auto max-w-xl">
               <UploadCard
                 icon={UserRound}
                 title={t('personTitle')}
                 description={t('personDescription')}
-                file={personFile}
-                preview={personPreview}
-                onSelect={(file) => selectFile(file, 'person')}
-                onClear={() => clearFile('person')}
-                inputRef={personInputRef}
-              />
-              <UploadCard
-                icon={Package}
-                title={t('productTitle')}
-                description={t('productDescription')}
-                file={productFile}
-                preview={productPreview}
-                onSelect={(file) => selectFile(file, 'product')}
-                onClear={() => clearFile('product')}
-                inputRef={productInputRef}
+                file={combinedFile}
+                preview={combinedPreview}
+                onSelect={selectFile}
+                onClear={clearFile}
+                inputRef={combinedInputRef}
               />
             </div>
 
@@ -380,7 +347,7 @@ export default function VideoStudioClient() {
 
             <button
               type="submit"
-              disabled={isWorking || !personFile || !productFile || !productName.trim() || !consent}
+              disabled={isWorking || !combinedFile || !productName.trim() || !consent}
               className="btn-gold mt-6 flex w-full items-center justify-center gap-2 py-4 text-base disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isWorking ? (
