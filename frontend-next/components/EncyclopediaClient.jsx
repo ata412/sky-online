@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { getIngredientKnowledge } from '@/data/ingredientKnowledgeTranslations';
-import { getProductTranslation } from '@/services/api';
+import { generateSpeech, getProductTranslation } from '@/services/api';
 
 const speechLocales = {
   th: 'th-TH',
@@ -32,6 +32,48 @@ const speechLocales = {
   my: 'my-MM',
   vi: 'vi-VN',
 };
+const SPEECH_CACHE_NAME = 'sky-online-gemini-tts-v1';
+const CLOUD_SPEECH_CHUNK_LENGTH = 1300;
+
+async function createSpeechCacheKey(text, locale) {
+  const input = new TextEncoder().encode(`${locale}\0${text}`);
+  if (window.crypto?.subtle) {
+    const digest = await window.crypto.subtle.digest('SHA-256', input);
+    return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+  }
+  let hash = 2166136261;
+  input.forEach((byte) => {
+    hash ^= byte;
+    hash = Math.imul(hash, 16777619);
+  });
+  return (hash >>> 0).toString(16);
+}
+
+async function getCloudSpeechAudio(text, locale, signal) {
+  let cache;
+  let cacheRequest;
+  if ('caches' in window) {
+    try {
+      const key = await createSpeechCacheKey(text, locale);
+      cache = await window.caches.open(SPEECH_CACHE_NAME);
+      cacheRequest = new Request(`${window.location.origin}/__speech-cache__/${key}`);
+      const cached = await cache.match(cacheRequest);
+      if (cached) return cached.arrayBuffer();
+    } catch (error) {
+      console.warn('[speech] browser cache unavailable', error);
+    }
+  }
+
+  const response = await generateSpeech(text, locale, signal);
+  const audio = response.data;
+  if (cache && cacheRequest) {
+    cache.put(
+      cacheRequest,
+      new Response(audio.slice(0), { headers: { 'Content-Type': 'audio/wav' } })
+    ).catch((error) => console.warn('[speech] unable to cache audio', error));
+  }
+  return audio;
+}
 
 function detectSpeechLanguage(text, fallbackLocale) {
   const scripts = [
@@ -162,6 +204,19 @@ function splitSpeechChunks(text, maxLength = 190) {
   });
 }
 
+function groupCloudSpeechChunks(text) {
+  return splitSpeechChunks(text, CLOUD_SPEECH_CHUNK_LENGTH).reduce((chunks, segment) => {
+    const lastIndex = chunks.length - 1;
+    const combined = lastIndex >= 0 ? `${chunks[lastIndex]} ${segment}` : segment;
+    if (lastIndex >= 0 && combined.length <= CLOUD_SPEECH_CHUNK_LENGTH) {
+      chunks[lastIndex] = combined;
+    } else {
+      chunks.push(segment);
+    }
+    return chunks;
+  }, []);
+}
+
 function createPhrasePattern(phrase) {
   const words = String(phrase || '').trim().split(/\s+/).filter(Boolean);
   if (!words.length) return null;
@@ -242,7 +297,7 @@ function speakMultilingual(
     }
     // Never send Lao (or another selected language) to the device's default
     // voice. A Thai/English fallback skips the letters and speaks punctuation.
-    if (!readingVoice && availableVoices.length > 0) {
+    if (!readingVoice) {
       onVoiceUnavailable?.();
       onFinish();
       return;
@@ -1009,6 +1064,9 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
   const [openingProductId, setOpeningProductId] = useState(null);
   const speechSessionRef = useRef(0);
   const speechVoicesRef = useRef([]);
+  const speechAbortRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const audioSourceRef = useRef(null);
   const ingredientKnowledge = useMemo(() => getIngredientKnowledge(locale), [locale]);
   const localizedProducts = useMemo(() => {
     const translationsById = new Map(
@@ -1032,6 +1090,16 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
 
   const stopSpeech = useCallback(() => {
     speechSessionRef.current += 1;
+    speechAbortRef.current?.abort();
+    speechAbortRef.current = null;
+    if (audioSourceRef.current) {
+      try {
+        audioSourceRef.current.stop();
+      } catch {
+        // The source may already have ended.
+      }
+      audioSourceRef.current = null;
+    }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
@@ -1092,38 +1160,121 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
 
   useEffect(() => {
     const supported = typeof window !== 'undefined'
-      && 'speechSynthesis' in window
-      && 'SpeechSynthesisUtterance' in window;
+      && Boolean(window.AudioContext || window.webkitAudioContext);
     setSpeechSupported(supported);
     if (!supported) return undefined;
 
     const loadVoices = () => {
-      speechVoicesRef.current = window.speechSynthesis.getVoices();
+      if ('speechSynthesis' in window) {
+        speechVoicesRef.current = window.speechSynthesis.getVoices();
+      }
     };
     loadVoices();
-    window.speechSynthesis.addEventListener?.('voiceschanged', loadVoices);
+    window.speechSynthesis?.addEventListener?.('voiceschanged', loadVoices);
     return () => {
       speechSessionRef.current += 1;
-      window.speechSynthesis.removeEventListener?.('voiceschanged', loadVoices);
+      speechAbortRef.current?.abort();
+      if (audioSourceRef.current) {
+        try {
+          audioSourceRef.current.stop();
+        } catch {
+          // The source may already have ended.
+        }
+      }
+      audioContextRef.current?.close().catch(() => {});
+      window.speechSynthesis?.removeEventListener?.('voiceschanged', loadVoices);
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
     };
   }, []);
 
-  const speak = (product) => {
-    if (!speechSupported) return;
-    if (speakingId === product.id) {
-      speechSessionRef.current += 1;
-      window.speechSynthesis.cancel();
+  const ensureAudioContext = () => {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+      audioContextRef.current = new AudioContextClass();
+    }
+    audioContextRef.current.resume().catch(() => {});
+    return audioContextRef.current;
+  };
+
+  const playAudioBuffer = async (audio, speechSession) => {
+    const audioContext = audioContextRef.current;
+    if (!audioContext || speechSessionRef.current !== speechSession) return;
+    const decodedAudio = await audioContext.decodeAudioData(audio.slice(0));
+    if (speechSessionRef.current !== speechSession) return;
+
+    await new Promise((resolve, reject) => {
+      const source = audioContext.createBufferSource();
+      audioSourceRef.current = source;
+      source.buffer = decodedAudio;
+      source.connect(audioContext.destination);
+      source.onended = () => {
+        if (audioSourceRef.current === source) audioSourceRef.current = null;
+        resolve();
+      };
+      try {
+        source.start();
+      } catch (error) {
+        if (audioSourceRef.current === source) audioSourceRef.current = null;
+        reject(error);
+      }
+    });
+  };
+
+  const speakWithCloud = async (text, speechSession) => {
+    const preparedText = prepareSpeechText(text, locale);
+    const chunks = groupCloudSpeechChunks(preparedText);
+    if (!chunks.length) {
       setSpeakingId(null);
       return;
     }
 
+    const controller = new AbortController();
+    speechAbortRef.current = controller;
+    try {
+      for (const chunk of chunks) {
+        const audio = await getCloudSpeechAudio(chunk, locale, controller.signal);
+        if (speechSessionRef.current !== speechSession) return;
+        await playAudioBuffer(audio, speechSession);
+      }
+      if (speechSessionRef.current === speechSession) setSpeakingId(null);
+    } catch (error) {
+      if (controller.signal.aborted || speechSessionRef.current !== speechSession) return;
+      console.warn('[speech] Gemini TTS unavailable; trying device voice', error);
+      const canUseDeviceSpeech = 'speechSynthesis' in window
+        && 'SpeechSynthesisUtterance' in window;
+      if (!canUseDeviceSpeech) {
+        setSpeechError(t('speechServiceUnavailable'));
+        setSpeakingId(null);
+        return;
+      }
+      speakMultilingual(
+        preparedText,
+        locale,
+        () => speechSessionRef.current === speechSession,
+        () => setSpeakingId(null),
+        () => speechVoicesRef.current,
+        () => setSpeechError(t('speechServiceUnavailable'))
+      );
+    } finally {
+      if (speechAbortRef.current === controller) speechAbortRef.current = null;
+    }
+  };
+
+  const speak = (product) => {
+    if (!speechSupported) return;
+    if (speakingId === product.id) {
+      stopSpeech();
+      return;
+    }
+
+    stopSpeech();
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
     setSpeechError('');
-    window.speechSynthesis.cancel();
+    ensureAudioContext();
     const productDescription = removeSpeechPhrase(product.description, product.name);
     const speechDescription = locale === 'en'
       ? prepareEnglishCardDescription(productDescription)
@@ -1135,14 +1286,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       price: Number(product.price).toLocaleString(),
     });
     setSpeakingId(product.id);
-    speakMultilingual(
-      speechText,
-      locale,
-      () => speechSessionRef.current === speechSession,
-      () => setSpeakingId(null),
-      () => speechVoicesRef.current,
-      () => setSpeechError(t('voiceUnavailable'))
-    );
+    speakWithCloud(speechText, speechSession);
   };
 
   const speakKnowledge = (article, page = null) => {
@@ -1155,10 +1299,11 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       return;
     }
 
+    stopSpeech();
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
     setSpeechError('');
-    window.speechSynthesis.cancel();
+    ensureAudioContext();
     const pageTitles = article.pageTitles || [
       t('bookIntroduction'),
       t('whatItHelps'),
@@ -1214,14 +1359,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     const repeatedProductName = article.productMeta && page !== 3 ? article.title : '';
     const speechText = joinSpeechParts(speechParts, repeatedProductName);
     setSpeakingId(speechId);
-    speakMultilingual(
-      speechText,
-      locale,
-      () => speechSessionRef.current === speechSession,
-      () => setSpeakingId(null),
-      () => speechVoicesRef.current,
-      () => setSpeechError(t('voiceUnavailable'))
-    );
+    speakWithCloud(speechText, speechSession);
   };
 
   const buildProductBook = (product, localizedProduct = product) => {

@@ -11,6 +11,7 @@ const membersRouter = require('./routes/members');
 const ordersRouter = require('./routes/orders');
 const chatbotRouter = require('./routes/chatbot');
 const videoStudioRouter = require('./routes/videoStudio');
+const speechRouter = require('./routes/speech');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +20,7 @@ app.use(cors());
 app.use('/api/video-studio', express.json({ limit: '20mb' }), videoStudioRouter);
 app.use(express.json({ limit: '1mb' }));
 
+app.use('/api/speech', speechRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/promotions', promotionsRouter);
 app.use('/api/hall-of-fame', hallOfFameRouter);

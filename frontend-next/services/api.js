@@ -12,6 +12,8 @@ export const sendChatMessage = (data) => api.post('/chatbot', data);
 export const getActivityPhotos = (id) => api.get(`/activities/${id}/photos`);
 export const getProductTranslation = (id, locale) =>
   api.get(`/products/${id}/translation`, { params: { locale } });
+export const generateSpeech = (text, locale, signal) =>
+  api.post('/speech', { text, locale }, { responseType: 'arraybuffer', signal });
 export const createVideoJob = (data) => api.post('/video-studio/jobs', data);
 export const getVideoJob = (id) => api.get(`/video-studio/jobs/${id}`);
 export const getVideoUrl = (id) =>
