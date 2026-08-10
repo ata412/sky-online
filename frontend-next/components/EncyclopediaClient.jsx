@@ -33,7 +33,8 @@ const speechLocales = {
   vi: 'vi-VN',
 };
 const SPEECH_CACHE_NAME = 'sky-online-gemini-tts-v1';
-const CLOUD_SPEECH_CHUNK_LENGTH = 1300;
+const CLOUD_SPEECH_FIRST_CHUNK_LENGTH = 180;
+const CLOUD_SPEECH_CHUNK_LENGTH = 400;
 
 async function createSpeechCacheKey(text, locale) {
   const input = new TextEncoder().encode(`${locale}\0${text}`);
@@ -205,10 +206,13 @@ function splitSpeechChunks(text, maxLength = 190) {
 }
 
 function groupCloudSpeechChunks(text) {
-  return splitSpeechChunks(text, CLOUD_SPEECH_CHUNK_LENGTH).reduce((chunks, segment) => {
+  return splitSpeechChunks(text, CLOUD_SPEECH_FIRST_CHUNK_LENGTH).reduce((chunks, segment) => {
     const lastIndex = chunks.length - 1;
     const combined = lastIndex >= 0 ? `${chunks[lastIndex]} ${segment}` : segment;
-    if (lastIndex >= 0 && combined.length <= CLOUD_SPEECH_CHUNK_LENGTH) {
+    const chunkLimit = lastIndex === 0
+      ? CLOUD_SPEECH_FIRST_CHUNK_LENGTH
+      : CLOUD_SPEECH_CHUNK_LENGTH;
+    if (lastIndex >= 0 && combined.length <= chunkLimit) {
       chunks[lastIndex] = combined;
     } else {
       chunks.push(segment);
@@ -1234,9 +1238,20 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     const controller = new AbortController();
     speechAbortRef.current = controller;
     try {
-      for (const chunk of chunks) {
-        const audio = await getCloudSpeechAudio(chunk, locale, controller.signal);
+      const audioRequests = chunks.slice(0, 2).map((chunk) =>
+        getCloudSpeechAudio(chunk, locale, controller.signal)
+      );
+      for (let index = 0; index < chunks.length; index += 1) {
+        const audio = await audioRequests[index];
         if (speechSessionRef.current !== speechSession) return;
+        const nextRequestIndex = index + 2;
+        if (nextRequestIndex < chunks.length) {
+          audioRequests[nextRequestIndex] = getCloudSpeechAudio(
+            chunks[nextRequestIndex],
+            locale,
+            controller.signal
+          );
+        }
         await playAudioBuffer(audio, speechSession);
       }
       if (speechSessionRef.current === speechSession) setSpeakingId(null);
