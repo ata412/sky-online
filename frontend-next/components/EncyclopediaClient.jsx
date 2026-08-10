@@ -45,8 +45,10 @@ function detectSpeechLanguage(text, fallbackLocale) {
   return scripts[0].count > 0 ? scripts[0].lang : speechLocales[fallbackLocale] || 'th-TH';
 }
 
-function selectVoice(language) {
-  const voices = window.speechSynthesis.getVoices();
+function selectVoice(language, availableVoices = []) {
+  const voices = availableVoices.length
+    ? availableVoices
+    : window.speechSynthesis.getVoices();
   const languageCode = language.split('-')[0].toLowerCase();
   const matchingVoices = voices.filter(
     (voice) => voice.lang.toLowerCase().split('-')[0] === languageCode
@@ -213,36 +215,51 @@ function createUtterance(text, language, voice) {
   return utterance;
 }
 
-function speakMultilingual(text, locale, isActive, onFinish) {
-  // Select one dominant language and one voice for the whole reading session.
-  // Product and brand names often contain another script; detecting every
-  // sentence separately makes the browser alternate between unrelated voices.
+function speakMultilingual(text, locale, isActive, onFinish, getAvailableVoices) {
+  // Keep the selected page language for the whole session. Product names and
+  // ingredient names often contain another script and must not switch voices.
   const preparedText = prepareSpeechText(text, locale);
-  const readingLanguage = detectSpeechLanguage(preparedText, locale);
-  const readingVoice = selectVoice(readingLanguage);
+  const readingLanguage = speechLocales[locale] || detectSpeechLanguage(preparedText, locale);
   const chunks = splitSpeechChunks(preparedText);
   let index = 0;
 
-  const speakNext = () => {
+  const startSpeaking = (voiceLoadAttempt = 0) => {
     if (!isActive()) return;
-    if (index >= chunks.length) {
-      onFinish();
+    const availableVoices = getAvailableVoices?.() || window.speechSynthesis.getVoices();
+    const readingVoice = selectVoice(readingLanguage, availableVoices);
+    if (!readingVoice && voiceLoadAttempt < 15) {
+      window.setTimeout(() => startSpeaking(voiceLoadAttempt + 1), 100);
       return;
     }
-    const utterance = createUtterance(chunks[index], readingLanguage, readingVoice);
-    index += 1;
-    let advanced = false;
-    const advanceOnce = () => {
-      if (advanced) return;
-      advanced = true;
-      speakNext();
+
+    const speakNext = () => {
+      if (!isActive()) return;
+      if (index >= chunks.length) {
+        onFinish();
+        return;
+      }
+      const utterance = createUtterance(chunks[index], readingLanguage, readingVoice);
+      index += 1;
+      let advanced = false;
+      const advanceOnce = () => {
+        if (advanced) return;
+        advanced = true;
+        window.setTimeout(speakNext, readingLanguage.startsWith('en') ? 180 : 100);
+      };
+      utterance.onend = advanceOnce;
+      utterance.onerror = advanceOnce;
+      window.speechSynthesis.speak(utterance);
     };
-    utterance.onend = advanceOnce;
-    utterance.onerror = advanceOnce;
-    window.speechSynthesis.speak(utterance);
+
+    speakNext();
   };
 
-  speakNext();
+  if (!chunks.length) {
+    onFinish();
+    return;
+  }
+
+  startSpeaking();
 }
 
 const categoryThemes = {
@@ -974,6 +991,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
   const [activeArticle, setActiveArticle] = useState(null);
   const [openingProductId, setOpeningProductId] = useState(null);
   const speechSessionRef = useRef(0);
+  const speechVoicesRef = useRef([]);
   const ingredientKnowledge = useMemo(() => getIngredientKnowledge(locale), [locale]);
   const localizedProducts = useMemo(() => {
     const translationsById = new Map(
@@ -1056,13 +1074,20 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
   }, [ingredientKnowledge, knowledgeSearch]);
 
   useEffect(() => {
-    setSpeechSupported(
-      typeof window !== 'undefined' &&
-        'speechSynthesis' in window &&
-        'SpeechSynthesisUtterance' in window
-    );
+    const supported = typeof window !== 'undefined'
+      && 'speechSynthesis' in window
+      && 'SpeechSynthesisUtterance' in window;
+    setSpeechSupported(supported);
+    if (!supported) return undefined;
+
+    const loadVoices = () => {
+      speechVoicesRef.current = window.speechSynthesis.getVoices();
+    };
+    loadVoices();
+    window.speechSynthesis.addEventListener?.('voiceschanged', loadVoices);
     return () => {
       speechSessionRef.current += 1;
+      window.speechSynthesis.removeEventListener?.('voiceschanged', loadVoices);
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -1096,7 +1121,8 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       speechText,
       locale,
       () => speechSessionRef.current === speechSession,
-      () => setSpeakingId(null)
+      () => setSpeakingId(null),
+      () => speechVoicesRef.current
     );
   };
 
@@ -1172,7 +1198,8 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       speechText,
       locale,
       () => speechSessionRef.current === speechSession,
-      () => setSpeakingId(null)
+      () => setSpeakingId(null),
+      () => speechVoicesRef.current
     );
   };
 
