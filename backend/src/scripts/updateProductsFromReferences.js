@@ -1,6 +1,15 @@
 require('dotenv').config();
 const pool = require('../db');
 
+function normalizeDescription(value) {
+  return String(value || '')
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !/^-{4,}$/.test(line))
+    .join('\n');
+}
+
 const products = [
   ['Luck Fiber Pineapple', 195, 20, 'ช่วยเรื่องระบบดีท็อกซ์ แก้ปัญหาท้องผูก เพิ่มวิตามิน สร้างภูมิคุ้มกัน ลดไขมันส่วนเกิน และลดพุง'],
   ['Luck Coffee Plus', 350, 30, 'กาแฟสูตรเจ 100% ช่วยบำรุงร่างกาย เสริมภูมิคุ้มกัน ดูแลสายตา ระบบย่อยอาหาร และหัวใจ'],
@@ -40,24 +49,32 @@ async function main() {
     await client.query('BEGIN');
     const names = products.map(([name]) => name);
     const matched = await client.query(
-      'SELECT name FROM products WHERE name = ANY($1::text[]) FOR UPDATE',
+      `SELECT name, description, full_description
+       FROM products
+       WHERE name = ANY($1::text[])
+       FOR UPDATE`,
       [names]
     );
     const matchedNames = new Set(matched.rows.map(({ name }) => name));
+    const matchedProducts = new Map(matched.rows.map((product) => [product.name, product]));
     const missing = names.filter((name) => !matchedNames.has(name));
     if (missing.length > 0 || matched.rowCount !== products.length) {
       throw new Error(`พบสินค้า ${matched.rowCount}/${products.length} รายการ; ไม่พบ: ${missing.join(', ')}`);
     }
 
     for (const [name, price, pv, summary] of products) {
+      const current = matchedProducts.get(name);
+      const fullDescription = normalizeDescription(
+        current.full_description || current.description
+      );
       await client.query(
         `UPDATE products
-         SET full_description = COALESCE(NULLIF(BTRIM(full_description), ''), description),
+         SET full_description = $5,
              description = $2,
              price = $3,
              pv = $4
          WHERE name = $1`,
-        [name, `สรรพคุณ\n\n${summary}`, price, pv]
+        [name, `สรรพคุณ\n${summary}`, price, pv, fullDescription]
       );
     }
 
@@ -84,4 +101,4 @@ if (require.main === module) {
     .finally(() => pool.end());
 }
 
-module.exports = { products };
+module.exports = { normalizeDescription, products };

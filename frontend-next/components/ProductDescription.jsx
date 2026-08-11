@@ -6,7 +6,7 @@ function normalizeLines(text) {
     .replace(/\r/g, '')
     .split('\n')
     .map((line) => line.trim())
-    .filter((line, index, lines) => line || (index > 0 && lines[index - 1]));
+    .filter(Boolean);
 }
 
 export default function ProductDescription({ text, compact = false }) {
@@ -15,9 +15,7 @@ export default function ProductDescription({ text, compact = false }) {
   return (
     <div className={compact ? 'space-y-3' : 'space-y-2'}>
       {normalizeLines(text).map((line, index) => {
-        if (!line || DIVIDER.test(line)) {
-          return <div key={index} aria-hidden="true" className={compact ? 'h-1' : 'h-3'} />;
-        }
+        if (DIVIDER.test(line)) return null;
 
         const headingText = line.replace(/^[•🎯💡📌🌿☕]+\s*/, '').replace(/:$/, '');
         if (SECTION_HEADING.test(headingText)) {
