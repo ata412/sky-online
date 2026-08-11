@@ -10,7 +10,8 @@
     "restore:local-promotions": "node src/scripts/restoreLocalPromotions.js",
     "restore:local-hall-of-fame": "node src/scripts/restoreLocalHallOfFame.js",
     "migrate:video-studio": "node src/scripts/migrateVideoStudio.js",
-    "migrate:product-translations": "node src/scripts/migrateProductTranslations.js"
+    "migrate:product-translations": "node src/scripts/migrateProductTranslations.js",
+    "products:update-from-ref": "node src/scripts/updateProductsFromReferences.js"
   },
   "dependencies": {
     "@seepine/edge-tts": "^1.4.1",

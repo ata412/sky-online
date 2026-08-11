@@ -2,62 +2,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { getProductServer } from '@/services/api';
 import ProductDetailTop from '@/components/ProductDetailTop';
+import ProductDescription from '@/components/ProductDescription';
 import { getSeoAlternates } from '@/lib/seo';
-
-function renderDescription(text) {
-  if (!text) return null;
-  return text.split('\n').map((line, i) => {
-    const trimmed = line.trimEnd();
-    if (!trimmed) return <div key={i} className="h-3" />;
-
-    // Section headers with emoji at start
-    if (/^[🎯💡✅]/.test(trimmed)) {
-      return (
-        <p key={i} className="font-bold text-navy-900 dark:text-white mt-5 mb-1 text-base">
-          {trimmed}
-        </p>
-      );
-    }
-    // Numbered items
-    if (/^\d+\.\s/.test(trimmed)) {
-      return (
-        <p key={i} className="font-semibold text-navy-800 dark:text-gray-200 mt-4 mb-1">
-          {trimmed}
-        </p>
-      );
-    }
-    // Arrow sub-items
-    if (/^\s*→/.test(trimmed)) {
-      return (
-        <p key={i} className="text-gray-500 dark:text-gray-400 font-light pl-6 leading-relaxed">
-          {trimmed.trim()}
-        </p>
-      );
-    }
-    // Bullet items with 👉 🟢
-    if (/^👉|^🟢/.test(trimmed)) {
-      return (
-        <p key={i} className="text-gray-600 dark:text-gray-300 font-light leading-relaxed pl-2">
-          {trimmed}
-        </p>
-      );
-    }
-    // Bullet •
-    if (/^•/.test(trimmed)) {
-      return (
-        <p key={i} className="font-semibold text-navy-900 dark:text-white mt-4 mb-1">
-          {trimmed}
-        </p>
-      );
-    }
-    // Default
-    return (
-      <p key={i} className="text-gray-600 dark:text-gray-300 font-light leading-relaxed">
-        {trimmed}
-      </p>
-    );
-  });
-}
 
 export async function generateMetadata({ params }) {
   const { locale, id } = await params;
@@ -101,9 +47,7 @@ export default async function ProductDetailPage({ params }) {
             <h2 className="text-xl font-bold text-navy-900 dark:text-white mb-6 pb-4 border-b border-gray-100 dark:border-navy-800">
               {t('productDetail.productDetails')}
             </h2>
-            <div className="space-y-1">
-              {renderDescription(product.full_description)}
-            </div>
+            <ProductDescription text={product.full_description} />
           </div>
         )}
       </div>

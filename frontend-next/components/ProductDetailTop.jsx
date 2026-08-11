@@ -6,6 +6,7 @@ import { ArrowLeft, ShoppingCart, CheckCircle } from 'lucide-react';
 import { useRouter } from '@/i18n/routing';
 import { useCart } from '@/context/CartContext';
 import { COMMERCE_ENABLED } from '@/lib/features';
+import ProductDescription from '@/components/ProductDescription';
 
 const categoryEmojis = {
   'วิตามิน': '💊', 'โปรตีน': '💪', 'ความงาม': '✨',
@@ -79,9 +80,9 @@ export default function ProductDetailTop({ product }) {
             {product.name}
           </h1>
 
-          <p className="text-gray-500 dark:text-gray-400 font-light leading-relaxed mb-6 whitespace-pre-line">
-            {product.description}
-          </p>
+          <div className="mb-7 rounded-xl border border-gray-100 bg-white/70 p-5 shadow-sm dark:border-navy-800 dark:bg-navy-900/60">
+            <ProductDescription text={product.description} compact />
+          </div>
 
           <div className="flex items-end gap-4 mb-4">
             <span className="text-4xl font-bold text-navy-900 dark:text-white">
