@@ -36,6 +36,30 @@ const SPEECH_CACHE_NAME = 'sky-online-edge-tts-v2';
 const CLOUD_SPEECH_FIRST_CHUNK_LENGTH = 180;
 const CLOUD_SPEECH_CHUNK_LENGTH = 400;
 
+function createSilentAudioUrl() {
+  const sampleRate = 8000;
+  const sampleCount = Math.floor(sampleRate / 4);
+  const wav = new ArrayBuffer(44 + sampleCount * 2);
+  const view = new DataView(wav);
+  const writeText = (offset, value) => {
+    [...value].forEach((character, index) => view.setUint8(offset + index, character.charCodeAt(0)));
+  };
+  writeText(0, 'RIFF');
+  view.setUint32(4, 36 + sampleCount * 2, true);
+  writeText(8, 'WAVE');
+  writeText(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeText(36, 'data');
+  view.setUint32(40, sampleCount * 2, true);
+  return URL.createObjectURL(new Blob([wav], { type: 'audio/wav' }));
+}
+
 async function createSpeechCacheKey(text, locale) {
   const input = new TextEncoder().encode(`${locale}\0${text}`);
   if (window.crypto?.subtle) {
@@ -59,7 +83,12 @@ async function getCloudSpeechAudio(text, locale, signal) {
       cache = await window.caches.open(SPEECH_CACHE_NAME);
       cacheRequest = new Request(`${window.location.origin}/__speech-cache__/${key}`);
       const cached = await cache.match(cacheRequest);
-      if (cached) return cached.arrayBuffer();
+      if (cached) {
+        return {
+          audio: await cached.arrayBuffer(),
+          mimeType: cached.headers.get('content-type') || 'audio/mpeg',
+        };
+      }
     } catch (error) {
       console.warn('[speech] browser cache unavailable', error);
     }
@@ -77,7 +106,10 @@ async function getCloudSpeechAudio(text, locale, signal) {
       })
     ).catch((error) => console.warn('[speech] unable to cache audio', error));
   }
-  return audio;
+  return {
+    audio,
+    mimeType: response.headers['content-type'] || 'audio/mpeg',
+  };
 }
 
 function detectSpeechLanguage(text, fallbackLocale) {
@@ -1083,8 +1115,10 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
   const speechSessionRef = useRef(0);
   const speechVoicesRef = useRef([]);
   const speechAbortRef = useRef(null);
-  const audioContextRef = useRef(null);
-  const audioSourceRef = useRef(null);
+  const audioElementRef = useRef(null);
+  const audioObjectUrlRef = useRef(null);
+  const silentAudioUrlRef = useRef(null);
+  const finishAudioPlaybackRef = useRef(null);
   const ingredientKnowledge = useMemo(() => getIngredientKnowledge(locale), [locale]);
   const localizedProducts = useMemo(() => {
     const translationsById = new Map(
@@ -1110,13 +1144,15 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     speechSessionRef.current += 1;
     speechAbortRef.current?.abort();
     speechAbortRef.current = null;
-    if (audioSourceRef.current) {
-      try {
-        audioSourceRef.current.stop();
-      } catch {
-        // The source may already have ended.
-      }
-      audioSourceRef.current = null;
+    if (audioElementRef.current) {
+      finishAudioPlaybackRef.current?.();
+      audioElementRef.current.pause();
+      audioElementRef.current.removeAttribute('src');
+      audioElementRef.current.load();
+    }
+    if (audioObjectUrlRef.current) {
+      URL.revokeObjectURL(audioObjectUrlRef.current);
+      audioObjectUrlRef.current = null;
     }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -1178,9 +1214,14 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
 
   useEffect(() => {
     const supported = typeof window !== 'undefined'
-      && Boolean(window.AudioContext || window.webkitAudioContext);
+      && typeof window.Audio === 'function';
     setSpeechSupported(supported);
     if (!supported) return undefined;
+
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audio.setAttribute('playsinline', '');
+    audioElementRef.current = audio;
 
     const loadVoices = () => {
       if ('speechSynthesis' in window) {
@@ -1192,14 +1233,21 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     return () => {
       speechSessionRef.current += 1;
       speechAbortRef.current?.abort();
-      if (audioSourceRef.current) {
-        try {
-          audioSourceRef.current.stop();
-        } catch {
-          // The source may already have ended.
-        }
+      if (audioElementRef.current) {
+        finishAudioPlaybackRef.current?.();
+        audioElementRef.current.pause();
+        audioElementRef.current.removeAttribute('src');
+        audioElementRef.current.load();
+        audioElementRef.current = null;
       }
-      audioContextRef.current?.close().catch(() => {});
+      if (audioObjectUrlRef.current) {
+        URL.revokeObjectURL(audioObjectUrlRef.current);
+        audioObjectUrlRef.current = null;
+      }
+      if (silentAudioUrlRef.current) {
+        URL.revokeObjectURL(silentAudioUrlRef.current);
+        silentAudioUrlRef.current = null;
+      }
       window.speechSynthesis?.removeEventListener?.('voiceschanged', loadVoices);
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -1207,47 +1255,44 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     };
   }, []);
 
-  const unlockAudioContext = () => {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return null;
-    if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
-      audioContextRef.current = new AudioContextClass();
-    }
-    const audioContext = audioContextRef.current;
-    audioContext.resume().catch(() => {});
-
-    // Start a silent buffer synchronously inside the tap/click handler. This
-    // unlocks Web Audio on iOS before the asynchronous TTS request begins.
-    const source = audioContext.createBufferSource();
-    source.buffer = audioContext.createBuffer(1, 1, audioContext.sampleRate);
-    source.connect(audioContext.destination);
-    source.start(0);
-    return audioContext;
+  const unlockAudioElement = () => {
+    const audio = audioElementRef.current;
+    if (!audio) return;
+    if (!silentAudioUrlRef.current) silentAudioUrlRef.current = createSilentAudioUrl();
+    audio.pause();
+    audio.loop = true;
+    audio.src = silentAudioUrlRef.current;
+    audio.load();
+    audio.play().catch(() => {
+      // A visible error is shown if playback is still rejected once MP3 arrives.
+    });
   };
 
-  const playAudioBuffer = async (audio, speechSession) => {
-    const audioContext = audioContextRef.current;
-    if (!audioContext || speechSessionRef.current !== speechSession) return;
-    if (audioContext.state !== 'running') await audioContext.resume();
-    if (audioContext.state !== 'running') throw new Error('Audio playback is blocked');
-    const decodedAudio = await audioContext.decodeAudioData(audio.slice(0));
-    if (speechSessionRef.current !== speechSession) return;
-
+  const playAudioBuffer = async ({ audio, mimeType }, speechSession) => {
+    const player = audioElementRef.current;
+    if (!player || speechSessionRef.current !== speechSession) return;
+    if (audioObjectUrlRef.current) URL.revokeObjectURL(audioObjectUrlRef.current);
+    const objectUrl = URL.createObjectURL(new Blob([audio], { type: mimeType }));
+    audioObjectUrlRef.current = objectUrl;
+    player.pause();
+    player.loop = false;
+    player.src = objectUrl;
+    player.load();
+    await player.play();
     await new Promise((resolve, reject) => {
-      const source = audioContext.createBufferSource();
-      audioSourceRef.current = source;
-      source.buffer = decodedAudio;
-      source.connect(audioContext.destination);
-      source.onended = () => {
-        if (audioSourceRef.current === source) audioSourceRef.current = null;
-        resolve();
+      let settled = false;
+      const finish = (error) => {
+        if (settled) return;
+        settled = true;
+        player.onended = null;
+        player.onerror = null;
+        if (finishAudioPlaybackRef.current === finish) finishAudioPlaybackRef.current = null;
+        if (error) reject(error);
+        else resolve();
       };
-      try {
-        source.start();
-      } catch (error) {
-        if (audioSourceRef.current === source) audioSourceRef.current = null;
-        reject(error);
-      }
+      finishAudioPlaybackRef.current = finish;
+      player.onended = () => finish();
+      player.onerror = () => finish(new Error('Audio element could not play speech'));
     });
   };
 
@@ -1313,7 +1358,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
     setSpeechError('');
-    unlockAudioContext();
+    unlockAudioElement();
     const productDescription = removeSpeechPhrase(
       cleanEncyclopediaText(product.description, { removeBeautySupplement: true }),
       product.name
@@ -1345,7 +1390,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
     setSpeechError('');
-    unlockAudioContext();
+    unlockAudioElement();
     const pageTitles = article.pageTitles || [
       t('bookIntroduction'),
       t('whatItHelps'),
