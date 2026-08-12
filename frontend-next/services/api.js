@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Client-side axios instance - used inside 'use client' components only.
-export const api = axios.create({ baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api` });
+// Browser requests stay on the website origin so phones never resolve an API
+// URL such as localhost to the phone itself. Next.js proxies /api to backend.
+export const api = axios.create({ baseURL: '/api' });
 
 export const submitContact = (data) => api.post('/contact', data);
 export const registerMember = (data) => api.post('/members/register', data);
@@ -17,7 +18,7 @@ export const generateSpeech = (text, locale, signal) =>
 export const createVideoJob = (data) => api.post('/video-studio/jobs', data);
 export const getVideoJob = (id) => api.get(`/video-studio/jobs/${id}`);
 export const getVideoUrl = (id) =>
-  `${process.env.NEXT_PUBLIC_API_URL}/api/video-studio/jobs/${id}/video`;
+  `/api/video-studio/jobs/${id}/video`;
 export const getVideoDownloadUrl = (id) => `${getVideoUrl(id)}?download=1`;
 
 // Server-side fetch helpers - used inside Server Component page.js files only.

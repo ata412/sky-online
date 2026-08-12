@@ -1207,19 +1207,29 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     };
   }, []);
 
-  const ensureAudioContext = () => {
+  const unlockAudioContext = () => {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return null;
     if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
       audioContextRef.current = new AudioContextClass();
     }
-    audioContextRef.current.resume().catch(() => {});
-    return audioContextRef.current;
+    const audioContext = audioContextRef.current;
+    audioContext.resume().catch(() => {});
+
+    // Start a silent buffer synchronously inside the tap/click handler. This
+    // unlocks Web Audio on iOS before the asynchronous TTS request begins.
+    const source = audioContext.createBufferSource();
+    source.buffer = audioContext.createBuffer(1, 1, audioContext.sampleRate);
+    source.connect(audioContext.destination);
+    source.start(0);
+    return audioContext;
   };
 
   const playAudioBuffer = async (audio, speechSession) => {
     const audioContext = audioContextRef.current;
     if (!audioContext || speechSessionRef.current !== speechSession) return;
+    if (audioContext.state !== 'running') await audioContext.resume();
+    if (audioContext.state !== 'running') throw new Error('Audio playback is blocked');
     const decodedAudio = await audioContext.decodeAudioData(audio.slice(0));
     if (speechSessionRef.current !== speechSession) return;
 
@@ -1303,7 +1313,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
     setSpeechError('');
-    ensureAudioContext();
+    unlockAudioContext();
     const productDescription = removeSpeechPhrase(
       cleanEncyclopediaText(product.description, { removeBeautySupplement: true }),
       product.name
@@ -1335,7 +1345,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     const speechSession = speechSessionRef.current + 1;
     speechSessionRef.current = speechSession;
     setSpeechError('');
-    ensureAudioContext();
+    unlockAudioContext();
     const pageTitles = article.pageTitles || [
       t('bookIntroduction'),
       t('whatItHelps'),
