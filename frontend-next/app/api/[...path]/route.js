@@ -37,11 +37,14 @@ async function proxy(request, { params }) {
       headers,
       body: hasBody ? await request.arrayBuffer() : undefined,
       cache: 'no-store',
-      signal: request.signal,
     });
+    const responseBody = await response.arrayBuffer();
     const responseHeaders = new Headers(response.headers);
     HOP_BY_HOP_HEADERS.forEach((header) => responseHeaders.delete(header));
-    return new Response(response.body, {
+    // fetch() transparently decompresses upstream responses. Do not forward a
+    // stale encoding header with the buffered, already-decoded response body.
+    responseHeaders.delete('content-encoding');
+    return new Response(responseBody, {
       status: response.status,
       statusText: response.statusText,
       headers: responseHeaders,
