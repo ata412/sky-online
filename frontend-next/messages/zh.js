@@ -205,6 +205,7 @@ const zh = {
     shippingFee: '运费',
     freeShipping: '免运费',
     shippingPolicy: '1–2件：50泰铢 · 3件以上：70泰铢 · 商品满2,000泰铢免运费',
+    deliveryEstimate: '14:00前下单，预计1–3个工作日送达。偏远地区可能需要更长时间。',
     freeShippingRemaining: '再购买 {amount} 泰铢即可免运费',
     grandTotal: '总计金额',
     processing: '处理中...',

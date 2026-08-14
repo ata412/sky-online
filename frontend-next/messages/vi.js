@@ -205,6 +205,7 @@ const vi = {
     shippingFee: 'Phí vận chuyển',
     freeShipping: 'Miễn phí',
     shippingPolicy: '1–2 sản phẩm: 50฿ · Từ 3 sản phẩm: 70฿ · Miễn phí khi mua từ 2.000฿',
+    deliveryEstimate: 'Đặt hàng trước 14:00, giao trong 1–3 ngày làm việc. Khu vực xa có thể mất nhiều thời gian hơn.',
     freeShippingRemaining: 'Mua thêm {amount}฿ để được miễn phí vận chuyển',
     grandTotal: 'Tổng thanh toán',
     processing: 'Đang xử lý...',

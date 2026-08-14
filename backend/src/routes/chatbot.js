@@ -41,11 +41,23 @@ function asksForShippingRates(message) {
   return /(ค่าส่ง|ค่าจัดส่ง|ส่งฟรี|shipping|delivery\s*fee)/.test(normalized);
 }
 
+function asksForDeliveryTime(message) {
+  const normalized = String(message || '').toLowerCase();
+  return /(ส่งถึง|กี่วัน|ระยะเวลา.*(?:ส่ง|จัดส่ง)|(?:ส่ง|จัดส่ง).*นาน|ส่ง.*เมื่อไหร่|delivery\s*time|when.*arrive)/.test(normalized);
+}
+
+function buildDeliveryEstimateReply() {
+  return `ระยะเวลาจัดส่งสินค้า:\n` +
+    `- คำสั่งซื้อที่สั่งไม่เกิน 14:00 น. จัดส่งถึงภายใน 1–3 วันทำการ\n` +
+    `- พื้นที่ห่างไกลอาจใช้เวลานานกว่านั้นครับ`;
+}
+
 function buildShippingRatesReply() {
   return `ค่าส่งสินค้าของ Sky Online:\n` +
     `- 1–2 รายการ ${STANDARD_SHIPPING_FEE} บาท\n` +
     `- 3 รายการขึ้นไป ${BULK_SHIPPING_FEE} บาท\n` +
-    `- ยอดสินค้า ${FREE_SHIPPING_THRESHOLD.toLocaleString('th-TH')} บาทขึ้นไป ส่งฟรีครับ`;
+    `- ยอดสินค้า ${FREE_SHIPPING_THRESHOLD.toLocaleString('th-TH')} บาทขึ้นไป ส่งฟรี\n\n` +
+    buildDeliveryEstimateReply();
 }
 
 function extractPackageInfo(fullDescription) {
@@ -125,6 +137,10 @@ router.post('/', async (req, res) => {
       return res.json({ reply: buildShippingRatesReply() });
     }
 
+    if (asksForDeliveryTime(message)) {
+      return res.json({ reply: buildDeliveryEstimateReply() });
+    }
+
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({ error: 'ยังไม่ได้ตั้งค่า GEMINI_API_KEY บนเซิร์ฟเวอร์' });
     }
@@ -132,7 +148,7 @@ router.post('/', async (req, res) => {
     const { context: productContext, total: productCount } = await buildProductContext();
     const systemInstruction = {
       parts: [{
-        text: `คุณเป็นผู้ช่วยตอบคำถามเกี่ยวกับสินค้าของร้าน Sky Online เท่านั้น ตอบเป็นภาษาไทย กระชับ สุภาพ ห้ามแต่งข้อมูลสินค้าที่ไม่มีในรายการ ปัจจุบันมีสินค้าทั้งหมด ${productCount} รายการ ห้ามนับจำนวนรายการเอง เมื่อกล่าวถึงสินค้าให้ระบุขนาดบรรจุตามข้อมูลที่ให้ไว้ ค่าส่ง 1–2 รายการ ${STANDARD_SHIPPING_FEE} บาท, 3 รายการขึ้นไป ${BULK_SHIPPING_FEE} บาท, ยอดสินค้า ${FREE_SHIPPING_THRESHOLD} บาทขึ้นไปส่งฟรี ห้ามระบุหรือคาดเดาจำนวนสินค้าคงเหลือ หากลูกค้าถามสต็อกหรือจำนวนคงเหลือ ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" ถ้าลูกค้าถามนอกเรื่องสินค้า ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" แทน\n\nรายการสินค้าปัจจุบัน:\n${productContext}`,
+        text: `คุณเป็นผู้ช่วยตอบคำถามเกี่ยวกับสินค้าของร้าน Sky Online เท่านั้น ตอบเป็นภาษาไทย กระชับ สุภาพ ห้ามแต่งข้อมูลสินค้าที่ไม่มีในรายการ ปัจจุบันมีสินค้าทั้งหมด ${productCount} รายการ ห้ามนับจำนวนรายการเอง เมื่อกล่าวถึงสินค้าให้ระบุขนาดบรรจุตามข้อมูลที่ให้ไว้ ค่าส่ง 1–2 รายการ ${STANDARD_SHIPPING_FEE} บาท, 3 รายการขึ้นไป ${BULK_SHIPPING_FEE} บาท, ยอดสินค้า ${FREE_SHIPPING_THRESHOLD} บาทขึ้นไปส่งฟรี คำสั่งซื้อที่สั่งไม่เกิน 14:00 น. จัดส่งถึงภายใน 1–3 วันทำการ ยกเว้นพื้นที่ห่างไกลอาจใช้เวลานานกว่านั้น ห้ามระบุหรือคาดเดาจำนวนสินค้าคงเหลือ หากลูกค้าถามสต็อกหรือจำนวนคงเหลือ ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" ถ้าลูกค้าถามนอกเรื่องสินค้า ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" แทน\n\nรายการสินค้าปัจจุบัน:\n${productContext}`,
       }],
     };
 
@@ -174,5 +190,7 @@ module.exports = router;
 module.exports.asksForTotalProductCount = asksForTotalProductCount;
 module.exports.asksForProductList = asksForProductList;
 module.exports.asksForShippingRates = asksForShippingRates;
+module.exports.asksForDeliveryTime = asksForDeliveryTime;
+module.exports.buildDeliveryEstimateReply = buildDeliveryEstimateReply;
 module.exports.buildShippingRatesReply = buildShippingRatesReply;
 module.exports.extractPackageInfo = extractPackageInfo;

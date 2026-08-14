@@ -205,6 +205,7 @@ const en = {
     shippingFee: 'Shipping',
     freeShipping: 'Free',
     shippingPolicy: '1–2 items: ฿50 · 3+ items: ฿70 · Free shipping on ฿2,000+',
+    deliveryEstimate: 'Orders placed by 2:00 PM arrive within 1–3 business days. Remote areas may take longer.',
     freeShippingRemaining: 'Add ฿{amount} more for free shipping',
     grandTotal: 'Grand Total',
     processing: 'Processing...',

@@ -225,6 +225,7 @@ export default function CheckoutClient() {
                 <span className="text-gold-600 dark:text-gold-400">฿{grandTotal.toLocaleString()}</span>
               </div>
               <p className="pt-1 text-xs leading-5 text-gray-400">{t('checkout.shippingPolicy')}</p>
+              <p className="text-xs leading-5 text-gray-400">{t('checkout.deliveryEstimate')}</p>
               {freeShippingRemaining > 0 ? (
                 <p className="text-xs font-medium text-gold-700 dark:text-gold-400">
                   {t('checkout.freeShippingRemaining', {
