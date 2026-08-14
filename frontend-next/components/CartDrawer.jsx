@@ -6,7 +6,7 @@ import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 const categoryEmojis = {
-  'วิตามิน': '💊', 'โปรตีน': '💪', 'ความงาม': '✨',
+  'วิตามิน': '💊', 'โปรตีน': '💪', 'อาหารเสริม': '✨',
   'ย่อยอาหาร': '🌱', 'กระดูก': '🦴',
 };
 

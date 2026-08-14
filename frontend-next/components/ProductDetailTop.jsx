@@ -9,14 +9,14 @@ import { COMMERCE_ENABLED } from '@/lib/features';
 import ProductDescription from '@/components/ProductDescription';
 
 const categoryEmojis = {
-  'วิตามิน': '💊', 'โปรตีน': '💪', 'ความงาม': '✨',
+  'วิตามิน': '💊', 'โปรตีน': '💪', 'อาหารเสริม': '✨',
   'ย่อยอาหาร': '🌱', 'กระดูก': '🦴', 'ไฟเบอร์': '🍍',
   'กาแฟ': '☕', 'ช็อกโกแลต': '🍫',
 };
 const categoryColors = {
   'วิตามิน': 'from-blue-400 to-blue-600',
   'โปรตีน': 'from-orange-400 to-orange-600',
-  'ความงาม': 'from-pink-400 to-pink-600',
+  'อาหารเสริม': 'from-pink-400 to-pink-600',
   'ย่อยอาหาร': 'from-green-400 to-green-600',
   'กระดูก': 'from-purple-400 to-purple-600',
   'ไฟเบอร์': 'from-yellow-400 to-lime-500',

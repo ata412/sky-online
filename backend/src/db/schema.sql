@@ -102,6 +102,7 @@ CREATE TABLE IF NOT EXISTS orders (
   member_id INTEGER REFERENCES members(id),
   member_code VARCHAR(20),
   total_amount DECIMAL(10, 2) NOT NULL,
+  shipping_fee DECIMAL(10, 2) NOT NULL DEFAULT 0,
   total_pv INTEGER DEFAULT 0,
   status VARCHAR(20) DEFAULT 'pending',
   note TEXT,

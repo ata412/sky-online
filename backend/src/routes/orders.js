@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
+const { calculateShippingFee } = require('../lib/shipping');
 
 async function generateOrderCode(client) {
   const year = new Date().getFullYear().toString().slice(-2);
@@ -23,37 +24,67 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'ไม่มีสินค้าในตะกร้า' });
   }
 
-  const total_amount = items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0);
-
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // Look up each product's real PV server-side (never trust client-supplied PV).
-    const productIds = items.map((i) => i.id);
-    const pvRes = await client.query(
-      'SELECT id, pv FROM products WHERE id = ANY($1::int[])',
+    const normalizedItems = items.map((item) => ({
+      id: Number(item.id),
+      quantity: Number(item.quantity),
+    }));
+    if (normalizedItems.some((item) => (
+      !Number.isInteger(item.id) || !Number.isInteger(item.quantity) || item.quantity < 1
+    ))) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'ข้อมูลสินค้าในตะกร้าไม่ถูกต้อง' });
+    }
+
+    // Prices, names and PV are authoritative server-side values.
+    const productIds = [...new Set(normalizedItems.map((item) => item.id))];
+    const productRes = await client.query(
+      'SELECT id, name, price, pv FROM products WHERE id = ANY($1::int[])',
       [productIds]
     );
-    const pvByProductId = Object.fromEntries(pvRes.rows.map((p) => [p.id, p.pv || 0]));
+    if (productRes.rowCount !== productIds.length) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'พบสินค้าที่ไม่มีในระบบ' });
+    }
+    const productsById = new Map(productRes.rows.map((product) => [product.id, product]));
+    const itemCount = normalizedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const itemsTotal = normalizedItems.reduce((sum, item) => {
+      const product = productsById.get(item.id);
+      return sum + Number(product.price) * item.quantity;
+    }, 0);
+    const shippingFee = calculateShippingFee(itemsTotal, itemCount);
+    const totalAmount = itemsTotal + shippingFee;
 
     let total_pv = 0;
     const orderCode = await generateOrderCode(client);
 
     const orderRes = await client.query(
-      `INSERT INTO orders (order_code, member_id, member_code, total_amount, note)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [orderCode, member_id || null, member_code || null, total_amount, note || null]
+      `INSERT INTO orders
+        (order_code, member_id, member_code, total_amount, shipping_fee, note)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [orderCode, member_id || null, member_code || null, totalAmount, shippingFee, note || null]
     );
     const order = orderRes.rows[0];
 
-    for (const item of items) {
-      const itemPv = (pvByProductId[item.id] || 0) * item.quantity;
+    for (const item of normalizedItems) {
+      const product = productsById.get(item.id);
+      const itemPv = (product.pv || 0) * item.quantity;
       total_pv += itemPv;
       await client.query(
         `INSERT INTO order_items (order_id, product_id, product_name, price, quantity, subtotal, pv)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [order.id, item.id, item.name, item.price, item.quantity, Number(item.price) * item.quantity, itemPv]
+        [
+          order.id,
+          item.id,
+          product.name,
+          product.price,
+          item.quantity,
+          Number(product.price) * item.quantity,
+          itemPv,
+        ]
       );
     }
 

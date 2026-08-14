@@ -376,7 +376,7 @@ function speakMultilingual(
 const categoryThemes = {
   'วิตามิน': { color: '#1e7496', artPosition: '0% 50%' },
   'โปรตีน': { color: '#b95c32', artPosition: '33.333% 100%' },
-  'ความงาม': { color: '#a44962', artPosition: '0% 0%' },
+  'อาหารเสริม': { color: '#a44962', artPosition: '0% 0%' },
   'ย่อยอาหาร': { color: '#39765a', artPosition: '100% 0%' },
   'กระดูก': { color: '#725693', artPosition: '100% 50%' },
   'ไฟเบอร์': { color: '#7a7727', artPosition: '66.667% 0%' },
@@ -1461,7 +1461,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       const categoryMap = {
         'วิตามิน': 'vitamin-c',
         'โปรตีน': 'protein',
-        'ความงาม': 'collagen',
+        'อาหารเสริม': 'collagen',
         'ย่อยอาหาร': 'probiotics',
         'กระดูก': 'calcium-vitamin-d',
         'ไฟเบอร์': 'fiber',

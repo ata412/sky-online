@@ -187,7 +187,9 @@ async function replaceRailwayProducts(products) {
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
         [
           Number(product.id), product.name, product.description, product.price,
-          product.image_url, product.category, Number(product.stock),
+          product.image_url,
+          product.category === 'ความงาม' ? 'อาหารเสริม' : product.category,
+          Number(product.stock),
           product.is_featured === 't', product.created_at, product.brand,
           Number(product.pv), product.full_description,
         ]

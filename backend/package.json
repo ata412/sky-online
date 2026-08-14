@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/scripts/migrateProductTranslations.js && node src/index.js",
+    "start": "node src/scripts/migrateShippingFee.js && node src/scripts/migrateProductTranslations.js && node src/index.js",
     "dev": "nodemon src/index.js",
     "sync:promotions": "node src/scripts/syncPromotions.js",
     "restore:local-products": "node src/scripts/restoreLocalProducts.js",
@@ -11,8 +11,10 @@
     "restore:local-hall-of-fame": "node src/scripts/restoreLocalHallOfFame.js",
     "migrate:video-studio": "node src/scripts/migrateVideoStudio.js",
     "migrate:product-translations": "node src/scripts/migrateProductTranslations.js",
+    "migrate:shipping-fee": "node src/scripts/migrateShippingFee.js",
     "products:update-from-ref": "node src/scripts/updateProductsFromReferences.js",
-    "products:proofread": "node src/scripts/proofreadProductText.js"
+    "products:proofread": "node src/scripts/proofreadProductText.js",
+    "products:rename-supplement-category": "node src/scripts/renameSupplementCategory.js"
   },
   "dependencies": {
     "@seepine/edge-tts": "^1.4.1",

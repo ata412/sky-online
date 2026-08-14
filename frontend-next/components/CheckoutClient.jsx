@@ -8,9 +8,10 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { createOrder } from '@/services/api';
 import PromptPayQR from '@/components/PromptPayQR';
+import { calculateShippingFee, FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
 
 const categoryEmojis = {
-  'วิตามิน': '💊', 'โปรตีน': '💪', 'ความงาม': '✨',
+  'วิตามิน': '💊', 'โปรตีน': '💪', 'อาหารเสริม': '✨',
   'ย่อยอาหาร': '🌱', 'กระดูก': '🦴', 'ไฟเบอร์': '🍍',
 };
 
@@ -26,6 +27,9 @@ export default function CheckoutClient() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState('');
+  const shippingFee = calculateShippingFee(total, count);
+  const grandTotal = total + shippingFee;
+  const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total);
 
   if (items.length === 0 && !success) {
     return (
@@ -51,6 +55,14 @@ export default function CheckoutClient() {
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
             {t('checkout.totalAmount')} <span className="font-bold text-navy-900 dark:text-white">฿{Number(success.total_amount).toLocaleString()}</span>
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+            {t('checkout.shippingFee')}{' '}
+            <span className="font-bold text-navy-900 dark:text-white">
+              {Number(success.shipping_fee) === 0
+                ? t('checkout.freeShipping')
+                : `฿${Number(success.shipping_fee).toLocaleString()}`}
+            </span>
           </p>
 
           {isLoggedIn && success.total_pv > 0 && (
@@ -200,11 +212,26 @@ export default function CheckoutClient() {
             <div className="bg-gray-50 dark:bg-navy-950 rounded-xl p-4 space-y-2">
               <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                 <span>{t('checkout.items', { count })}</span>
+                <span>฿{total.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+                <span>{t('checkout.shippingFee')}</span>
+                <span className={shippingFee === 0 ? 'font-semibold text-green-600 dark:text-green-400' : ''}>
+                  {shippingFee === 0 ? t('checkout.freeShipping') : `฿${shippingFee.toLocaleString()}`}
+                </span>
               </div>
               <div className="flex justify-between font-bold text-navy-900 dark:text-white text-lg pt-2 border-t border-gray-200 dark:border-navy-700">
                 <span>{t('checkout.grandTotal')}</span>
-                <span className="text-gold-600 dark:text-gold-400">฿{total.toLocaleString()}</span>
+                <span className="text-gold-600 dark:text-gold-400">฿{grandTotal.toLocaleString()}</span>
               </div>
+              <p className="pt-1 text-xs leading-5 text-gray-400">{t('checkout.shippingPolicy')}</p>
+              {freeShippingRemaining > 0 ? (
+                <p className="text-xs font-medium text-gold-700 dark:text-gold-400">
+                  {t('checkout.freeShippingRemaining', {
+                    amount: freeShippingRemaining.toLocaleString(),
+                  })}
+                </p>
+              ) : null}
             </div>
 
             {error && (
