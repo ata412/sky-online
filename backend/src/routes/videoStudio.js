@@ -13,6 +13,8 @@ const OPERATION_NAME_PATTERN = /^(?:models\/[A-Za-z0-9._-]+\/)?operations\/[A-Za
 const PROVIDER_FILTER_PREFIX = 'Video was filtered by the provider:';
 const PRODUCT_NAME_MAX_LENGTH = 60;
 const PRODUCT_DETAIL_MAX_LENGTH = 100;
+// Temporarily paused. Set this to false when Video Studio is ready to reopen.
+const VIDEO_STUDIO_PAUSED = true;
 const VIDEO_VARIANTS = [
   {
     setting: 'a bright luxury studio with warm gold and cream accents',
@@ -51,7 +53,7 @@ function asyncRoute(handler) {
 }
 
 function isEnabled() {
-  return process.env.VIDEO_STUDIO_ENABLED === 'true';
+  return !VIDEO_STUDIO_PAUSED && process.env.VIDEO_STUDIO_ENABLED === 'true';
 }
 
 function parseImage(dataUrl, fieldName) {

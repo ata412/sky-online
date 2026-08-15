@@ -7,7 +7,7 @@ import { Menu, X, UserPlus, LogIn, LogOut, User, Sun, Moon, ChevronDown } from '
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
-import { COMMERCE_ENABLED } from '@/lib/features';
+import { COMMERCE_ENABLED, VIDEO_STUDIO_ENABLED } from '@/lib/features';
 
 function CartIcon({ light }) {
   const { count, setIsOpen } = useCart();
@@ -151,7 +151,9 @@ export default function Navbar() {
     { to: '/activities', label: t('nav.activities') },
     { to: '/hall-of-fame', label: t('nav.hallOfFame') },
     { to: '/chatbot', label: t('nav.chatbot') },
-    { to: '/video-studio', label: t('nav.videoStudio') },
+    ...(VIDEO_STUDIO_ENABLED
+      ? [{ to: '/video-studio', label: t('nav.videoStudio') }]
+      : []),
     { to: '/contact', label: t('nav.contact') },
   ];
   const primaryLinks = navLinks.filter((link) =>

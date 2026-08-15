@@ -1,5 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 import VideoStudioClient from '@/components/VideoStudioClient';
+import { VIDEO_STUDIO_ENABLED } from '@/lib/features';
 
 export async function generateMetadata({ params }) {
   const { locale } = await params;
@@ -13,6 +15,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function VideoStudioPage({ params }) {
+  if (!VIDEO_STUDIO_ENABLED) notFound();
+
   const { locale } = await params;
   setRequestLocale(locale);
 
