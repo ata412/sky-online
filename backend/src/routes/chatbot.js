@@ -78,6 +78,11 @@ function extractPackageInfo(fullDescription) {
     (perSachetWeight ? ` ซองละ ${perSachetWeight} กรัม` : '');
 }
 
+function extractFdaNumber(fullDescription) {
+  return String(fullDescription || '')
+    .match(/\b\d{2}-\d-\d{5}-\d-\d{4}\b/)?.[0] || 'ไม่ระบุ';
+}
+
 async function getProductCount() {
   const result = await pool.query('SELECT COUNT(*)::int AS total FROM products');
   return result.rows[0].total;
@@ -112,7 +117,8 @@ async function buildProductContext() {
   );
   const context = result.rows
     .map((p) => `- ${p.name} (${p.brand}, ${p.category}) ราคา ${p.price} บาท ` +
-      `ขนาดบรรจุ ${extractPackageInfo(p.full_description)}: ${p.description}`)
+      `ขนาดบรรจุ ${extractPackageInfo(p.full_description)} เลข อย. ` +
+      `${extractFdaNumber(p.full_description)}: ${p.description}`)
     .join('\n');
   return { context, total: result.rowCount };
 }
@@ -193,4 +199,5 @@ module.exports.asksForShippingRates = asksForShippingRates;
 module.exports.asksForDeliveryTime = asksForDeliveryTime;
 module.exports.buildDeliveryEstimateReply = buildDeliveryEstimateReply;
 module.exports.buildShippingRatesReply = buildShippingRatesReply;
+module.exports.extractFdaNumber = extractFdaNumber;
 module.exports.extractPackageInfo = extractPackageInfo;

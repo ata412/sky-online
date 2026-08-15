@@ -14,7 +14,8 @@
     "migrate:shipping-fee": "node src/scripts/migrateShippingFee.js",
     "products:update-from-ref": "node src/scripts/updateProductsFromReferences.js",
     "products:proofread": "node src/scripts/proofreadProductText.js",
-    "products:rename-supplement-category": "node src/scripts/renameSupplementCategory.js"
+    "products:rename-supplement-category": "node src/scripts/renameSupplementCategory.js",
+    "products:sync-fda-numbers": "node src/scripts/syncProductFdaNumbers.js"
   },
   "dependencies": {
     "@seepine/edge-tts": "^1.4.1",
