@@ -6,6 +6,7 @@
     "start": "node src/scripts/migrateShippingFee.js && node src/scripts/migrateProductTranslations.js && node src/index.js",
     "dev": "nodemon src/index.js",
     "sync:promotions": "node src/scripts/syncPromotions.js",
+    "sync:activities": "node src/scripts/syncActivities.js",
     "restore:local-products": "node src/scripts/restoreLocalProducts.js",
     "restore:local-promotions": "node src/scripts/restoreLocalPromotions.js",
     "restore:local-hall-of-fame": "node src/scripts/restoreLocalHallOfFame.js",
