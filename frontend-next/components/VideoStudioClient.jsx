@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import {
   CheckCircle2,
   Download,
-  Film,
+  Images,
   ImagePlus,
   LoaderCircle,
   Package,
@@ -15,7 +15,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
-import { createVideoJob, getVideoDownloadUrl, getVideoJob, getVideoUrl } from '@/services/api';
+import { createImageJob, getGeneratedImageDownloadUrl, getGeneratedImageUrl } from '@/services/api';
 
 const MAX_FILE_SIZE = 6 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png']);
@@ -93,40 +93,10 @@ export default function VideoStudioClient() {
   const [job, setJob] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [pollWarning, setPollWarning] = useState('');
 
   useEffect(() => () => {
     if (combinedPreview) URL.revokeObjectURL(combinedPreview);
   }, [combinedPreview]);
-
-  useEffect(() => {
-    if (!job?.id || !['submitting', 'processing'].includes(job.status)) return undefined;
-
-    let cancelled = false;
-    let timer;
-
-    const poll = async () => {
-      try {
-        const response = await getVideoJob(job.id);
-        if (cancelled) return;
-        setJob(response.data.job);
-        setPollWarning('');
-        if (['submitting', 'processing'].includes(response.data.job.status)) {
-          timer = window.setTimeout(poll, 8000);
-        }
-      } catch {
-        if (cancelled) return;
-        setPollWarning(t('statusRetry'));
-        timer = window.setTimeout(poll, 12000);
-      }
-    };
-
-    timer = window.setTimeout(poll, 5000);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [job?.id, job?.status, t]);
 
   const selectFile = (file) => {
     setError('');
@@ -158,7 +128,6 @@ export default function VideoStudioClient() {
     setConsent(false);
     setJob(null);
     setError('');
-    setPollWarning('');
   };
 
   const handleSubmit = async (event) => {
@@ -180,7 +149,7 @@ export default function VideoStudioClient() {
     setError('');
     try {
       const combinedImage = await readAsDataUrl(combinedFile);
-      const response = await createVideoJob({
+      const response = await createImageJob({
         combined_image: combinedImage,
         product_name: productName.trim(),
         product_detail: productDetail.trim(),
@@ -188,18 +157,19 @@ export default function VideoStudioClient() {
       });
       setJob(response.data.job);
     } catch (requestError) {
-      setError(requestError.response?.data?.error || t('createError'));
+      const code = requestError.response?.data?.error_code;
+      setError(code === 'provider_filtered'
+        ? t('providerFilterError')
+        : requestError.response?.data?.error || t('createError'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const isWorking = submitting || ['submitting', 'processing'].includes(job?.status);
-  const videoUrl = job?.status === 'completed' ? getVideoUrl(job.id) : '';
-  const videoDownloadUrl = job?.status === 'completed' ? getVideoDownloadUrl(job.id) : '';
-  const jobError = job?.error_code === 'provider_audio_filtered'
-    ? t('audioFilterError')
-    : job?.error_code === 'provider_filtered'
+  const isWorking = submitting;
+  const imageUrl = job?.status === 'completed' ? getGeneratedImageUrl(job.id) : '';
+  const imageDownloadUrl = job?.status === 'completed' ? getGeneratedImageDownloadUrl(job.id) : '';
+  const jobError = job?.error_code === 'provider_filtered'
       ? t('providerFilterError')
       : job?.error;
 
@@ -209,7 +179,7 @@ export default function VideoStudioClient() {
         <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_20%_20%,#d4a017_0,transparent_30%),radial-gradient(circle_at_80%_70%,#2563eb_0,transparent_35%)]" />
         <div className="relative mx-auto max-w-3xl">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-500 text-navy-950 shadow-xl">
-            <Film size={29} />
+            <Images size={29} />
           </div>
           <h1 className="text-3xl font-bold sm:text-5xl">{t('title')}</h1>
           <p className="mx-auto mt-4 max-w-2xl text-gray-300 sm:text-lg">{t('subtitle')}</p>
@@ -228,14 +198,13 @@ export default function VideoStudioClient() {
               <h2 className="text-2xl font-bold text-navy-900 dark:text-white">{t('completedTitle')}</h2>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('completedDescription')}</p>
             </div>
-            <video
-              src={videoUrl}
-              controls
-              playsInline
-              className="mx-auto aspect-[9/16] max-h-[640px] w-full rounded-2xl bg-black object-contain"
+            <img
+              src={imageUrl}
+              alt={t('generatedImageAlt')}
+              className="mx-auto aspect-[4/5] max-h-[720px] w-full rounded-2xl bg-gray-100 object-contain dark:bg-navy-950"
             />
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <a href={videoDownloadUrl} className="btn-gold inline-flex items-center justify-center gap-2">
+              <a href={imageDownloadUrl} className="btn-gold inline-flex items-center justify-center gap-2">
                 <Download size={18} /> {t('download')}
               </a>
               <button type="button" onClick={reset} className="btn-outline-gold inline-flex items-center justify-center gap-2">
@@ -341,7 +310,6 @@ export default function VideoStudioClient() {
                 <LoaderCircle size={36} className="mx-auto animate-spin text-gold-600 dark:text-gold-400" />
                 <h2 className="mt-3 font-bold text-navy-900 dark:text-white">{t('processingTitle')}</h2>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('processingDescription')}</p>
-                {pollWarning && <p className="mt-2 text-xs text-amber-600">{pollWarning}</p>}
               </div>
             )}
 

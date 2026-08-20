@@ -15,11 +15,9 @@ export const getProductTranslation = (id, locale) =>
   api.get(`/products/${id}/translation`, { params: { locale } });
 export const generateSpeech = (text, locale, signal) =>
   api.post('/speech', { text, locale }, { responseType: 'arraybuffer', signal });
-export const createVideoJob = (data) => api.post('/video-studio/jobs', data);
-export const getVideoJob = (id) => api.get(`/video-studio/jobs/${id}`);
-export const getVideoUrl = (id) =>
-  `/api/video-studio/jobs/${id}/video`;
-export const getVideoDownloadUrl = (id) => `${getVideoUrl(id)}?download=1`;
+export const createImageJob = (data) => api.post('/image-studio/jobs', data, { timeout: 130000 });
+export const getGeneratedImageUrl = (id) => `/api/image-studio/jobs/${id}/image`;
+export const getGeneratedImageDownloadUrl = (id) => `${getGeneratedImageUrl(id)}?download=1`;
 
 // Server-side fetch helpers - used inside Server Component page.js files only.
 const SERVER_API_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL;

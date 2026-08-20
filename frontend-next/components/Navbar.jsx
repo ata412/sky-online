@@ -152,12 +152,12 @@ export default function Navbar() {
     { to: '/hall-of-fame', label: t('nav.hallOfFame') },
     { to: '/chatbot', label: t('nav.chatbot') },
     ...(VIDEO_STUDIO_ENABLED
-      ? [{ to: '/video-studio', label: t('nav.videoStudio') }]
+      ? [{ to: '/image-studio', label: t('nav.videoStudio') }]
       : []),
     { to: '/contact', label: t('nav.contact') },
   ];
   const primaryLinks = navLinks.filter((link) =>
-    ['/', '/products', '/promotions', '/chatbot', '/video-studio'].includes(link.to)
+    ['/', '/products', '/promotions', '/chatbot', '/image-studio'].includes(link.to)
   );
   const moreLinks = navLinks.filter((link) =>
     ['/encyclopedia', '/vision', '/activities', '/hall-of-fame', '/contact'].includes(link.to)

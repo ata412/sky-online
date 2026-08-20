@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/scripts/migrateShippingFee.js && node src/scripts/migrateProductTranslations.js && node src/index.js",
+    "start": "node src/scripts/migrateShippingFee.js && node src/scripts/migrateProductTranslations.js && node src/scripts/migrateImageStudio.js && node src/index.js",
     "dev": "nodemon src/index.js",
     "sync:promotions": "node src/scripts/syncPromotions.js",
     "sync:activities": "node src/scripts/syncActivities.js",
@@ -11,6 +11,7 @@
     "restore:local-promotions": "node src/scripts/restoreLocalPromotions.js",
     "restore:local-hall-of-fame": "node src/scripts/restoreLocalHallOfFame.js",
     "migrate:video-studio": "node src/scripts/migrateVideoStudio.js",
+    "migrate:image-studio": "node src/scripts/migrateImageStudio.js",
     "migrate:product-translations": "node src/scripts/migrateProductTranslations.js",
     "migrate:shipping-fee": "node src/scripts/migrateShippingFee.js",
     "products:update-from-ref": "node src/scripts/updateProductsFromReferences.js",

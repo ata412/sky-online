@@ -1,7 +1,7 @@
 import { routing } from '@/i18n/routing';
 import { SITE_URL, localizedPath } from '@/lib/seo';
 
-const PRIVATE_PATHS = ['/checkout', '/login', '/register', '/chatbot', '/video-studio'];
+const PRIVATE_PATHS = ['/checkout', '/login', '/register', '/chatbot', '/image-studio', '/video-studio'];
 
 export default function robots() {
   return {

@@ -34,6 +34,11 @@ services:
       DB_NAME: sky_online
       DB_USER: postgres
       DB_PASSWORD: password
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      IMAGE_STUDIO_ENABLED: ${IMAGE_STUDIO_ENABLED:-true}
+      IMAGE_STUDIO_MODEL: ${IMAGE_STUDIO_MODEL:-gemini-3.1-flash-lite-image}
+      IMAGE_STUDIO_MAX_JOBS_PER_HOUR: ${IMAGE_STUDIO_MAX_JOBS_PER_HOUR:-4}
+      IMAGE_STUDIO_RATE_LIMIT_SECRET: ${IMAGE_STUDIO_RATE_LIMIT_SECRET:-replace-with-a-long-random-secret}
     depends_on:
       db:
         condition: service_healthy
