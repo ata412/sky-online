@@ -158,15 +158,69 @@ function UploadCard({ icon: Icon, title, description, file, preview, onSelect, o
   );
 }
 
-export default function VideoStudioClient() {
+function ProductSelectCard({ products, selectedProduct, selectedProductId, onSelect }) {
+  const t = useTranslations('videoStudio');
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-navy-700 dark:bg-navy-900">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-100 text-gold-700 dark:bg-gold-500/10 dark:text-gold-400">
+          <Package size={21} />
+        </div>
+        <div>
+          <h2 className="font-bold text-navy-900 dark:text-white">{t('productImageTitle')}</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('productImageDescription')}</p>
+        </div>
+      </div>
+
+      <label className="block">
+        <span className="sr-only">{t('productSelectPlaceholder')}</span>
+        <select
+          value={selectedProductId}
+          onChange={(event) => onSelect(event.target.value)}
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-navy-900 outline-none transition focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 dark:border-navy-700 dark:bg-navy-950 dark:text-white"
+        >
+          <option value="">{t('productSelectPlaceholder')}</option>
+          {products.map((product) => (
+            <option key={product.id} value={String(product.id)}>
+              {product.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {selectedProduct ? (
+        <div className="mt-4 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-navy-700 dark:bg-navy-950">
+          <img
+            src={selectedProduct.image_url}
+            alt={selectedProduct.name}
+            className="aspect-[4/3] w-full object-contain p-3"
+          />
+          <div className="border-t border-gray-200 bg-white px-3 py-2 dark:border-navy-700 dark:bg-navy-900">
+            <p className="truncate text-sm font-semibold text-navy-900 dark:text-white">{selectedProduct.name}</p>
+            <p className="truncate text-xs text-gray-400">
+              {[selectedProduct.brand, selectedProduct.category].filter(Boolean).join(' · ')}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 flex aspect-[4/3] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 text-center dark:border-navy-700 dark:bg-navy-950/50">
+          <Package size={34} className="mb-3 text-gold-600 dark:text-gold-400" />
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {products.length > 0 ? t('productSelectPrompt') : t('productsUnavailable')}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function VideoStudioClient({ products = [] }) {
   const t = useTranslations('videoStudio');
   const personInputRef = useRef(null);
-  const productInputRef = useRef(null);
   const [personFile, setPersonFile] = useState(null);
   const [personPreview, setPersonPreview] = useState('');
-  const [productFile, setProductFile] = useState(null);
-  const [productPreview, setProductPreview] = useState('');
-  const [productName, setProductName] = useState('');
+  const [selectedProductId, setSelectedProductId] = useState('');
   const [productDetail, setProductDetail] = useState('');
   const [consent, setConsent] = useState(false);
   const [job, setJob] = useState(null);
@@ -176,10 +230,6 @@ export default function VideoStudioClient() {
   useEffect(() => () => {
     if (personPreview) URL.revokeObjectURL(personPreview);
   }, [personPreview]);
-
-  useEffect(() => () => {
-    if (productPreview) URL.revokeObjectURL(productPreview);
-  }, [productPreview]);
 
   const selectFile = (file, setFile, setPreview) => {
     setError('');
@@ -206,8 +256,7 @@ export default function VideoStudioClient() {
 
   const reset = () => {
     clearFile(setPersonFile, setPersonPreview, personInputRef);
-    clearFile(setProductFile, setProductPreview, productInputRef);
-    setProductName('');
+    setSelectedProductId('');
     setProductDetail('');
     setConsent(false);
     setJob(null);
@@ -216,12 +265,15 @@ export default function VideoStudioClient() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!personFile || !productFile) {
-      setError(t('imagesRequired'));
+    if (!personFile) {
+      setError(t('personImageRequired'));
       return;
     }
-    if (!productName.trim()) {
-      setError(t('productNameRequired'));
+    const selectedProduct = products.find(
+      (product) => String(product.id) === selectedProductId
+    );
+    if (!selectedProduct) {
+      setError(t('productSelectionRequired'));
       return;
     }
     if (!consent) {
@@ -232,14 +284,10 @@ export default function VideoStudioClient() {
     setSubmitting(true);
     setError('');
     try {
-      const [personImage, productImage] = await Promise.all([
-        prepareImageDataUrl(personFile),
-        prepareImageDataUrl(productFile),
-      ]);
+      const personImage = await prepareImageDataUrl(personFile);
       const response = await createImageJob({
         person_image: personImage,
-        product_image: productImage,
-        product_name: productName.trim(),
+        product_id: selectedProduct.id,
         product_detail: productDetail.trim(),
         consent: true,
       });
@@ -258,6 +306,9 @@ export default function VideoStudioClient() {
   };
 
   const isWorking = submitting;
+  const selectedProduct = products.find(
+    (product) => String(product.id) === selectedProductId
+  );
   const imageUrl = job?.status === 'completed' ? getGeneratedImageUrl(job.id) : '';
   const imageDownloadUrl = job?.status === 'completed' ? getGeneratedImageDownloadUrl(job.id) : '';
   const jobError = job?.error_code === 'provider_filtered'
@@ -317,15 +368,14 @@ export default function VideoStudioClient() {
                 onClear={() => clearFile(setPersonFile, setPersonPreview, personInputRef)}
                 inputRef={personInputRef}
               />
-              <UploadCard
-                icon={Package}
-                title={t('productImageTitle')}
-                description={t('productImageDescription')}
-                file={productFile}
-                preview={productPreview}
-                onSelect={(file) => selectFile(file, setProductFile, setProductPreview)}
-                onClear={() => clearFile(setProductFile, setProductPreview, productInputRef)}
-                inputRef={productInputRef}
+              <ProductSelectCard
+                products={products}
+                selectedProduct={selectedProduct}
+                selectedProductId={selectedProductId}
+                onSelect={(productId) => {
+                  setSelectedProductId(productId);
+                  setError('');
+                }}
               />
             </div>
 
@@ -340,25 +390,7 @@ export default function VideoStudioClient() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1.5 block text-sm font-semibold text-navy-900 dark:text-white">
-                    {t('productNameLabel')}
-                  </span>
-                  <input
-                    type="text"
-                    value={productName}
-                    onChange={(event) => {
-                      setProductName(event.target.value);
-                      setError('');
-                    }}
-                    maxLength={60}
-                    disabled={isWorking}
-                    placeholder={t('productNamePlaceholder')}
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-navy-900 outline-none transition placeholder:text-gray-400 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 disabled:opacity-60 dark:border-navy-700 dark:bg-navy-950 dark:text-white"
-                  />
-                </label>
-
+              <div>
                 <label className="block">
                   <span className="mb-1.5 block text-sm font-semibold text-navy-900 dark:text-white">
                     {t('productDetailLabel')}
@@ -416,7 +448,7 @@ export default function VideoStudioClient() {
 
             <button
               type="submit"
-              disabled={isWorking || !personFile || !productFile || !productName.trim() || !consent}
+              disabled={isWorking || !personFile || !selectedProduct || !consent}
               className="btn-gold mt-6 flex w-full items-center justify-center gap-2 py-4 text-base disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isWorking ? (

@@ -22,7 +22,7 @@ const en = {
     chatbotTitle: 'Product Assistant',
     chatbotDescription: 'Ask the Sky Online AI assistant about our products.',
     videoStudioTitle: 'AI Product Image Studio',
-    videoStudioDescription: 'Create a product advertisement from separate person and product photos.',
+    videoStudioDescription: 'Create an advertisement from a person photo and a product selected from the catalog.',
   },
 
   // Navbar
@@ -230,13 +230,16 @@ const en = {
 
   videoStudio: {
     title: 'Create a Product Image with AI',
-    subtitle: 'Add one person photo and one product photo, plus a short product detail. AI creates a new advertisement image each time.',
+    subtitle: 'Add one person photo and select a catalog product. The system uses its database image to create a new advertisement.',
     format: 'Vertical 4:5 image · Ready for social media',
     personTitle: '1. Person photo',
     personDescription: 'Use a clear photo showing the face and upper body. The product does not need to be in this photo.',
-    productImageTitle: '2. Product photo',
-    productImageDescription: 'Use a clear photo of the packaging, logo, and product label.',
-    productInfoTitle: '3. Product information',
+    productImageTitle: '2. Select product',
+    productImageDescription: 'Choose a catalog product. No product image upload is required.',
+    productSelectPlaceholder: 'Select a product',
+    productSelectPrompt: 'Select a product to preview its image.',
+    productsUnavailable: 'No products are currently available.',
+    productInfoTitle: '3. Additional detail',
     productInfoDescription: 'This information guides the image without adding text to it.',
     productNameLabel: 'Product name *',
     productNamePlaceholder: 'For example, Luck Coffee',
@@ -244,6 +247,8 @@ const en = {
     productDetailPlaceholder: 'For example, instant coffee with a smooth aroma',
     productDetailHint: 'Use brief factual information only. Avoid treatment, weight-loss, or guaranteed-result claims.',
     productNameRequired: 'Please enter the product name.',
+    personImageRequired: 'Please choose a person photo.',
+    productSelectionRequired: 'Please select a product from the catalog.',
     chooseImage: 'Choose image',
     fileHint: 'JPEG or PNG · up to 6 MB',
     removeImage: 'Remove image',

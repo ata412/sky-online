@@ -22,7 +22,7 @@ const lo = {
     chatbotTitle: 'ຜູ້ຊ່ວຍແນະນຳສິນຄ້າ',
     chatbotDescription: 'ສອບຖາມຂໍ້ມູນສິນຄ້າກັບຜູ້ຊ່ວຍ AI ຂອງ Sky Online.',
     videoStudioTitle: 'ສ້າງຮູບໂຄສະນາສິນຄ້າດ້ວຍ AI',
-    videoStudioDescription: 'ສ້າງຮູບໂຄສະນາຈາກຮູບບຸກຄົນ ແລະ ຮູບສິນຄ້າແຍກກັນ.',
+    videoStudioDescription: 'ສ້າງຮູບໂຄສະນາຈາກຮູບບຸກຄົນ ແລະ ສິນຄ້າທີ່ເລືອກຈາກລາຍການ.',
   },
 
   // Navbar
@@ -230,13 +230,16 @@ const lo = {
 
   videoStudio: {
     title: 'ສ້າງຮູບຂາຍສິນຄ້າດ້ວຍ AI',
-    subtitle: 'ໃສ່ຮູບບຸກຄົນ 1 ຮູບ ແລະ ຮູບສິນຄ້າ 1 ຮູບ ພ້ອມຂໍ້ມູນສັ້ນໆ. AI ຈະສ້າງຮູບໂຄສະນາໃໝ່.',
+    subtitle: 'ໃສ່ຮູບບຸກຄົນ 1 ຮູບ ແລ້ວເລືອກສິນຄ້າຈາກລາຍການ. ລະບົບຈະໃຊ້ຮູບຈາກຖານຂໍ້ມູນ.',
     format: 'ຮູບແນວຕັ້ງ 4:5 · ພ້ອມໃຊ້ໃນໂຊຊຽວມີເດຍ',
     personTitle: '1. ຮູບບຸກຄົນ',
     personDescription: 'ໃຊ້ຮູບທີ່ເຫັນໃບໜ້າ ແລະ ຊ່ວງເທິງຊັດເຈນ.',
-    productImageTitle: '2. ຮູບສິນຄ້າ',
-    productImageDescription: 'ໃຊ້ຮູບທີ່ເຫັນບັນຈຸພັນ, ໂລໂກ້ ແລະ ສະຫຼາກຊັດເຈນ.',
-    productInfoTitle: '3. ຂໍ້ມູນສິນຄ້າ',
+    productImageTitle: '2. ເລືອກສິນຄ້າ',
+    productImageDescription: 'ເລືອກຈາກລາຍການ ບໍ່ຕ້ອງອັບໂຫຼດຮູບສິນຄ້າ.',
+    productSelectPlaceholder: 'ເລືອກສິນຄ້າ',
+    productSelectPrompt: 'ເລືອກສິນຄ້າເພື່ອເບິ່ງຮູບ.',
+    productsUnavailable: 'ຍັງບໍ່ມີສິນຄ້າພ້ອມໃຊ້.',
+    productInfoTitle: '3. ລາຍລະອຽດເພີ່ມເຕີມ',
     productInfoDescription: 'ລະບົບຈະໃຊ້ຂໍ້ມູນນີ້ສ້າງຮູບ ໂດຍບໍ່ເພີ່ມຂໍ້ຄວາມໃສ່ຮູບ.',
     productNameLabel: 'ຊື່ສິນຄ້າ *',
     productNamePlaceholder: 'ຕົວຢ່າງ: Luck Coffee',
@@ -244,6 +247,8 @@ const lo = {
     productDetailPlaceholder: 'ຕົວຢ່າງ: ກາເຟສຳເລັດຮູບ ກິ່ນຫອມນຸ່ມ',
     productDetailHint: 'ໃຊ້ສະເພາະຂໍ້ມູນຈິງແບບສັ້ນ. ຫຼີກລ່ຽງຄຳອ້າງເລື່ອງຮັກສາໂລກ, ຫຼຸດນ້ຳໜັກ ຫຼື ຮັບປະກັນຜົນ.',
     productNameRequired: 'ກະລຸນາໃສ່ຊື່ສິນຄ້າ.',
+    personImageRequired: 'ກະລຸນາເລືອກຮູບບຸກຄົນ.',
+    productSelectionRequired: 'ກະລຸນາເລືອກສິນຄ້າຈາກລາຍການ.',
     chooseImage: 'ເລືອກຮູບ',
     fileHint: 'JPEG ຫຼື PNG · ບໍ່ເກີນ 6 MB',
     removeImage: 'ລຶບຮູບ',

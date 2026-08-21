@@ -22,7 +22,7 @@ const my = {
     chatbotTitle: 'ကုန်ပစ္စည်း လက်ထောက်',
     chatbotDescription: 'Sky Online AI လက်ထောက်ထံ ကုန်ပစ္စည်းအကြောင်း မေးမြန်းပါ။',
     videoStudioTitle: 'AI ကုန်ပစ္စည်း ပုံစတူဒီယို',
-    videoStudioDescription: 'လူပုံနှင့် ကုန်ပစ္စည်းပုံ သီးခြားစီမှ ကြော်ငြာပုံ ဖန်တီးပါ။',
+    videoStudioDescription: 'လူပုံနှင့် စာရင်းမှရွေးထားသော ကုန်ပစ္စည်းဖြင့် ကြော်ငြာပုံ ဖန်တီးပါ။',
   },
 
   // Navbar
@@ -230,13 +230,16 @@ const my = {
 
   videoStudio: {
     title: 'AI ဖြင့် ကုန်ပစ္စည်းပုံ ဖန်တီးပါ',
-    subtitle: 'လူပုံတစ်ပုံနှင့် ကုန်ပစ္စည်းပုံတစ်ပုံကို အချက်အလက်တိုနှင့်အတူ ထည့်ပါ။ AI က ကြော်ငြာပုံအသစ် ဖန်တီးပေးမည်။',
+    subtitle: 'လူပုံတစ်ပုံထည့်ပြီး စာရင်းမှကုန်ပစ္စည်းကို ရွေးပါ။ စနစ်က ဒေတာဘေ့စ်ရှိပုံကိုသုံး၍ ကြော်ငြာဖန်တီးမည်။',
     format: 'ဒေါင်လိုက် 4:5 ပုံ · လူမှုကွန်ရက်အတွက် အသင့်',
     personTitle: '1. လူပုံ',
     personDescription: 'မျက်နှာနှင့် ကိုယ်အပေါ်ပိုင်း ရှင်းလင်းစွာ မြင်ရသောပုံကို သုံးပါ။ ကုန်ပစ္စည်း ပါရန်မလိုပါ။',
-    productImageTitle: '2. ကုန်ပစ္စည်းပုံ',
-    productImageDescription: 'ထုပ်ပိုးမှု၊ လိုဂိုနှင့် ကုန်ပစ္စည်းတံဆိပ် ရှင်းလင်းစွာ မြင်ရသောပုံကို သုံးပါ။',
-    productInfoTitle: '3. ကုန်ပစ္စည်းအချက်အလက်',
+    productImageTitle: '2. ကုန်ပစ္စည်းရွေးရန်',
+    productImageDescription: 'စာရင်းမှရွေးပါ၊ ကုန်ပစ္စည်းပုံ တင်ရန်မလိုပါ။',
+    productSelectPlaceholder: 'ကုန်ပစ္စည်းရွေးရန်',
+    productSelectPrompt: 'ပုံကြည့်ရန် ကုန်ပစ္စည်းရွေးပါ။',
+    productsUnavailable: 'လက်ရှိအသုံးပြုနိုင်သော ကုန်ပစ္စည်းမရှိပါ။',
+    productInfoTitle: '3. ထပ်ဆောင်းအချက်အလက်',
     productInfoDescription: 'ဤအချက်အလက်ကို ပုံဖန်တီးရန် အသုံးပြုမည်ဖြစ်ပြီး ပုံပေါ်တွင် စာမထည့်ပါ။',
     productNameLabel: 'ကုန်ပစ္စည်းအမည် *',
     productNamePlaceholder: 'ဥပမာ Luck Coffee',
@@ -244,6 +247,8 @@ const my = {
     productDetailPlaceholder: 'ဥပမာ နူးညံ့သောရနံ့ရှိ အသင့်ဖျော်ကော်ဖီ',
     productDetailHint: 'တိုတောင်းပြီး မှန်ကန်သောအချက်အလက်သာ ထည့်ပါ။ ကုသမှု၊ ကိုယ်အလေးချိန်လျှော့ချမှု သို့မဟုတ် အာမခံရလဒ် အဆိုများကို ရှောင်ပါ။',
     productNameRequired: 'ကုန်ပစ္စည်းအမည် ထည့်ပါ။',
+    personImageRequired: 'လူပုံရွေးပါ။',
+    productSelectionRequired: 'စာရင်းမှ ကုန်ပစ္စည်းရွေးပါ။',
     chooseImage: 'ပုံရွေးရန်',
     fileHint: 'JPEG သို့မဟုတ် PNG · 6 MB အထိ',
     removeImage: 'ပုံဖယ်ရန်',

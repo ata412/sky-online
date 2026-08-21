@@ -2,6 +2,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import VideoStudioClient from '@/components/VideoStudioClient';
 import { VIDEO_STUDIO_ENABLED } from '@/lib/features';
+import { getProductsServer } from '@/services/api';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
   const { locale } = await params;
@@ -17,5 +20,14 @@ export default async function ImageStudioPage({ params }) {
   if (!VIDEO_STUDIO_ENABLED) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
-  return <VideoStudioClient />;
+  const products = ((await getProductsServer()) ?? [])
+    .filter((product) => product.image_url)
+    .map(({ id, name, image_url, brand, category }) => ({
+      id,
+      name,
+      image_url,
+      brand,
+      category,
+    }));
+  return <VideoStudioClient products={products} />;
 }

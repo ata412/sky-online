@@ -22,7 +22,7 @@ const th = {
     chatbotTitle: 'ผู้ช่วยแนะนำสินค้า',
     chatbotDescription: 'สอบถามข้อมูลสินค้า Sky Online กับผู้ช่วย AI',
     videoStudioTitle: 'สร้างภาพขายสินค้าด้วย AI',
-    videoStudioDescription: 'สร้างภาพโฆษณาสินค้าจากภาพบุคคลและภาพสินค้า',
+    videoStudioDescription: 'สร้างภาพโฆษณาจากภาพบุคคลและสินค้าที่เลือกจากรายการ',
   },
 
   // Navbar
@@ -230,13 +230,16 @@ const th = {
 
   videoStudio: {
     title: 'สร้างภาพขายสินค้าด้วย AI',
-    subtitle: 'ใส่ภาพบุคคล 1 ภาพและภาพสินค้า 1 ภาพ พร้อมข้อมูลสั้น ๆ ระบบจะสร้างภาพโฆษณาใหม่ที่แตกต่างกันในแต่ละครั้ง',
+    subtitle: 'ใส่ภาพบุคคล 1 ภาพ แล้วเลือกสินค้าจากรายการ ระบบจะใช้ภาพสินค้าจากฐานข้อมูลสร้างภาพโฆษณาใหม่ให้',
     format: 'ภาพแนวตั้ง 4:5 · พร้อมใช้บนโซเชียลมีเดีย',
     personTitle: '1. ภาพบุคคล',
     personDescription: 'ใช้ภาพที่เห็นใบหน้าและช่วงบนชัดเจน โดยไม่จำเป็นต้องถือสินค้า',
-    productImageTitle: '2. ภาพสินค้า',
-    productImageDescription: 'ใช้ภาพที่เห็นบรรจุภัณฑ์ โลโก้ และฉลากสินค้าชัดเจน',
-    productInfoTitle: '3. ข้อมูลสินค้า',
+    productImageTitle: '2. เลือกสินค้า',
+    productImageDescription: 'เลือกจากรายการสินค้าในระบบ ไม่ต้องอัปโหลดภาพเอง',
+    productSelectPlaceholder: 'เลือกสินค้า',
+    productSelectPrompt: 'เลือกสินค้าเพื่อดูภาพตัวอย่าง',
+    productsUnavailable: 'ยังไม่มีสินค้าที่พร้อมใช้งาน',
+    productInfoTitle: '3. รายละเอียดเพิ่มเติม',
     productInfoDescription: 'ระบบจะใช้ข้อมูลนี้ประกอบการสร้างภาพ โดยไม่เพิ่มข้อความลงบนภาพ',
     productNameLabel: 'ชื่อสินค้า *',
     productNamePlaceholder: 'เช่น ลัคซ์ คอฟฟี่',
@@ -244,6 +247,8 @@ const th = {
     productDetailPlaceholder: 'เช่น กาแฟปรุงสำเร็จชนิดผง กลิ่นหอมนุ่ม',
     productDetailHint: 'ระบุเฉพาะข้อมูลจริงและกระชับ หลีกเลี่ยงข้อความรักษาโรค ลดน้ำหนัก หรือรับประกันผลลัพธ์',
     productNameRequired: 'กรุณาระบุชื่อสินค้า',
+    personImageRequired: 'กรุณาเลือกภาพบุคคล',
+    productSelectionRequired: 'กรุณาเลือกสินค้าจากรายการ',
     chooseImage: 'เลือกภาพ',
     fileHint: 'JPEG หรือ PNG · ไม่เกิน 6 MB',
     removeImage: 'นำภาพออก',

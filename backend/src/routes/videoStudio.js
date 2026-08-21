@@ -7,6 +7,8 @@ const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1';
 const IMAGE_MODEL = process.env.IMAGE_STUDIO_MODEL || 'gemini-3.1-flash-lite-image';
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 const MAX_GENERATED_IMAGE_BYTES = 16 * 1024 * 1024;
+const PRODUCT_IMAGE_BASE_URL = process.env.IMAGE_STUDIO_PRODUCT_IMAGE_BASE_URL
+  || 'https://skyonline99.online';
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png']);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const IMAGE_VARIANTS = [
@@ -56,6 +58,45 @@ function parseProductText(value, fieldName, maxLength, required = false) {
     throw new Error(`${fieldName} must be no longer than ${maxLength} characters`);
   }
   return normalized;
+}
+
+function parseProductId(value) {
+  const productId = Number(value);
+  if (!Number.isSafeInteger(productId) || productId <= 0) {
+    throw new Error('product_id must be a positive integer');
+  }
+  return productId;
+}
+
+async function fetchProductImage(imagePath) {
+  if (typeof imagePath !== 'string' || !/^\/(?!\/)/.test(imagePath)) {
+    throw new Error('The selected product does not have a valid catalog image');
+  }
+
+  const response = await fetch(new URL(imagePath, PRODUCT_IMAGE_BASE_URL), {
+    redirect: 'error',
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!response.ok) throw new Error('Unable to load the selected product image');
+
+  const mimeType = String(response.headers.get('content-type') || '')
+    .split(';')[0]
+    .trim()
+    .toLowerCase();
+  if (!ALLOWED_IMAGE_TYPES.has(mimeType)) {
+    throw new Error('The selected product image must be JPEG or PNG');
+  }
+
+  const declaredSize = Number(response.headers.get('content-length'));
+  if (Number.isFinite(declaredSize) && declaredSize > MAX_IMAGE_BYTES) {
+    throw new Error('The selected product image is larger than 6 MB');
+  }
+
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length === 0 || bytes.length > MAX_IMAGE_BYTES) {
+    throw new Error('The selected product image has an invalid size');
+  }
+  return { mimeType, data: bytes.toString('base64') };
 }
 
 function buildJobPrompt(productName, productDetail) {
@@ -163,17 +204,25 @@ router.post('/jobs', asyncRoute(async (req, res) => {
   }
 
   let personImage;
-  let productImage;
-  let productName;
+  let productId;
   let productDetail;
   try {
     personImage = parseImage(req.body.person_image, 'person_image');
-    productImage = parseImage(req.body.product_image, 'product_image');
-    productName = parseProductText(req.body.product_name, 'product_name', 60, true);
+    productId = parseProductId(req.body.product_id);
     productDetail = parseProductText(req.body.product_detail, 'product_detail', 100);
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
+
+  const productResult = await pool.query(
+    'SELECT id, name, image_url FROM products WHERE id = $1',
+    [productId]
+  );
+  if (productResult.rows.length === 0 || !productResult.rows[0].image_url) {
+    return res.status(400).json({ error: 'Selected product is unavailable' });
+  }
+  const product = productResult.rows[0];
+  const productName = parseProductText(product.name, 'product name', 100, true);
 
   const requesterHash = getRequesterHash(req);
   const rateLimit = await checkRateLimit(requesterHash);
@@ -190,6 +239,7 @@ router.post('/jobs', asyncRoute(async (req, res) => {
   );
 
   try {
+    const productImage = await fetchProductImage(product.image_url);
     const response = await geminiRequest(`models/${encodeURIComponent(IMAGE_MODEL)}:generateContent`, {
       method: 'POST',
       body: JSON.stringify(buildImageRequest(prompt, personImage, productImage)),

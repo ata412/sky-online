@@ -22,7 +22,7 @@ const zh = {
     chatbotTitle: '产品助手',
     chatbotDescription: '向 Sky Online AI 助手咨询产品信息。',
     videoStudioTitle: 'AI 产品图片工作室',
-    videoStudioDescription: '使用单独的人物照片和产品照片创建产品广告图片。',
+    videoStudioDescription: '使用人物照片和从目录中选择的产品创建广告图片。',
   },
 
   // Navbar
@@ -230,13 +230,16 @@ const zh = {
 
   videoStudio: {
     title: '使用 AI 创建产品图片',
-    subtitle: '上传一张人物照片和一张产品照片及简短产品信息，AI 每次都会创建新的广告图片。',
+    subtitle: '上传一张人物照片并从目录中选择产品，系统将使用数据库中的产品图片创建广告。',
     format: '竖版 4:5 图片 · 适合社交媒体',
     personTitle: '1. 人物照片',
     personDescription: '请使用面部和上半身清晰可见的照片，此照片无需包含产品。',
-    productImageTitle: '2. 产品照片',
-    productImageDescription: '请使用包装、标志和产品标签清晰可见的照片。',
-    productInfoTitle: '3. 产品信息',
+    productImageTitle: '2. 选择产品',
+    productImageDescription: '从产品目录中选择，无需上传产品图片。',
+    productSelectPlaceholder: '选择产品',
+    productSelectPrompt: '选择产品以预览图片。',
+    productsUnavailable: '目前没有可用产品。',
+    productInfoTitle: '3. 补充信息',
     productInfoDescription: '系统将使用这些信息指导图片生成，但不会在图片上添加文字。',
     productNameLabel: '产品名称 *',
     productNamePlaceholder: '例如 Luck Coffee',
@@ -244,6 +247,8 @@ const zh = {
     productDetailPlaceholder: '例如 香气柔和的速溶咖啡',
     productDetailHint: '仅填写简短真实的信息，请避免治疗、减重或保证效果等宣称。',
     productNameRequired: '请输入产品名称。',
+    personImageRequired: '请选择人物照片。',
+    productSelectionRequired: '请从目录中选择产品。',
     chooseImage: '选择图片',
     fileHint: 'JPEG 或 PNG · 最大 6 MB',
     removeImage: '移除图片',

@@ -22,7 +22,7 @@ const vi = {
     chatbotTitle: 'Trợ lý sản phẩm',
     chatbotDescription: 'Hỏi trợ lý AI của Sky Online về các sản phẩm của chúng tôi.',
     videoStudioTitle: 'Studio hình ảnh sản phẩm AI',
-    videoStudioDescription: 'Tạo hình ảnh quảng cáo từ ảnh người và ảnh sản phẩm riêng biệt.',
+    videoStudioDescription: 'Tạo quảng cáo từ ảnh người và sản phẩm được chọn trong danh mục.',
   },
 
   // Navbar
@@ -230,13 +230,16 @@ const vi = {
 
   videoStudio: {
     title: 'Tạo hình ảnh sản phẩm bằng AI',
-    subtitle: 'Thêm một ảnh người và một ảnh sản phẩm cùng thông tin ngắn. AI sẽ tạo một hình ảnh quảng cáo mới mỗi lần.',
+    subtitle: 'Thêm một ảnh người và chọn sản phẩm trong danh mục. Hệ thống dùng ảnh sản phẩm từ cơ sở dữ liệu để tạo quảng cáo.',
     format: 'Ảnh dọc 4:5 · Sẵn sàng cho mạng xã hội',
     personTitle: '1. Ảnh người',
     personDescription: 'Dùng ảnh rõ khuôn mặt và phần thân trên. Ảnh này không cần có sản phẩm.',
-    productImageTitle: '2. Ảnh sản phẩm',
-    productImageDescription: 'Dùng ảnh rõ bao bì, logo và nhãn sản phẩm.',
-    productInfoTitle: '3. Thông tin sản phẩm',
+    productImageTitle: '2. Chọn sản phẩm',
+    productImageDescription: 'Chọn từ danh mục, không cần tải ảnh sản phẩm lên.',
+    productSelectPlaceholder: 'Chọn sản phẩm',
+    productSelectPrompt: 'Chọn sản phẩm để xem trước hình ảnh.',
+    productsUnavailable: 'Hiện không có sản phẩm khả dụng.',
+    productInfoTitle: '3. Thông tin bổ sung',
     productInfoDescription: 'Thông tin này hướng dẫn việc tạo ảnh mà không thêm chữ lên ảnh.',
     productNameLabel: 'Tên sản phẩm *',
     productNamePlaceholder: 'Ví dụ: Luck Coffee',
@@ -244,6 +247,8 @@ const vi = {
     productDetailPlaceholder: 'Ví dụ: cà phê hòa tan có hương thơm dịu',
     productDetailHint: 'Chỉ nhập thông tin ngắn gọn, đúng sự thật. Tránh tuyên bố điều trị, giảm cân hoặc đảm bảo kết quả.',
     productNameRequired: 'Vui lòng nhập tên sản phẩm.',
+    personImageRequired: 'Vui lòng chọn ảnh người.',
+    productSelectionRequired: 'Vui lòng chọn sản phẩm trong danh mục.',
     chooseImage: 'Chọn ảnh',
     fileHint: 'JPEG hoặc PNG · tối đa 6 MB',
     removeImage: 'Xóa ảnh',
