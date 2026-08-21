@@ -264,6 +264,7 @@ const en = {
     consentRequired: 'Please confirm rights and consent before creating an image.',
     invalidType: 'Only JPEG and PNG files are supported.',
     fileTooLarge: 'Each image must be no larger than 6 MB.',
+    payloadTooLarge: 'The combined images are too large. Choose different images and try again.',
     createError: 'Unable to create the image. Please try again.',
     statusRetry: 'Status check was interrupted. The system will retry automatically.',
     providerFilterError: 'The provider filtered this result. Change the source photo or create the image again. This filtered attempt does not count toward the website limit.',

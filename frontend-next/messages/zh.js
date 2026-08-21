@@ -264,6 +264,7 @@ const zh = {
     consentRequired: '创建图片前请确认权利与同意。',
     invalidType: '仅支持 JPEG 和 PNG 文件。',
     fileTooLarge: '每张图片不得超过 6 MB。',
+    payloadTooLarge: '图片总大小过大，请选择其他图片后重试。',
     createError: '无法创建图片，请重试。',
     statusRetry: '状态检查中断，系统将自动重试。',
     providerFilterError: '服务商过滤了本次结果。请更换原图或再次创建图片，本次不会计入网站使用次数。',

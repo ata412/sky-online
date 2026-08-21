@@ -18,6 +18,8 @@ import {
 import { createImageJob, getGeneratedImageDownloadUrl, getGeneratedImageUrl } from '@/services/api';
 
 const MAX_FILE_SIZE = 6 * 1024 * 1024;
+const MAX_PREPARED_IMAGE_SIZE = 1200 * 1024;
+const MAX_PREPARED_IMAGE_DIMENSION = 2048;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png']);
 
 function readAsDataUrl(file) {
@@ -27,6 +29,80 @@ function readAsDataUrl(file) {
     reader.onerror = () => reject(new Error('Unable to read image'));
     reader.readAsDataURL(file);
   });
+}
+
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Unable to decode image'));
+    };
+    image.src = objectUrl;
+  });
+}
+
+function canvasToJpeg(canvas, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => blob ? resolve(blob) : reject(new Error('Unable to prepare image')),
+      'image/jpeg',
+      quality
+    );
+  });
+}
+
+async function prepareImageDataUrl(file) {
+  const image = await loadImage(file);
+  const sourceWidth = image.naturalWidth;
+  const sourceHeight = image.naturalHeight;
+  const initialScale = Math.min(
+    1,
+    MAX_PREPARED_IMAGE_DIMENSION / Math.max(sourceWidth, sourceHeight)
+  );
+  let width = Math.max(1, Math.round(sourceWidth * initialScale));
+  let height = Math.max(1, Math.round(sourceHeight * initialScale));
+  let quality = 0.9;
+
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Unable to prepare image');
+
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+
+    const blob = await canvasToJpeg(canvas, quality);
+    if (blob.size <= MAX_PREPARED_IMAGE_SIZE) {
+      return readAsDataUrl(blob);
+    }
+
+    if (attempt === 9) break;
+
+    if (quality > 0.7) {
+      quality -= 0.1;
+    } else {
+      width = Math.max(1, Math.round(width * 0.82));
+      height = Math.max(1, Math.round(height * 0.82));
+    }
+  }
+
+  throw new Error('Unable to prepare image');
+}
+
+function getApiErrorMessage(requestError, fallback) {
+  const apiError = requestError.response?.data?.error;
+  if (typeof apiError === 'string' && apiError.trim()) return apiError;
+  if (typeof apiError?.message === 'string' && apiError.message.trim()) return apiError.message;
+  return fallback;
 }
 
 function UploadCard({ icon: Icon, title, description, file, preview, onSelect, onClear, inputRef }) {
@@ -157,8 +233,8 @@ export default function VideoStudioClient() {
     setError('');
     try {
       const [personImage, productImage] = await Promise.all([
-        readAsDataUrl(personFile),
-        readAsDataUrl(productFile),
+        prepareImageDataUrl(personFile),
+        prepareImageDataUrl(productFile),
       ]);
       const response = await createImageJob({
         person_image: personImage,
@@ -170,9 +246,12 @@ export default function VideoStudioClient() {
       setJob(response.data.job);
     } catch (requestError) {
       const code = requestError.response?.data?.error_code;
-      setError(code === 'provider_filtered'
-        ? t('providerFilterError')
-        : requestError.response?.data?.error || t('createError'));
+      const status = requestError.response?.status;
+      setError(status === 413
+        ? t('payloadTooLarge')
+        : code === 'provider_filtered'
+          ? t('providerFilterError')
+          : getApiErrorMessage(requestError, t('createError')));
     } finally {
       setSubmitting(false);
     }

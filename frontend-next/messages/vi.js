@@ -264,6 +264,7 @@ const vi = {
     consentRequired: 'Vui lòng xác nhận quyền sử dụng và sự đồng ý trước khi tạo ảnh.',
     invalidType: 'Chỉ hỗ trợ tệp JPEG và PNG.',
     fileTooLarge: 'Mỗi ảnh không được lớn hơn 6 MB.',
+    payloadTooLarge: 'Tổng dung lượng ảnh quá lớn. Hãy chọn ảnh khác và thử lại.',
     createError: 'Không thể tạo ảnh. Vui lòng thử lại.',
     statusRetry: 'Việc kiểm tra trạng thái bị gián đoạn. Hệ thống sẽ tự động thử lại.',
     providerFilterError: 'Nhà cung cấp đã lọc kết quả này. Hãy đổi ảnh nguồn hoặc tạo lại ảnh. Lần bị lọc này không được tính vào giới hạn của trang web.',
