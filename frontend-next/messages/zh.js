@@ -22,7 +22,7 @@ const zh = {
     chatbotTitle: '产品助手',
     chatbotDescription: '向 Sky Online AI 助手咨询产品信息。',
     videoStudioTitle: 'AI 产品图片工作室',
-    videoStudioDescription: '使用一张您与产品的合照创建产品广告图片。',
+    videoStudioDescription: '使用单独的人物照片和产品照片创建产品广告图片。',
   },
 
   // Navbar
@@ -230,11 +230,13 @@ const zh = {
 
   videoStudio: {
     title: '使用 AI 创建产品图片',
-    subtitle: '上传一张您手持产品或与产品合影的照片及简短产品信息，AI 每次都会创建新的广告图片。',
+    subtitle: '上传一张人物照片和一张产品照片及简短产品信息，AI 每次都会创建新的广告图片。',
     format: '竖版 4:5 图片 · 适合社交媒体',
-    personTitle: '1. 您与产品的合照',
-    personDescription: '请使用一张面部、上半身及产品标签均清晰可见的照片。',
-    productInfoTitle: '2. 产品信息',
+    personTitle: '1. 人物照片',
+    personDescription: '请使用面部和上半身清晰可见的照片，此照片无需包含产品。',
+    productImageTitle: '2. 产品照片',
+    productImageDescription: '请使用包装、标志和产品标签清晰可见的照片。',
+    productInfoTitle: '3. 产品信息',
     productInfoDescription: '系统将使用这些信息指导图片生成，但不会在图片上添加文字。',
     productNameLabel: '产品名称 *',
     productNamePlaceholder: '例如 Luck Coffee',
@@ -258,7 +260,7 @@ const zh = {
     createAnother: '再次创建',
     retentionNotice: '图片已保存在系统中，使用前请下载副本。',
     safetyNotice: 'AI 可能出错，发布前请核对标签、标志和宣传内容。',
-    imagesRequired: '请选择一张您与产品的合照。',
+    imagesRequired: '请选择人物照片和产品照片。',
     consentRequired: '创建图片前请确认权利与同意。',
     invalidType: '仅支持 JPEG 和 PNG 文件。',
     fileTooLarge: '每张图片不得超过 6 MB。',

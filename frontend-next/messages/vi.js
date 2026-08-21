@@ -22,7 +22,7 @@ const vi = {
     chatbotTitle: 'Trợ lý sản phẩm',
     chatbotDescription: 'Hỏi trợ lý AI của Sky Online về các sản phẩm của chúng tôi.',
     videoStudioTitle: 'Studio hình ảnh sản phẩm AI',
-    videoStudioDescription: 'Tạo hình ảnh quảng cáo từ một ảnh bạn chụp cùng sản phẩm.',
+    videoStudioDescription: 'Tạo hình ảnh quảng cáo từ ảnh người và ảnh sản phẩm riêng biệt.',
   },
 
   // Navbar
@@ -230,11 +230,13 @@ const vi = {
 
   videoStudio: {
     title: 'Tạo hình ảnh sản phẩm bằng AI',
-    subtitle: 'Thêm một ảnh bạn cầm hoặc chụp cùng sản phẩm và thông tin ngắn. AI sẽ tạo một hình ảnh quảng cáo mới mỗi lần.',
+    subtitle: 'Thêm một ảnh người và một ảnh sản phẩm cùng thông tin ngắn. AI sẽ tạo một hình ảnh quảng cáo mới mỗi lần.',
     format: 'Ảnh dọc 4:5 · Sẵn sàng cho mạng xã hội',
-    personTitle: '1. Ảnh bạn chụp cùng sản phẩm',
-    personDescription: 'Dùng một ảnh rõ khuôn mặt, phần thân trên và nhãn sản phẩm.',
-    productInfoTitle: '2. Thông tin sản phẩm',
+    personTitle: '1. Ảnh người',
+    personDescription: 'Dùng ảnh rõ khuôn mặt và phần thân trên. Ảnh này không cần có sản phẩm.',
+    productImageTitle: '2. Ảnh sản phẩm',
+    productImageDescription: 'Dùng ảnh rõ bao bì, logo và nhãn sản phẩm.',
+    productInfoTitle: '3. Thông tin sản phẩm',
     productInfoDescription: 'Thông tin này hướng dẫn việc tạo ảnh mà không thêm chữ lên ảnh.',
     productNameLabel: 'Tên sản phẩm *',
     productNamePlaceholder: 'Ví dụ: Luck Coffee',
@@ -258,7 +260,7 @@ const vi = {
     createAnother: 'Tạo ảnh khác',
     retentionNotice: 'Ảnh được lưu trong hệ thống, nhưng hãy tải xuống một bản trước khi sử dụng.',
     safetyNotice: 'AI có thể mắc lỗi. Hãy kiểm tra nhãn, logo và nội dung tuyên bố trước khi đăng.',
-    imagesRequired: 'Vui lòng chọn một ảnh bạn chụp cùng sản phẩm.',
+    imagesRequired: 'Vui lòng chọn cả ảnh người và ảnh sản phẩm.',
     consentRequired: 'Vui lòng xác nhận quyền sử dụng và sự đồng ý trước khi tạo ảnh.',
     invalidType: 'Chỉ hỗ trợ tệp JPEG và PNG.',
     fileTooLarge: 'Mỗi ảnh không được lớn hơn 6 MB.',

@@ -84,9 +84,12 @@ function UploadCard({ icon: Icon, title, description, file, preview, onSelect, o
 
 export default function VideoStudioClient() {
   const t = useTranslations('videoStudio');
-  const combinedInputRef = useRef(null);
-  const [combinedFile, setCombinedFile] = useState(null);
-  const [combinedPreview, setCombinedPreview] = useState('');
+  const personInputRef = useRef(null);
+  const productInputRef = useRef(null);
+  const [personFile, setPersonFile] = useState(null);
+  const [personPreview, setPersonPreview] = useState('');
+  const [productFile, setProductFile] = useState(null);
+  const [productPreview, setProductPreview] = useState('');
   const [productName, setProductName] = useState('');
   const [productDetail, setProductDetail] = useState('');
   const [consent, setConsent] = useState(false);
@@ -95,10 +98,14 @@ export default function VideoStudioClient() {
   const [error, setError] = useState('');
 
   useEffect(() => () => {
-    if (combinedPreview) URL.revokeObjectURL(combinedPreview);
-  }, [combinedPreview]);
+    if (personPreview) URL.revokeObjectURL(personPreview);
+  }, [personPreview]);
 
-  const selectFile = (file) => {
+  useEffect(() => () => {
+    if (productPreview) URL.revokeObjectURL(productPreview);
+  }, [productPreview]);
+
+  const selectFile = (file, setFile, setPreview) => {
     setError('');
     if (!file) return;
     if (!ALLOWED_TYPES.has(file.type)) {
@@ -111,18 +118,19 @@ export default function VideoStudioClient() {
     }
 
     const preview = URL.createObjectURL(file);
-    setCombinedFile(file);
-    setCombinedPreview(preview);
+    setFile(file);
+    setPreview(preview);
   };
 
-  const clearFile = () => {
-    setCombinedFile(null);
-    setCombinedPreview('');
-    if (combinedInputRef.current) combinedInputRef.current.value = '';
+  const clearFile = (setFile, setPreview, inputRef) => {
+    setFile(null);
+    setPreview('');
+    if (inputRef.current) inputRef.current.value = '';
   };
 
   const reset = () => {
-    clearFile();
+    clearFile(setPersonFile, setPersonPreview, personInputRef);
+    clearFile(setProductFile, setProductPreview, productInputRef);
     setProductName('');
     setProductDetail('');
     setConsent(false);
@@ -132,7 +140,7 @@ export default function VideoStudioClient() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!combinedFile) {
+    if (!personFile || !productFile) {
       setError(t('imagesRequired'));
       return;
     }
@@ -148,9 +156,13 @@ export default function VideoStudioClient() {
     setSubmitting(true);
     setError('');
     try {
-      const combinedImage = await readAsDataUrl(combinedFile);
+      const [personImage, productImage] = await Promise.all([
+        readAsDataUrl(personFile),
+        readAsDataUrl(productFile),
+      ]);
       const response = await createImageJob({
-        combined_image: combinedImage,
+        person_image: personImage,
+        product_image: productImage,
         product_name: productName.trim(),
         product_detail: productDetail.trim(),
         consent: true,
@@ -215,16 +227,26 @@ export default function VideoStudioClient() {
           </section>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div className="mx-auto max-w-xl">
+            <div className="grid gap-6 md:grid-cols-2">
               <UploadCard
                 icon={UserRound}
                 title={t('personTitle')}
                 description={t('personDescription')}
-                file={combinedFile}
-                preview={combinedPreview}
-                onSelect={selectFile}
-                onClear={clearFile}
-                inputRef={combinedInputRef}
+                file={personFile}
+                preview={personPreview}
+                onSelect={(file) => selectFile(file, setPersonFile, setPersonPreview)}
+                onClear={() => clearFile(setPersonFile, setPersonPreview, personInputRef)}
+                inputRef={personInputRef}
+              />
+              <UploadCard
+                icon={Package}
+                title={t('productImageTitle')}
+                description={t('productImageDescription')}
+                file={productFile}
+                preview={productPreview}
+                onSelect={(file) => selectFile(file, setProductFile, setProductPreview)}
+                onClear={() => clearFile(setProductFile, setProductPreview, productInputRef)}
+                inputRef={productInputRef}
               />
             </div>
 
@@ -315,7 +337,7 @@ export default function VideoStudioClient() {
 
             <button
               type="submit"
-              disabled={isWorking || !combinedFile || !productName.trim() || !consent}
+              disabled={isWorking || !personFile || !productFile || !productName.trim() || !consent}
               className="btn-gold mt-6 flex w-full items-center justify-center gap-2 py-4 text-base disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isWorking ? (

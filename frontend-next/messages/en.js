@@ -22,7 +22,7 @@ const en = {
     chatbotTitle: 'Product Assistant',
     chatbotDescription: 'Ask the Sky Online AI assistant about our products.',
     videoStudioTitle: 'AI Product Image Studio',
-    videoStudioDescription: 'Create a product advertisement image from one photo of you with the product.',
+    videoStudioDescription: 'Create a product advertisement from separate person and product photos.',
   },
 
   // Navbar
@@ -230,11 +230,13 @@ const en = {
 
   videoStudio: {
     title: 'Create a Product Image with AI',
-    subtitle: 'Add one photo of you holding or posing with the product, plus a short product detail. AI creates a new advertisement image each time.',
+    subtitle: 'Add one person photo and one product photo, plus a short product detail. AI creates a new advertisement image each time.',
     format: 'Vertical 4:5 image · Ready for social media',
-    personTitle: '1. Photo of you with the product',
-    personDescription: 'Use one clear photo showing your face, upper body, and the product label.',
-    productInfoTitle: '2. Product information',
+    personTitle: '1. Person photo',
+    personDescription: 'Use a clear photo showing the face and upper body. The product does not need to be in this photo.',
+    productImageTitle: '2. Product photo',
+    productImageDescription: 'Use a clear photo of the packaging, logo, and product label.',
+    productInfoTitle: '3. Product information',
     productInfoDescription: 'This information guides the image without adding text to it.',
     productNameLabel: 'Product name *',
     productNamePlaceholder: 'For example, Luck Coffee',
@@ -258,7 +260,7 @@ const en = {
     createAnother: 'Create another',
     retentionNotice: 'The image is stored by the system, but download a copy before using it.',
     safetyNotice: 'AI can make mistakes. Verify labels, logos, and claims before publishing.',
-    imagesRequired: 'Please select one photo of you with the product.',
+    imagesRequired: 'Please select both a person photo and a product photo.',
     consentRequired: 'Please confirm rights and consent before creating an image.',
     invalidType: 'Only JPEG and PNG files are supported.',
     fileTooLarge: 'Each image must be no larger than 6 MB.',
