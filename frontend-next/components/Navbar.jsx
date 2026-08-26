@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/routing';
-import { Menu, X, UserPlus, LogIn, LogOut, User, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, User, Sun, Moon, ChevronDown } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -64,7 +64,6 @@ const LANGUAGES = [
 ];
 
 const MEMBER_LOGIN_URL = 'https://member.skyonline99.com/login.asp';
-const MEMBER_REGISTER_URL = 'https://member.skyonline99.com/RegisMemQR/RegMemQR.asp?id=0000001';
 
 function LangToggle({ light }) {
   const locale = useLocale();
@@ -309,15 +308,6 @@ export default function Navbar() {
                   <LogIn size={15} />
                   {t('nav.login')}
                 </a>
-                <a
-                  href={MEMBER_REGISTER_URL}
-                  className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
-                    isOverHero ? 'bg-navy-900 hover:bg-navy-800 text-white' : 'bg-white hover:bg-gray-100 text-navy-900'
-                  }`}
-                >
-                  <UserPlus size={15} />
-                  {t('nav.register')}
-                </a>
               </div>
             )}
             {COMMERCE_ENABLED && <CartIcon light={isOverHero} />}
@@ -385,15 +375,6 @@ export default function Navbar() {
                 >
                   <LogIn size={16} />
                   {t('nav.login')}
-                </a>
-                <a
-                  href={MEMBER_REGISTER_URL}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold rounded-lg transition-colors ${
-                    isOverHero ? 'bg-navy-900 hover:bg-navy-800 text-white' : 'bg-white hover:bg-gray-100 text-navy-900'
-                  }`}
-                >
-                  <UserPlus size={16} />
-                  {t('nav.register')}
                 </a>
               </div>
             )}

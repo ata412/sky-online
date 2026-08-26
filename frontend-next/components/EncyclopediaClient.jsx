@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import {
@@ -493,12 +493,49 @@ function createProductSummaryLines(value, productName) {
   });
 }
 
+function splitBookDetails(value, maxCharacters = 650, maxLines = 15) {
+  const sourceLines = String(value || '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .flatMap((line) => {
+      if (line.length <= maxCharacters) return [line];
+      const parts = [];
+      for (let offset = 0; offset < line.length; offset += maxCharacters) {
+        parts.push(line.slice(offset, offset + maxCharacters));
+      }
+      return parts;
+    });
+
+  if (!sourceLines.length) return [];
+
+  const chunks = [];
+  let currentLines = [];
+  let currentLength = 0;
+  sourceLines.forEach((line) => {
+    const exceedsPage = currentLines.length > 0 && (
+      currentLines.length >= maxLines || currentLength + line.length > maxCharacters
+    );
+    if (exceedsPage) {
+      chunks.push(currentLines.join('\n'));
+      currentLines = [];
+      currentLength = 0;
+    }
+    currentLines.push(line);
+    currentLength += line.length;
+  });
+  if (currentLines.length) chunks.push(currentLines.join('\n'));
+  return chunks;
+}
+
 function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onClose }) {
   const t = useTranslations('encyclopedia');
   const [page, setPage] = useState(0);
   const [opened, setOpened] = useState(false);
   const [turningPage, setTurningPage] = useState(null);
   const pageRef = useRef(0);
+  const pageViewportRef = useRef(null);
+  const pageContentRef = useRef(null);
   const turningRef = useRef(false);
   const turnTimerRef = useRef(null);
   const linkedProducts = article.relatedProducts || products.filter((product) => {
@@ -509,12 +546,71 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
     return article.keywords.some((keyword) => haystack.includes(keyword.toLocaleLowerCase()));
   });
   const isSpeaking = speakingId === `knowledge-${article.id}-page-${page}`;
-  const pageTitles = article.pageTitles || [
-    t('bookIntroduction'),
-    t('whatItHelps'),
-    t('bookSourcesAndNotes'),
-    t('bookRelatedAndReferences'),
-  ];
+  const basePageTitles = useMemo(
+    () => article.pageTitles || [
+      t('bookIntroduction'),
+      t('whatItHelps'),
+      t('bookSourcesAndNotes'),
+      t('bookRelatedAndReferences'),
+    ],
+    [article.pageTitles, t]
+  );
+  const readerPages = useMemo(() => {
+    const detailChunks = splitBookDetails(article.fullDetails);
+    const details = (detailChunks.length ? detailChunks : [null]).map((detailsText, index, chunks) => ({
+      kind: 'details',
+      detailsText,
+      showNotes: index === chunks.length - 1,
+      title: chunks.length > 1
+        ? `${basePageTitles[2]} ${index + 1}/${chunks.length}`
+        : basePageTitles[2],
+    }));
+    return [
+      { kind: 'intro', title: basePageTitles[0] },
+      { kind: 'benefits', title: basePageTitles[1] },
+      ...details,
+      { kind: 'related', title: basePageTitles[3] },
+    ];
+  }, [article.fullDetails, basePageTitles]);
+  const pageTitles = readerPages.map((readerPage) => readerPage.title);
+  const currentReaderPage = readerPages[page] || readerPages[0];
+
+  useLayoutEffect(() => {
+    const viewport = pageViewportRef.current;
+    const content = pageContentRef.current;
+    if (!viewport || !content) return undefined;
+
+    let animationFrame;
+    const fitPageToViewport = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() => {
+        const availableHeight = viewport.clientHeight;
+        let scale = 1;
+
+        // Re-measure after each reduction because the wider virtual page changes
+        // line wrapping. A single height ratio is not enough for long product copy.
+        for (let attempt = 0; attempt < 4; attempt += 1) {
+          content.style.setProperty('--ebook-page-scale', scale.toFixed(3));
+          const requiredHeight = content.scrollHeight;
+          const availableUnscaledHeight = availableHeight / scale;
+          if (requiredHeight <= availableUnscaledHeight + 1) break;
+          scale = Math.max(0.2, Math.min(scale, availableHeight / requiredHeight));
+        }
+
+        content.style.setProperty('--ebook-page-scale', scale.toFixed(3));
+      });
+    };
+
+    fitPageToViewport();
+    const resizeObserver = new ResizeObserver(fitPageToViewport);
+    resizeObserver.observe(viewport);
+    document.fonts?.ready.then(fitPageToViewport);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      resizeObserver.disconnect();
+    };
+  }, [article, page]);
 
   const changePage = useCallback((nextPage) => {
     const currentPage = pageRef.current;
@@ -522,7 +618,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
       turningRef.current ||
       nextPage === currentPage ||
       nextPage < 0 ||
-      nextPage > 3
+      nextPage >= readerPages.length
     ) return;
 
     onStopSpeech();
@@ -535,7 +631,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
       turningRef.current = false;
       setTurningPage(null);
     }, 920);
-  }, [onStopSpeech]);
+  }, [onStopSpeech, readerPages.length]);
 
   useEffect(() => {
     const openTimer = window.setTimeout(() => setOpened(true), 80);
@@ -556,11 +652,31 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
   }, [changePage, onClose]);
 
   const previewText = (pageNumber) => {
-    if (pageNumber === 0) return article.summary;
-    if (pageNumber === 1) return article.benefits[0];
-    if (pageNumber === 2) return article.sources;
+    const readerPage = readerPages[pageNumber];
+    if (readerPage?.kind === 'intro') return article.summary;
+    if (readerPage?.kind === 'benefits') return article.benefits[0];
+    if (readerPage?.kind === 'details') return readerPage.detailsText || article.sources;
     return linkedProducts[0]?.name || article.sourceLabel;
   };
+
+  const currentSpeechParts = currentReaderPage.kind === 'intro'
+    ? [currentReaderPage.title, article.title, ...(article.summaryLines?.length ? article.summaryLines : [article.summary])]
+    : currentReaderPage.kind === 'benefits'
+      ? [currentReaderPage.title, ...article.benefits]
+      : currentReaderPage.kind === 'details'
+        ? [
+            currentReaderPage.title,
+            currentReaderPage.detailsText,
+            ...(currentReaderPage.showNotes
+              ? [t('naturalSources'), article.sources, t('importantNotes'), article.caution]
+              : []),
+          ]
+        : [
+            currentReaderPage.title,
+            article.relatedLabel || t('foundInProducts'),
+            ...linkedProducts.slice(0, 6).map((product) => product.name),
+            article.sourceLabel,
+          ];
 
   return (
     <div
@@ -626,21 +742,38 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
               </div>
             </aside>
 
-            <section className="encyclopedia-book-page flex h-full min-h-0 flex-col overflow-y-auto p-6 sm:p-7">
-              <div className="mb-6 flex items-center justify-between border-b border-[#d9caae] pb-4 dark:border-[#4b4337]">
+            <section
+              ref={pageViewportRef}
+              className="encyclopedia-book-page h-full min-h-0 overflow-hidden"
+            >
+              <div
+                ref={pageContentRef}
+                className={`flex min-h-0 origin-top-left flex-col ${
+                  currentReaderPage.kind === 'details' ? 'p-4 sm:p-5' : 'p-6 sm:p-7'
+                }`}
+                style={{
+                  '--ebook-page-scale': 1,
+                  width: 'calc(100% / var(--ebook-page-scale))',
+                  height: 'calc(100% / var(--ebook-page-scale))',
+                  transform: 'scale(var(--ebook-page-scale))',
+                }}
+              >
+              <div className={`flex items-center justify-between border-b border-[#d9caae] dark:border-[#4b4337] ${
+                currentReaderPage.kind === 'details' ? 'mb-3 pb-3' : 'mb-6 pb-4'
+              }`}>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#9a835d]">
                     {t('bookChapter', { number: page + 1 })}
                   </p>
                   <h3 className={`mt-1 font-bold text-[#30271b] dark:text-[#f3ead7] ${
-                    page === 0 && article.productMeta ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'
+                    currentReaderPage.kind === 'intro' && article.productMeta ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'
                   }`}>
                     {pageTitles[page]}
                   </h3>
                 </div>
                 <button
                   type="button"
-                  onClick={() => onSpeak(article, page)}
+                  onClick={() => onSpeak(article, page, currentSpeechParts)}
                   className={`flex h-11 w-11 items-center justify-center rounded-full border transition ${
                     isSpeaking
                       ? 'border-[#8d312c] bg-[#8d312c] text-white'
@@ -653,7 +786,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
               </div>
 
               <div className="flex-1">
-                {page === 0 && (
+                {currentReaderPage.kind === 'intro' && (
                   <div>
                     <div className="mb-5 flex items-center gap-4 border-b border-[#ddd0b8] pb-5 lg:hidden dark:border-[#4b4337]">
                       {article.heroImageUrl ? (
@@ -720,7 +853,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
                   </div>
                 )}
 
-                {page === 1 && (
+                {currentReaderPage.kind === 'benefits' && (
                   <ol className="space-y-5">
                     {article.benefits.map((benefit, index) => (
                       <li key={benefit} className="flex gap-4">
@@ -733,28 +866,32 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
                   </ol>
                 )}
 
-                {page === 2 && (
-                  <div className="space-y-5">
-                    {article.fullDetails && (
-                      <div className="max-h-52 overflow-y-auto border-l-4 border-[#8d312c] bg-[#f2e8d5] p-5 dark:bg-[#2d2821]">
-                        <p className="text-sm font-bold text-[#8d312c]">{t('productOriginalDetails')}</p>
-                        <p className="mt-2 whitespace-pre-line text-sm leading-7 text-[#665c49] dark:text-[#c2b6a2]">
-                          {article.fullDetails}
+                {currentReaderPage.kind === 'details' && (
+                  <div className="space-y-3">
+                    {currentReaderPage.detailsText && (
+                      <div className="border-l-4 border-[#8d312c] bg-[#f2e8d5] p-3 dark:bg-[#2d2821]">
+                        <p className="text-xs font-bold text-[#8d312c]">{t('productOriginalDetails')}</p>
+                        <p className="mt-1.5 whitespace-pre-line text-xs leading-5 text-[#665c49] dark:text-[#c2b6a2]">
+                          {currentReaderPage.detailsText}
                         </p>
                       </div>
                     )}
-                    <div className="border-l-4 border-[#567565] bg-[#edf2ec] p-5 dark:bg-[#29312b]">
-                      <p className="text-sm font-bold text-[#315c47] dark:text-[#a9cfb8]">{t('naturalSources')}</p>
-                      <p className="mt-2 text-sm leading-7 text-[#665c49] dark:text-[#c2b6a2]">{article.sources}</p>
-                    </div>
-                    <div className="border-l-4 border-[#b17a37] bg-[#f6eddb] p-5 dark:bg-[#332d23]">
-                      <p className="text-sm font-bold text-[#8e5d25] dark:text-[#e0b77e]">{t('importantNotes')}</p>
-                      <p className="mt-2 text-sm leading-7 text-[#665c49] dark:text-[#c2b6a2]">{article.caution}</p>
-                    </div>
+                    {currentReaderPage.showNotes && (
+                      <>
+                        <div className="border-l-4 border-[#567565] bg-[#edf2ec] p-3 dark:bg-[#29312b]">
+                          <p className="text-xs font-bold text-[#315c47] dark:text-[#a9cfb8]">{t('naturalSources')}</p>
+                          <p className="mt-1.5 text-xs leading-5 text-[#665c49] dark:text-[#c2b6a2]">{article.sources}</p>
+                        </div>
+                        <div className="border-l-4 border-[#b17a37] bg-[#f6eddb] p-3 dark:bg-[#332d23]">
+                          <p className="text-xs font-bold text-[#8e5d25] dark:text-[#e0b77e]">{t('importantNotes')}</p>
+                          <p className="mt-1.5 text-xs leading-5 text-[#665c49] dark:text-[#c2b6a2]">{article.caution}</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
-                {page === 3 && (
+                {currentReaderPage.kind === 'related' && (
                   <div>
                     <p className="text-sm font-bold text-[#635641] dark:text-[#c7baa4]">
                       {article.relatedLabel || t('foundInProducts')}
@@ -794,7 +931,9 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
                 )}
               </div>
 
-              <div className="mt-8 flex items-center justify-between border-t border-[#d9caae] pt-5 dark:border-[#4b4337]">
+              <div className={`flex items-center justify-between border-t border-[#d9caae] dark:border-[#4b4337] ${
+                currentReaderPage.kind === 'details' ? 'mt-3 pt-3' : 'mt-8 pt-5'
+              }`}>
                 <button
                   type="button"
                   onClick={() => changePage(page - 1)}
@@ -803,7 +942,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
                 >
                   <ChevronLeft size={18} /> {t('previousPage')}
                 </button>
-                {page < 3 ? (
+                {page < readerPages.length - 1 ? (
                   <button
                     type="button"
                     onClick={() => changePage(page + 1)}
@@ -820,6 +959,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
                     {t('finishReading')} <BookOpen size={17} />
                   </button>
                 )}
+              </div>
               </div>
             </section>
           </div>
@@ -1376,7 +1516,7 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     speakWithCloud(speechText, speechSession);
   };
 
-  const speakKnowledge = (article, page = null) => {
+  const speakKnowledge = (article, page = null, pageSpeechOverride = null) => {
     if (!speechSupported) return;
     const speechId = page === null
       ? `knowledge-${article.id}`
@@ -1442,8 +1582,10 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
         article.sourceLabel,
       ],
     ];
-    const speechParts = page === null ? fullArticleText : pageSpeechText[page];
-    const repeatedProductName = article.productMeta && page !== 3 ? article.title : '';
+    const speechParts = page === null
+      ? fullArticleText
+      : (pageSpeechOverride || pageSpeechText[page] || fullArticleText);
+    const repeatedProductName = article.productMeta ? article.title : '';
     const speechText = joinSpeechParts(speechParts, repeatedProductName);
     setSpeakingId(speechId);
     speakWithCloud(speechText, speechSession);

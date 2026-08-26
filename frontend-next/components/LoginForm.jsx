@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/i18n/routing';
+import { useRouter } from '@/i18n/routing';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { loginMember } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -256,12 +256,6 @@ export default function LoginForm() {
               {loading ? t('login.loggingIn') : t('login.submit')}
             </button>
 
-            <p className="text-center text-sm text-gray-400">
-              {t('login.noAccount')}{' '}
-              <Link href="/register" className="text-gold-400 hover:text-gold-300 font-semibold">
-                {t('login.registerFree')}
-              </Link>
-            </p>
           </form>
         </div>
       </div>
