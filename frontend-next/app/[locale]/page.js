@@ -35,11 +35,18 @@ export default async function HomePage({ params }) {
     <div>
       {/* Hero */}
       <section className="relative bg-hero-gradient min-h-[88vh] flex items-center overflow-hidden">
-        <img
-          src="/hero-cityscape.jpg"
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <picture className="absolute inset-0 block">
+          <source
+            media="(max-width: 767px)"
+            srcSet="/hero-sky-online-mobile.jpg"
+          />
+          <img
+            src="/hero-sky-online-building.jpg"
+            alt=""
+            fetchPriority="high"
+            className="h-full w-full object-cover object-center"
+          />
+        </picture>
         <div className="absolute inset-0 bg-gradient-to-b from-navy-900/80 via-navy-900/60 to-navy-900/85" />
         <HeroContent />
       </section>
