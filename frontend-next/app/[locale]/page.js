@@ -44,7 +44,7 @@ export default async function HomePage({ params }) {
             src="/hero-sky-online-building.jpg"
             alt=""
             fetchPriority="high"
-            className="h-full w-full object-cover object-center"
+            className="h-full w-full object-cover object-top"
           />
         </picture>
         <div className="absolute inset-0 bg-gradient-to-b from-navy-900/80 via-navy-900/60 to-navy-900/85" />
