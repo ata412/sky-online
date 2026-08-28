@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 
 const HERO_SLIDES = [
   {
-    desktop: '/hero-leadership-1-desktop.jpg',
-    mobile: '/hero-leadership-1-mobile.jpg',
+    desktop: '/hero-building-desktop.jpg',
+    mobile: '/hero-building-mobile.jpg',
   },
   {
-    desktop: '/hero-leadership-2-desktop.jpg',
-    mobile: '/hero-leadership-2-mobile.jpg',
+    desktop: '/hero-city-desktop.jpg',
+    mobile: '/hero-city-mobile.jpg',
   },
 ];
 
