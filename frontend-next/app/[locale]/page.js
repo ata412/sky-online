@@ -3,6 +3,7 @@ import { Link } from '@/i18n/routing';
 import { ArrowRight } from 'lucide-react';
 import { getProductsServer, getPromotionsServer } from '@/services/api';
 import HeroContent from '@/components/HeroContent';
+import HeroBackgroundSlideshow from '@/components/HeroBackgroundSlideshow';
 import BannerSlideshow from '@/components/BannerSlideshow';
 import FeaturesSection from '@/components/FeaturesSection';
 import HomeProductsGrid from '@/components/HomeProductsGrid';
@@ -35,11 +36,7 @@ export default async function HomePage({ params }) {
     <div>
       {/* Hero */}
       <section className="relative bg-hero-gradient min-h-[88vh] flex items-center overflow-hidden">
-        <img
-          src="/hero-cityscape.jpg"
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <HeroBackgroundSlideshow />
         <div className="absolute inset-0 bg-gradient-to-b from-navy-900/80 via-navy-900/60 to-navy-900/85" />
         <HeroContent />
       </section>
