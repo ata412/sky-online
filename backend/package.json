@@ -17,6 +17,7 @@
     "products:update-from-ref": "node src/scripts/updateProductsFromReferences.js",
     "products:proofread": "node src/scripts/proofreadProductText.js",
     "products:rename-supplement-category": "node src/scripts/renameSupplementCategory.js",
+    "products:reclassify-categories": "node src/scripts/reclassifyProductCategories.js",
     "products:sync-fda-numbers": "node src/scripts/syncProductFdaNumbers.js"
   },
   "dependencies": {

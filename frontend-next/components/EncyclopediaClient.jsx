@@ -382,7 +382,11 @@ const categoryThemes = {
   'ไฟเบอร์': { color: '#7a7727', artPosition: '66.667% 0%' },
   'กาแฟ': { color: '#75482f', artPosition: '100% 100%' },
   'ช็อกโกแลต': { color: '#604238', artPosition: '100% 100%' },
+  'ชงดื่มสำเร็จรูป': { color: '#2f7580', artPosition: '100% 100%' },
+  'คอลลาเจน': { color: '#b55776', artPosition: '0% 0%' },
 };
+
+const categoryOrder = ['กาแฟ', 'อาหารเสริม', 'โปรตีน', 'ไฟเบอร์', 'ชงดื่มสำเร็จรูป', 'คอลลาเจน'];
 
 const defaultTheme = { color: '#39765a', artPosition: '66.667% 0%' };
 const ingredientArtPositions = {
@@ -1305,10 +1309,14 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     setActiveArticle(null);
   }, [stopSpeech]);
 
-  const categories = useMemo(
-    () => [...new Set(localizedProducts.map((product) => product.category).filter(Boolean))],
-    [localizedProducts]
-  );
+  const categories = useMemo(() => {
+    const localizedBySource = new Map(
+      localizedProducts.map((product) => [product.source_category || product.category, product.category])
+    );
+    return categoryOrder
+      .map((sourceCategory) => localizedBySource.get(sourceCategory))
+      .filter(Boolean);
+  }, [localizedProducts]);
   const brands = useMemo(
     () => [...new Set(localizedProducts.map((product) => product.brand).filter(Boolean))],
     [localizedProducts]

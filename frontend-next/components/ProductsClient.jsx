@@ -23,10 +23,13 @@ const categoryColors = {
   'ไฟเบอร์': 'from-yellow-400 to-lime-500',
   'กาแฟ': 'from-amber-700 to-yellow-900',
   'ช็อกโกแลต': 'from-amber-800 to-brown-900',
+  'ชงดื่มสำเร็จรูป': 'from-teal-400 to-cyan-600',
+  'คอลลาเจน': 'from-rose-400 to-pink-600',
 };
 const categoryEmojis = {
   'วิตามิน': '💊', 'โปรตีน': '💪', 'อาหารเสริม': '✨', 'ย่อยอาหาร': '🌱',
   'กระดูก': '🦴', 'ไฟเบอร์': '🍍', 'กาแฟ': '☕', 'ช็อกโกแลต': '🍫',
+  'ชงดื่มสำเร็จรูป': '🥤', 'คอลลาเจน': '🌸',
 };
 
 function ProductCard({ product }) {

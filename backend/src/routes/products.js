@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
+const { CATEGORY_TRANSLATIONS } = require('../lib/productCategories');
 
 const PRODUCT_TRANSLATION_MODEL =
   process.env.PRODUCT_TRANSLATION_MODEL || 'gemini-3.1-flash-lite';
@@ -11,33 +12,13 @@ const PRODUCT_TRANSLATION_LOCALES = {
   my: 'Burmese',
   vi: 'Vietnamese',
 };
-const PRODUCT_CATEGORY_TRANSLATIONS = {
-  lo: {
-    'กาแฟ': 'ກາເຟ',
-    'อาหารเสริม': 'ອາຫານເສີມ',
-    'ช็อกโกแลต': 'ຊັອກໂກແລັດ',
-    'โปรตีน': 'ໂປຣຕີນ',
-    'ไฟเบอร์': 'ໃຍອາຫານ',
-    'ย่อยอาหาร': 'ສຸຂະພາບລະບົບຍ່ອຍອາຫານ',
-    'วิตามิน': 'ວິຕາມິນ',
-  },
-  zh: {
-    'กาแฟ': '咖啡',
-    'อาหารเสริม': '膳食补充剂',
-    'ช็อกโกแลต': '巧克力',
-    'โปรตีน': '蛋白质',
-    'ไฟเบอร์': '膳食纤维',
-    'ย่อยอาหาร': '消化健康',
-    'วิตามิน': '维生素',
-  },
-};
 
 function normalizeTranslatedField(value, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback || '';
 }
 
 function localizedCategory(sourceCategory, locale, translatedCategory) {
-  return PRODUCT_CATEGORY_TRANSLATIONS[locale]?.[sourceCategory]
+  return CATEGORY_TRANSLATIONS[locale]?.[sourceCategory]
     || normalizeTranslatedField(translatedCategory, sourceCategory);
 }
 
@@ -215,7 +196,20 @@ router.get('/', async (req, res) => {
 
 router.get('/categories', async (req, res) => {
   try {
-    const result = await pool.query('SELECT DISTINCT category FROM products ORDER BY category');
+    const result = await pool.query(
+      `SELECT category
+       FROM products
+       GROUP BY category
+       ORDER BY CASE category
+         WHEN 'กาแฟ' THEN 1
+         WHEN 'อาหารเสริม' THEN 2
+         WHEN 'โปรตีน' THEN 3
+         WHEN 'ไฟเบอร์' THEN 4
+         WHEN 'ชงดื่มสำเร็จรูป' THEN 5
+         WHEN 'คอลลาเจน' THEN 6
+         ELSE 99
+       END`
+    );
     res.json(result.rows.map(r => r.category));
   } catch (err) {
     res.status(500).json({ error: err.message });
