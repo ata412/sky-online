@@ -2,8 +2,19 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Bot, RotateCcw, Send, Sparkles, User } from 'lucide-react';
+import { ArrowRight, Bot, ChevronDown, RotateCcw, Send, Sparkles, User } from 'lucide-react';
+import { Link } from '@/i18n/routing';
+import { CHATBOT_KNOWLEDGE_MENU } from '@/data/chatbotKnowledge';
 import { sendChatMessage } from '@/services/api';
+
+function normalizeKnowledgeQuestion(value) {
+  return String(value || '')
+    .replace(/^[^\p{L}\p{N}]+/u, '')
+    .replace(/[?？]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
 
 export default function ChatbotClient() {
   const t = useTranslations('chatbot');
@@ -12,6 +23,7 @@ export default function ChatbotClient() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(true);
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -28,13 +40,51 @@ export default function ChatbotClient() {
   const resetConversation = () => {
     setMessages([{ role: 'assistant', text: t('greeting') }]);
     setInput('');
+    setMenuOpen(true);
     inputRef.current?.focus({ preventScroll: true });
+  };
+
+  const handleKnowledgeSelect = (item) => {
+    if (loading) return;
+
+    setMessages((current) => [
+      ...current,
+      { role: 'user', text: item.title },
+      {
+        role: 'assistant',
+        text: item.answer,
+        action: item.href
+          ? { href: item.href, label: item.actionLabel }
+          : null,
+      },
+    ]);
+    setMenuOpen(false);
   };
 
   const handleSend = async (event) => {
     event?.preventDefault();
     const text = input.trim();
     if (!text || loading) return;
+
+    const knowledgeItem = CHATBOT_KNOWLEDGE_MENU.find(
+      (item) => normalizeKnowledgeQuestion(item.title) === normalizeKnowledgeQuestion(text)
+    );
+    if (knowledgeItem) {
+      setMessages((current) => [
+        ...current,
+        { role: 'user', text },
+        {
+          role: 'assistant',
+          text: knowledgeItem.answer,
+          action: knowledgeItem.href
+            ? { href: knowledgeItem.href, label: knowledgeItem.actionLabel }
+            : null,
+        },
+      ]);
+      setInput('');
+      setMenuOpen(false);
+      return;
+    }
 
     const history = messages;
     setMessages((current) => [...current, { role: 'user', text }]);
@@ -95,6 +145,51 @@ export default function ChatbotClient() {
             </button>
           </div>
 
+          <div className="border-b border-gray-100 bg-white dark:border-navy-800 dark:bg-navy-900">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-gold-50/60 dark:hover:bg-navy-800 sm:px-6"
+              aria-expanded={menuOpen}
+              aria-controls="chatbot-knowledge-menu"
+            >
+              <span>
+                <span className="block font-bold text-navy-900 dark:text-white">
+                  อยากรู้อะไร กดเลือกได้เลย
+                </span>
+                <span className="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">
+                  คำตอบสำเร็จรูป แสดงทันทีโดยไม่เรียก AI
+                </span>
+              </span>
+              <ChevronDown
+                size={20}
+                className={`flex-shrink-0 text-gold-600 transition-transform ${menuOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {menuOpen && (
+              <div
+                id="chatbot-knowledge-menu"
+                className="grid max-h-[360px] grid-cols-1 gap-2 overflow-y-auto px-4 pb-4 sm:grid-cols-2 sm:px-6"
+              >
+                {CHATBOT_KNOWLEDGE_MENU.map((item, index) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleKnowledgeSelect(item)}
+                    disabled={loading}
+                    className="group flex min-h-14 items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-left text-sm font-medium text-navy-900 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:bg-gold-50 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 dark:border-navy-700 dark:bg-navy-800 dark:text-white dark:hover:border-gold-500 dark:hover:bg-navy-700"
+                  >
+                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-gold-700 shadow-sm dark:bg-navy-900 dark:text-gold-400">
+                      {index + 1}
+                    </span>
+                    <span className="leading-5">{item.title}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div
             ref={messagesRef}
             className="flex-1 space-y-5 overflow-y-auto bg-gray-50/70 px-4 py-6 dark:bg-navy-950/50 sm:px-8"
@@ -119,7 +214,16 @@ export default function ChatbotClient() {
                         : 'rounded-bl-md border border-gray-100 bg-white text-navy-900 dark:border-navy-700 dark:bg-navy-800 dark:text-white'
                     }`}
                   >
-                    {message.text}
+                    <span>{message.text}</span>
+                    {message.action && (
+                      <Link
+                        href={message.action.href}
+                        className="mt-3 flex w-fit items-center gap-1.5 rounded-lg bg-gold-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-700"
+                      >
+                        {message.action.label}
+                        <ArrowRight size={15} />
+                      </Link>
+                    )}
                   </div>
                   {isUser && (
                     <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-navy-800 text-white dark:bg-navy-700">
