@@ -32,6 +32,25 @@ const categoryEmojis = {
   'ชงดื่มสำเร็จรูป': '🥤', 'คอลลาเจน': '🌸',
 };
 
+const CATEGORY_ORDER = [
+  'กาแฟ',
+  'อาหารเสริม',
+  'โปรตีน',
+  'ไฟเบอร์',
+  'ชงดื่มสำเร็จรูป',
+  'คอลลาเจน',
+];
+
+function sortProductsByCategory(products) {
+  return [...products].sort((left, right) => {
+    const leftCategory = CATEGORY_ORDER.indexOf(left.category);
+    const rightCategory = CATEGORY_ORDER.indexOf(right.category);
+    const leftRank = leftCategory === -1 ? CATEGORY_ORDER.length : leftCategory;
+    const rightRank = rightCategory === -1 ? CATEGORY_ORDER.length : rightCategory;
+    return leftRank - rightRank || Number(left.id) - Number(right.id);
+  });
+}
+
 function ProductCard({ product }) {
   const t = useTranslations();
   const { addToCart } = useCart();
@@ -108,9 +127,9 @@ function ProductCard({ product }) {
 
 function BrandSection({ brand, products, search }) {
   const sectionRef = useRef(null);
-  const filtered = products.filter((product) =>
+  const filtered = sortProductsByCategory(products.filter((product) =>
     !search || product.name.toLowerCase().includes(search.toLowerCase())
-  );
+  ));
 
   if (filtered.length === 0) return null;
 

@@ -4,7 +4,11 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 require('dotenv').config();
 const pool = require('../db');
-const { categoryForProduct } = require('../lib/productCategories');
+const { categoryForProduct, EXPECTED_PRODUCT_NAMES } = require('../lib/productCategories');
+const {
+  deduplicateDescriptionLines,
+  productDescription,
+} = require('../lib/productDescriptions');
 
 const BACKUP_PATH = path.resolve(__dirname, '../../sky_online_backup.dump');
 const PUBLIC_DIR = path.resolve(__dirname, '../../../frontend-next/public');
@@ -187,12 +191,13 @@ async function replaceRailwayProducts(products) {
            created_at, brand, pv, full_description)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
         [
-          Number(product.id), product.name, product.description, product.price,
+          Number(product.id), EXPECTED_PRODUCT_NAMES[Number(product.id)] || product.name,
+          productDescription(product), product.price,
           product.image_url,
           categoryForProduct(product),
           Number(product.stock),
           product.is_featured === 't', product.created_at, product.brand,
-          Number(product.pv), product.full_description,
+          Number(product.pv), deduplicateDescriptionLines(product.full_description),
         ]
       );
     }
