@@ -79,9 +79,6 @@ export default function HeroContent() {
           <Link href="/products" className="btn-gold flex items-center gap-2">
             {t('home.viewAllProducts')} <ArrowRight size={18} />
           </Link>
-          <Link href="/contact" className="btn-outline-gold">
-            {t('home.contactUs')}
-          </Link>
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link

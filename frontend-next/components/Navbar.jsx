@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/routing';
-import { Menu, X, LogIn, LogOut, User, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, User, Sun, Moon, ChevronDown, Type } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useFontSize } from '@/context/FontSizeContext';
 import { COMMERCE_ENABLED, VIDEO_STUDIO_ENABLED } from '@/lib/features';
 
 function CartIcon({ light }) {
@@ -51,6 +52,81 @@ function ThemeToggle({ light }) {
     >
       {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
     </button>
+  );
+}
+
+const FONT_SIZE_TEXT = {
+  th: { title: 'ขนาดตัวอักษร', level: 'ระดับ' },
+  en: { title: 'Font size', level: 'Level' },
+  zh: { title: '字体大小', level: '级别' },
+  lo: { title: 'ຂະໜາດຕົວອັກສອນ', level: 'ລະດັບ' },
+  my: { title: 'စာလုံးအရွယ်အစား', level: 'အဆင့်' },
+  vi: { title: 'Cỡ chữ', level: 'Mức' },
+};
+
+function FontSizeToggle({ light }) {
+  const locale = useLocale();
+  const { fontSizeLevel, setFontSizeLevel } = useFontSize();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const labels = FONT_SIZE_TEXT[locale] || FONT_SIZE_TEXT.en;
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-label={`${labels.title}: ${labels.level} ${fontSizeLevel}`}
+        aria-expanded={open}
+        className={`flex h-9 items-center justify-center gap-0.5 rounded-lg px-2 transition-colors ${
+          light ? 'text-gray-700 hover:bg-gray-100 hover:text-gold-600' : 'text-gray-300 hover:bg-navy-800 hover:text-gold-400'
+        }`}
+      >
+        <Type size={18} />
+        <span className="text-[10px] font-bold leading-none">{fontSizeLevel}</span>
+      </button>
+
+      {open && (
+        <div className={`absolute right-0 z-50 mt-2 w-36 overflow-hidden rounded-xl border p-2 shadow-xl ${
+          light ? 'border-gray-200 bg-white' : 'border-navy-700 bg-navy-900'
+        }`}>
+          <p className={`px-2 pb-2 text-xs font-semibold ${light ? 'text-gray-500' : 'text-gray-400'}`}>
+            {labels.title}
+          </p>
+          <div className="grid grid-cols-3 gap-1" role="group" aria-label={labels.title}>
+            {[1, 2, 3].map((level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => {
+                  setFontSizeLevel(level);
+                  setOpen(false);
+                }}
+                aria-label={`${labels.level} ${level}`}
+                aria-pressed={fontSizeLevel === level}
+                className={`rounded-lg py-2 text-sm font-bold transition-colors ${
+                  fontSizeLevel === level
+                    ? 'bg-gold-500 text-navy-950'
+                    : light
+                      ? 'bg-gray-100 text-gray-700 hover:bg-gold-50 hover:text-gold-700'
+                      : 'bg-navy-800 text-gray-300 hover:text-gold-400'
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -153,13 +229,12 @@ export default function Navbar() {
     ...(VIDEO_STUDIO_ENABLED
       ? [{ to: '/image-studio', label: t('nav.videoStudio') }]
       : []),
-    { to: '/contact', label: t('nav.contact') },
   ];
   const primaryLinks = navLinks.filter((link) =>
     ['/', '/products', '/promotions', '/chatbot', '/image-studio'].includes(link.to)
   );
   const moreLinks = navLinks.filter((link) =>
-    ['/encyclopedia', '/vision', '/activities', '/hall-of-fame', '/contact'].includes(link.to)
+    ['/encyclopedia', '/vision', '/activities', '/hall-of-fame'].includes(link.to)
   );
 
   const handleLogout = () => {
@@ -311,11 +386,13 @@ export default function Navbar() {
               </div>
             )}
             {COMMERCE_ENABLED && <CartIcon light={isOverHero} />}
+            <FontSizeToggle light={isOverHero} />
             <ThemeToggle light={isOverHero} />
             <LangToggle light={isOverHero} />
           </div>
 
           <div className="flex items-center gap-2 xl:hidden">
+            <FontSizeToggle light={isOverHero} />
             <ThemeToggle light={isOverHero} />
             <LangToggle light={isOverHero} />
             {COMMERCE_ENABLED && <CartIcon light={isOverHero} />}

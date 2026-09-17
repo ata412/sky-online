@@ -102,21 +102,6 @@ export default async function HomePage({ params }) {
         </section>
       )}
 
-      {/* CTA */}
-      <section className="py-20 bg-gold-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">{t('home.ctaTitle')}</h2>
-          <p className="text-gold-100 mb-8 max-w-xl mx-auto">
-            {t('home.ctaDesc')}
-          </p>
-          <Link
-            href="/contact"
-            className="bg-white text-gold-700 hover:bg-gold-50 font-bold px-8 py-4 rounded-xl text-lg inline-flex items-center gap-2 transition-colors shadow-lg"
-          >
-            {t('home.ctaBtn')} <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  font-size: 100%;
+}
+
+html[data-font-size='2'] {
+  font-size: 110%;
+}
+
+html[data-font-size='3'] {
+  font-size: 120%;
+}
+
 @layer base {
   body {
     font-family: var(--font-noto-sans-thai), var(--font-noto-sans), system-ui, sans-serif;

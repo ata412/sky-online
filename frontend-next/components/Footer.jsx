@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Phone, Mail, MapPin, Facebook, Instagram, Youtube } from 'lucide-react';
+import { Facebook, Instagram, Youtube, MapPin } from 'lucide-react';
 
 export default function Footer() {
   const t = useTranslations();
@@ -14,13 +14,12 @@ export default function Footer() {
     { to: '/vision', label: t('footer.quickLinkItems.vision') },
     { to: '/activities', label: t('footer.quickLinkItems.activities') },
     { to: '/hall-of-fame', label: t('footer.quickLinkItems.hallOfFame') },
-    { to: '/contact', label: t('footer.quickLinkItems.contact') },
   ];
 
   return (
     <footer className="bg-navy-900 text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
           <div>
             <div className="mb-4">
               <img src="/sky_online.png" alt="Sky Online" className="h-10 w-auto object-contain" />
@@ -58,45 +57,27 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
-            <h4 className="text-gold-400 font-semibold mb-4 text-base">{t('footer.contactUs')}</h4>
-            <ul className="space-y-3 text-sm text-gray-400">
-              <li className="flex items-start gap-3">
-                <MapPin size={16} className="text-gold-500 mt-0.5 flex-shrink-0" />
-                <span>28/14 ถ.ลำลูกกา ต.บึงคำพร้อย อ.ลำลูกกา ปทุมธานี 12150</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone size={16} className="text-gold-500 flex-shrink-0" />
-                <a href="tel:026901234" className="hover:text-gold-400 transition-colors">02-690-1234</a>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail size={16} className="text-gold-500 flex-shrink-0" />
-                <a href="mailto:info@skyonline.co.th" className="hover:text-gold-400 transition-colors">
-                  info@skyonline.co.th
-                </a>
-              </li>
-            </ul>
-            <div className="mt-4 p-3 bg-navy-800 rounded-lg">
-              <p className="text-xs text-gray-500">{t('footer.businessHours')}</p>
-              <p className="text-sm text-gray-300 font-medium">{t('footer.monFri')}</p>
-              <p className="text-sm text-gray-300 font-medium">{t('footer.sat')}</p>
-            </div>
-          </div>
         </div>
 
-        <div className="mt-10 pt-8 border-t border-navy-700">
-          <h4 className="text-gold-400 font-semibold mb-3 text-sm flex items-center gap-2">
-            <MapPin size={15} /> {t('footer.findUs')}
-          </h4>
-          <div className="rounded-xl overflow-hidden border border-navy-700">
+        <div className="mt-10 border-t border-navy-700 pt-8">
+          <div className="mb-4 flex items-start gap-3">
+            <MapPin size={18} className="mt-0.5 flex-shrink-0 text-gold-500" />
+            <div>
+              <h4 className="font-semibold text-gold-400">บริษัท สกาย ออนไลน์ กรุ๊ป จำกัด</h4>
+              <p className="mt-1 text-sm text-gray-400">
+                28/15 ตำบลบึงคำพร้อย อำเภอลำลูกกา ปทุมธานี 12150
+              </p>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-navy-700">
             <iframe
-              title="Sky Online Location"
-              src="https://maps.google.com/maps?q=28+14+%E0%B8%96.%E0%B8%A5%E0%B8%B3%E0%B8%A5%E0%B8%B9%E0%B8%81%E0%B8%81%E0%B8%B2+%E0%B8%95.%E0%B8%9A%E0%B8%B6%E0%B8%87%E0%B8%84%E0%B8%B3%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%AD%E0%B8%A2+%E0%B8%AD.%E0%B8%A5%E0%B8%B3%E0%B8%A5%E0%B8%B9%E0%B8%81%E0%B8%81%E0%B8%B2+%E0%B8%9B%E0%B8%97%E0%B8%B8%E0%B8%A1%E0%B8%98%E0%B8%B2%E0%B8%99%E0%B8%B5+12150&output=embed&z=16"
+              title="แผนที่บริษัท สกาย ออนไลน์ กรุ๊ป จำกัด"
+              src="https://maps.google.com/maps?q=%E0%B8%9A%E0%B8%A3%E0%B8%B4%E0%B8%A9%E0%B8%B1%E0%B8%97+%E0%B8%AA%E0%B8%81%E0%B8%B2%E0%B8%A2+%E0%B8%AD%E0%B8%AD%E0%B8%99%E0%B9%84%E0%B8%A5%E0%B8%99%E0%B9%8C+%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B9%8A%E0%B8%9B+%E0%B8%88%E0%B8%B3%E0%B8%81%E0%B8%B1%E0%B8%94+28%2F15+%E0%B8%95%E0%B8%B3%E0%B8%9A%E0%B8%A5+%E0%B8%9A%E0%B8%B6%E0%B8%87%E0%B8%84%E0%B8%B3%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%AD%E0%B8%A2+%E0%B8%AD%E0%B8%B3%E0%B9%80%E0%B8%A0%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B8%A5%E0%B8%B9%E0%B8%81%E0%B8%81%E0%B8%B2+%E0%B8%9B%E0%B8%97%E0%B8%B8%E0%B8%A1%E0%B8%98%E0%B8%B2%E0%B8%99%E0%B8%B5+12150&output=embed&z=16"
               width="100%"
               height="280"
               style={{ border: 0, display: 'block' }}
+              loading="lazy"
               allowFullScreen=""
-              tabIndex="-1"
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
