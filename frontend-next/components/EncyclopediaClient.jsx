@@ -32,9 +32,12 @@ const speechLocales = {
   my: 'my-MM',
   vi: 'vi-VN',
 };
-const SPEECH_CACHE_NAME = 'sky-online-edge-tts-v2';
-const CLOUD_SPEECH_FIRST_CHUNK_LENGTH = 180;
-const CLOUD_SPEECH_CHUNK_LENGTH = 400;
+const SPEECH_CACHE_NAME = 'sky-online-chirp-tts-v5';
+// A complete e-book page stays below the backend's 1,600-character limit.
+// Keeping one file per page cuts TTS requests and lets the permanent MP3 play
+// without network gaps between many small clips.
+const CLOUD_SPEECH_FIRST_CHUNK_LENGTH = 1500;
+const CLOUD_SPEECH_CHUNK_LENGTH = 1500;
 
 function createSilentAudioUrl() {
   const sampleRate = 8000;
@@ -532,6 +535,52 @@ function splitBookDetails(value, maxCharacters = 650, maxLines = 15) {
   return chunks;
 }
 
+function getReaderPages(article, t) {
+  const basePageTitles = article.pageTitles || [
+    t('bookIntroduction'),
+    t('whatItHelps'),
+    t('bookSourcesAndNotes'),
+    t('bookRelatedAndReferences'),
+  ];
+  const detailChunks = splitBookDetails(article.fullDetails);
+  const details = (detailChunks.length ? detailChunks : [null]).map((detailsText, index, chunks) => ({
+    kind: 'details',
+    detailsText,
+    showNotes: index === chunks.length - 1,
+    title: chunks.length > 1
+      ? `${basePageTitles[2]} ${index + 1}/${chunks.length}`
+      : basePageTitles[2],
+  }));
+  return [
+    { kind: 'intro', title: basePageTitles[0] },
+    { kind: 'benefits', title: basePageTitles[1] },
+    ...details,
+    { kind: 'related', title: basePageTitles[3] },
+  ];
+}
+
+function getReaderSpeechParts(article, readerPage, linkedProducts, t) {
+  if (readerPage.kind === 'intro') {
+    return [readerPage.title, article.title, ...(article.summaryLines?.length ? article.summaryLines : [article.summary])];
+  }
+  if (readerPage.kind === 'benefits') return [readerPage.title, ...article.benefits];
+  if (readerPage.kind === 'details') {
+    return [
+      readerPage.title,
+      readerPage.detailsText,
+      ...(readerPage.showNotes
+        ? [t('naturalSources'), article.sources, t('importantNotes'), article.caution]
+        : []),
+    ];
+  }
+  return [
+    readerPage.title,
+    article.relatedLabel || t('foundInProducts'),
+    ...linkedProducts.slice(0, 6).map((product) => product.name),
+    article.sourceLabel,
+  ];
+}
+
 function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onClose }) {
   const t = useTranslations('encyclopedia');
   const [page, setPage] = useState(0);
@@ -550,32 +599,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
     return article.keywords.some((keyword) => haystack.includes(keyword.toLocaleLowerCase()));
   });
   const isSpeaking = speakingId === `knowledge-${article.id}-page-${page}`;
-  const basePageTitles = useMemo(
-    () => article.pageTitles || [
-      t('bookIntroduction'),
-      t('whatItHelps'),
-      t('bookSourcesAndNotes'),
-      t('bookRelatedAndReferences'),
-    ],
-    [article.pageTitles, t]
-  );
-  const readerPages = useMemo(() => {
-    const detailChunks = splitBookDetails(article.fullDetails);
-    const details = (detailChunks.length ? detailChunks : [null]).map((detailsText, index, chunks) => ({
-      kind: 'details',
-      detailsText,
-      showNotes: index === chunks.length - 1,
-      title: chunks.length > 1
-        ? `${basePageTitles[2]} ${index + 1}/${chunks.length}`
-        : basePageTitles[2],
-    }));
-    return [
-      { kind: 'intro', title: basePageTitles[0] },
-      { kind: 'benefits', title: basePageTitles[1] },
-      ...details,
-      { kind: 'related', title: basePageTitles[3] },
-    ];
-  }, [article.fullDetails, basePageTitles]);
+  const readerPages = useMemo(() => getReaderPages(article, t), [article, t]);
   const pageTitles = readerPages.map((readerPage) => readerPage.title);
   const currentReaderPage = readerPages[page] || readerPages[0];
 
@@ -663,24 +687,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
     return linkedProducts[0]?.name || article.sourceLabel;
   };
 
-  const currentSpeechParts = currentReaderPage.kind === 'intro'
-    ? [currentReaderPage.title, article.title, ...(article.summaryLines?.length ? article.summaryLines : [article.summary])]
-    : currentReaderPage.kind === 'benefits'
-      ? [currentReaderPage.title, ...article.benefits]
-      : currentReaderPage.kind === 'details'
-        ? [
-            currentReaderPage.title,
-            currentReaderPage.detailsText,
-            ...(currentReaderPage.showNotes
-              ? [t('naturalSources'), article.sources, t('importantNotes'), article.caution]
-              : []),
-          ]
-        : [
-            currentReaderPage.title,
-            article.relatedLabel || t('foundInProducts'),
-            ...linkedProducts.slice(0, 6).map((product) => product.name),
-            article.sourceLabel,
-          ];
+  const currentSpeechParts = getReaderSpeechParts(article, currentReaderPage, linkedProducts, t);
 
   return (
     <div
@@ -1243,7 +1250,7 @@ function EncyclopediaEntry({ product, index, speakingId, onSpeak, onOpen, isOpen
   );
 }
 
-export default function EncyclopediaClient({ products, productTranslations = [] }) {
+export default function EncyclopediaClient({ products, productTranslations = [], speechManifestMode = false }) {
   const t = useTranslations('encyclopedia');
   const locale = useLocale();
   const [search, setSearch] = useState('');
@@ -1474,7 +1481,13 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
       if (speechSessionRef.current === speechSession) setSpeakingId(null);
     } catch (error) {
       if (controller.signal.aborted || speechSessionRef.current !== speechSession) return;
-      console.warn('[speech] Gemini TTS unavailable; trying device voice', error);
+      if (locale === 'th') {
+        console.warn('[speech] Thai Chirp audio unavailable; device fallback is disabled', error);
+        setSpeechError(t('speechServiceUnavailable'));
+        setSpeakingId(null);
+        return;
+      }
+      console.warn('[speech] Cloud TTS unavailable; trying device voice', error);
       const canUseDeviceSpeech = 'speechSynthesis' in window
         && 'SpeechSynthesisUtterance' in window;
       if (!canUseDeviceSpeech) {
@@ -1723,8 +1736,55 @@ export default function EncyclopediaClient({ products, productTranslations = [] 
     setActiveBrand('all');
   };
 
+  // The pre-generation command reads this opt-in manifest from the rendered page.
+  // It uses the same page construction and chunking as the actual listen button.
+  const speechManifest = speechManifestMode ? (() => {
+    const entries = [];
+    const addText = (id, value) => {
+      const text = prepareSpeechText(value, locale);
+      groupCloudSpeechChunks(text).forEach((chunk, index) => {
+        entries.push({ id: `${id}-${index + 1}`, text: chunk });
+      });
+    };
+    const allArticles = [
+      ...ingredientKnowledge,
+      ...localizedProducts.map((product) => {
+        const source = {
+          ...product,
+          name: product.source_name || product.name,
+          category: product.source_category || product.category,
+          description: product.source_description || product.description,
+          full_description: product.source_full_description || product.full_description,
+        };
+        return buildProductBook(source, product);
+      }),
+    ];
+
+    allArticles.forEach((article) => {
+      const linkedProducts = article.relatedProducts || localizedProducts.filter((product) => {
+        const haystack = [product.name, product.description, product.full_description]
+          .filter(Boolean).join(' ').toLocaleLowerCase();
+        return article.keywords.some((keyword) => haystack.includes(keyword.toLocaleLowerCase()));
+      });
+      getReaderPages(article, t).forEach((readerPage, page) => {
+        const parts = getReaderSpeechParts(article, readerPage, linkedProducts, t);
+        addText(`${article.id}-page-${page}`, joinSpeechParts(
+          parts, article.productMeta ? article.title : ''
+        ));
+      });
+    });
+    return entries;
+  })() : null;
+
   return (
     <div className="min-h-screen bg-[#e9dfca] text-[#2d251a] dark:bg-[#15130f]">
+      {speechManifest && (
+        <script
+          id="ebook-speech-manifest"
+          type="application/json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({ locale, entries: speechManifest }).replace(/</g, '\\u003c') }}
+        />
+      )}
       {speechError && (
         <div
           role="alert"

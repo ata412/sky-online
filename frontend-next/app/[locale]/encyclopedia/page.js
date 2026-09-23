@@ -16,8 +16,9 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function EncyclopediaPage({ params }) {
+export default async function EncyclopediaPage({ params, searchParams }) {
   const { locale } = await params;
+  const query = await searchParams;
   setRequestLocale(locale);
   const [products, productTranslations] = await Promise.all([
     getProductsServer(),
@@ -28,6 +29,7 @@ export default async function EncyclopediaPage({ params }) {
     <EncyclopediaClient
       products={products ?? []}
       productTranslations={productTranslations ?? []}
+      speechManifestMode={query?.speech_manifest === '1'}
     />
   );
 }

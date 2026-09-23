@@ -33,6 +33,7 @@ docker-compose.override.yml
 # Database backups
 *.dump
 *.sql.gz
+backend/audio-cache/
 
 # Scraped/reference site assets (not part of this project's source)
 drpong.com/

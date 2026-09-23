@@ -5,6 +5,9 @@
   "scripts": {
     "start": "node src/scripts/migrateShippingFee.js && node src/scripts/migrateProductTranslations.js && node src/scripts/migrateImageStudio.js && node src/index.js",
     "dev": "nodemon src/index.js",
+    "speech:pregenerate": "node src/scripts/pregenerateSpeech.js",
+    "speech:stitch-pages": "node src/scripts/stitchSpeechPages.js",
+    "speech:complete-th": "node src/scripts/completeThaiSpeech.js",
     "sync:promotions": "node src/scripts/syncPromotions.js",
     "sync:activities": "node src/scripts/syncActivities.js",
     "restore:local-products": "node src/scripts/restoreLocalProducts.js",
@@ -23,7 +26,6 @@
     "products:sync-fda-numbers": "node src/scripts/syncProductFdaNumbers.js"
   },
   "dependencies": {
-    "@seepine/edge-tts": "^1.4.1",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

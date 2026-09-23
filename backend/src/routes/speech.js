@@ -1,14 +1,14 @@
 const crypto = require('crypto');
 const express = require('express');
-const { EdgeTTS } = require('@seepine/edge-tts');
+const { readAudioFile, saveAudioFile } = require('../lib/speechFileCache');
 
 const router = express.Router();
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 const TTS_MODEL = process.env.TTS_MODEL || 'gemini-2.5-flash-preview-tts';
 const TTS_VOICE = process.env.TTS_VOICE || 'Sulafat';
-const EDGE_TTS_ENABLED = process.env.EDGE_TTS_ENABLED !== 'false';
-const EDGE_TTS_TIMEOUT_MS = 8000;
+const GOOGLE_CLOUD_TTS_URL = 'https://texttospeech.googleapis.com/v1/text:synthesize';
+const GOOGLE_CLOUD_TTS_VOICE = process.env.GOOGLE_CLOUD_TTS_VOICE || 'th-TH-Chirp3-HD-Sulafat';
 const MAX_TEXT_LENGTH = 1600;
 const CACHE_MAX_ITEMS = 80;
 const CACHE_MAX_BYTES = 64 * 1024 * 1024;
@@ -21,23 +21,6 @@ const SUPPORTED_LOCALES = {
   my: 'Burmese',
   vi: 'Vietnamese',
 };
-const EDGE_TTS_VOICES = {
-  th: 'th-TH-PremwadeeNeural',
-  en: 'en-US-AriaNeural',
-  zh: 'zh-CN-XiaoxiaoNeural',
-  lo: 'lo-LA-KeomanyNeural',
-  my: 'my-MM-NilarNeural',
-  vi: 'vi-VN-HoaiMyNeural',
-};
-const EDGE_TTS_LOCALES = {
-  th: 'th-TH',
-  en: 'en-US',
-  zh: 'zh-CN',
-  lo: 'lo-LA',
-  my: 'my-MM',
-  vi: 'vi-VN',
-};
-
 const audioCache = new Map();
 const pendingAudio = new Map();
 const requestHistory = new Map();
@@ -53,10 +36,89 @@ function normalizeText(value) {
 }
 
 function createCacheKey(text, locale) {
+  if (locale === 'th') {
+    return crypto
+      .createHash('sha256')
+      .update(`google-cloud-file-v1\0chirp3-hd\0${GOOGLE_CLOUD_TTS_VOICE}\0${locale}\0${text}`)
+      .digest('hex');
+  }
   return crypto
     .createHash('sha256')
-    .update(`edge-mp3-v1\0${EDGE_TTS_ENABLED}\0${EDGE_TTS_VOICES[locale]}\0${TTS_MODEL}\0${TTS_VOICE}\0${locale}\0${text}`)
+    .update(`gemini-file-v2\0${TTS_MODEL}\0${TTS_VOICE}\0${locale}\0${text}`)
     .digest('hex');
+}
+
+function splitGoogleCloudText(text, maxBytes = 350) {
+  const chunks = [];
+  let current = '';
+  for (const character of text) {
+    if (Buffer.byteLength(current + character, 'utf8') <= maxBytes) {
+      current += character;
+      continue;
+    }
+
+    let cutAt = -1;
+    for (let index = current.length - 1; index >= Math.floor(current.length / 2); index -= 1) {
+      if (/[\s.!?。！？,;:/()\-–—]/u.test(current[index])) {
+        cutAt = index + 1;
+        break;
+      }
+    }
+    if (cutAt < 1) cutAt = current.length;
+    const completed = current.slice(0, cutAt).trim();
+    if (completed) chunks.push(completed);
+    current = `${current.slice(cutAt).trimStart()}${character}`;
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks;
+}
+
+function extractWavPcm(wav) {
+  const dataOffset = wav.indexOf(Buffer.from('data'));
+  if (dataOffset < 0 || dataOffset + 8 > wav.length) {
+    throw new Error('Google Cloud speech generation returned invalid WAV audio');
+  }
+  const declaredLength = wav.readUInt32LE(dataOffset + 4);
+  const pcmStart = dataOffset + 8;
+  return wav.subarray(pcmStart, Math.min(pcmStart + declaredLength, wav.length));
+}
+
+async function performGoogleCloudAudioRequest(text, locale) {
+  const wavSegments = await Promise.all(splitGoogleCloudText(text).map(async (segment) => {
+    const response = await fetch(GOOGLE_CLOUD_TTS_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.GOOGLE_CLOUD_TTS_ACCESS_TOKEN}`,
+        ...(process.env.GOOGLE_CLOUD_PROJECT
+          ? { 'x-goog-user-project': process.env.GOOGLE_CLOUD_PROJECT }
+          : {}),
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify({
+        input: { text: segment },
+        voice: {
+          languageCode: locale === 'th' ? 'th-TH' : locale,
+          name: GOOGLE_CLOUD_TTS_VOICE,
+        },
+        audioConfig: {
+          audioEncoding: 'LINEAR16',
+          speakingRate: 0.95,
+        },
+      }),
+      signal: AbortSignal.timeout(90000),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      const error = new Error(data?.error?.message || 'Google Cloud speech service is unavailable');
+      error.status = response.status;
+      throw error;
+    }
+
+    const wav = Buffer.from(data?.audioContent || '', 'base64');
+    if (!wav.length) throw new Error('Google Cloud speech generation returned empty audio');
+    return wav;
+  }));
+  return pcmToWav(Buffer.concat(wavSegments.map(extractWavPcm)), 24000);
 }
 
 function getCachedAudio(key) {
@@ -133,19 +195,6 @@ function buildPrompt(text, locale) {
   return `Generate speech that reads the transcript below exactly as written in ${language}. Use a clear, warm, natural product encyclopedia narration at a moderate pace. Do not translate, add, omit, summarize, or describe the transcript.\n\nTranscript:\n${text}`;
 }
 
-async function requestEdgeAudio(text, locale) {
-  const tts = new EdgeTTS({
-    voice: EDGE_TTS_VOICES[locale],
-    lang: EDGE_TTS_LOCALES[locale],
-    outputFormat: 'audio-24khz-48kbitrate-mono-mp3',
-    timeout: EDGE_TTS_TIMEOUT_MS,
-  });
-  const response = await tts.call(text);
-  const audio = Buffer.from(response.data);
-  if (!audio.length) throw new Error('Edge speech generation returned empty audio');
-  return { audio, mimeType: 'audio/mpeg', provider: 'edge' };
-}
-
 async function performGeminiAudioRequest(text, locale) {
   const response = await fetch(
     `${GEMINI_BASE_URL}/models/${encodeURIComponent(TTS_MODEL)}:generateContent`,
@@ -166,7 +215,7 @@ async function performGeminiAudioRequest(text, locale) {
           },
         },
       }),
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(90000),
     }
   );
   const data = await response.json();
@@ -208,24 +257,16 @@ async function generateAudio(text, locale, key) {
   if (existing) return existing;
 
   const generation = (async () => {
-    let result;
-    if (EDGE_TTS_ENABLED) {
-      try {
-        result = await requestEdgeAudio(text, locale);
-      } catch (error) {
-        console.warn(
-          '[speech] Edge TTS unavailable; using Gemini fallback',
-          error?.message || String(error)
-        );
-      }
-    }
-    if (!result) {
-      if (!process.env.GEMINI_API_KEY) {
-        throw new Error('Gemini speech fallback is not configured');
-      }
-      const audio = await requestGeminiAudio(text, locale);
-      result = { audio, mimeType: 'audio/wav', provider: 'gemini' };
-    }
+    const useGoogleCloud = locale === 'th';
+    const audio = useGoogleCloud
+      ? await performGoogleCloudAudioRequest(text, locale)
+      : await requestGeminiAudio(text, locale);
+    const result = {
+      audio,
+      mimeType: 'audio/wav',
+      provider: useGoogleCloud ? 'google-cloud-chirp3-hd' : 'gemini',
+    };
+    await saveAudioFile(key, result);
     cacheAudio(key, result);
     return result;
   })()
@@ -235,10 +276,6 @@ async function generateAudio(text, locale, key) {
 }
 
 router.post('/', async (req, res) => {
-  if (!EDGE_TTS_ENABLED && !process.env.GEMINI_API_KEY) {
-    return res.status(503).json({ error: 'Speech generation is not configured' });
-  }
-
   const locale = typeof req.body?.locale === 'string' ? req.body.locale.toLowerCase() : '';
   const text = normalizeText(req.body?.text);
   if (!SUPPORTED_LOCALES[locale]) {
@@ -259,6 +296,32 @@ router.post('/', async (req, res) => {
     res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
     res.type(cached.mimeType);
     return res.send(cached.audio);
+  }
+
+  try {
+    const stored = await readAudioFile(key);
+    if (stored) {
+      cacheAudio(key, stored);
+      res.setHeader('X-TTS-Cache', 'FILE');
+      res.setHeader('X-TTS-Provider', stored.provider);
+      res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+      res.type(stored.mimeType);
+      return res.send(stored.audio);
+    }
+  } catch (error) {
+    console.error('[speech] unable to read saved audio', error);
+    return res.status(503).json({ error: 'Saved speech audio is unavailable' });
+  }
+
+  if (process.env.SPEECH_GENERATION_ENABLED !== 'true') {
+    return res.status(404).json({ error: 'Saved speech audio is not available for this text' });
+  }
+
+  const generationConfigured = locale === 'th'
+    ? process.env.GOOGLE_CLOUD_TTS_ACCESS_TOKEN
+    : process.env.GEMINI_API_KEY;
+  if (!generationConfigured) {
+    return res.status(503).json({ error: 'Speech generation is not configured' });
   }
 
   const rateLimit = consumeRateLimit(req);
