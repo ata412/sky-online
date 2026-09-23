@@ -559,12 +559,80 @@ function getReaderPages(article, t) {
   ];
 }
 
-function getReaderSpeechParts(article, readerPage, linkedProducts, t) {
+function prepareThaiDetailSpeechText(value) {
+  return String(value || '')
+    .replace(/\r/g, '')
+    .replace(/\n+/g, '. ')
+    .replace(/\bNo Sugar\b/gi, 'ไม่มีน้ำตาล')
+    .replace(/\bNo Trans\s*fat\b/gi, 'ไม่มีไขมันทรานส์')
+    .replace(/\bNo Cholesterol\b/gi, 'ไม่มีคอเลสเตอรอล')
+    .replace(/\b(\d+(?:\.\d+)?)\s*ml\b/gi, '$1 มิลลิลิตร')
+    .replace(/\b(\d+(?:\.\d+)?)\s*mg\b/gi, '$1 มิลลิกรัม')
+    .replace(/\s*(?:ส่วนประกอบที่สำคัญ|ส่วนประกอบสำคัญ)\s*:?\s*/gu, '. ส่วนประกอบสำคัญ มีดังนี้. ')
+    .replace(/\s*สรรพคุณ\s*:?\s*/gu, '. คุณสมบัติโดยสรุป มีดังนี้. ')
+    .replace(/\s*วิธีรับประทาน\s*:?\s*[^\p{L}\p{N}]*\s*/gu, '. วิธีรับประทาน คือ ')
+    .replace(/\s*วิธีการเก็บรักษา\s*:?\s*[^\p{L}\p{N}]*\s*/gu, '. วิธีเก็บรักษา คือ ')
+    .replace(/\s*อายุการเก็บรักษา\s*:?\s*[^\p{L}\p{N}]*\s*/gu, '. อายุการเก็บรักษา คือ ')
+    .replace(/\s*ขนาดบรรจุ\s*:?\s*[^\p{L}\p{N}]*\s*/gu, '. ขนาดบรรจุ คือ ')
+    .replace(/\s*เลขที่\s*อย\.\s*[^\p{L}\p{N}]*\s*/giu, '. เลขทะเบียน อย. คือ ')
+    .replace(/\s*คำเตือน\s*:?\s*[^\p{L}\p{N}]*\s*/gu, '. คำเตือน คือ ')
+    .replace(/(?:^|\s)\d+\.\s*(?=\S)/gu, '. ')
+    .replace(/\b\d+\.(?=\p{L})/gu, '. ')
+    .replace(/\s*:\s*/g, ', ')
+    .replace(/(?:\s*\.\s*){2,}/g, '. ')
+    .replace(/\s+,/g, ',')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function prepareThaiSourceSpeechText(value) {
+  return String(value || '')
+    .split(/\n+/u)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line
+      .replace(/^([^:]+):\s*พบใน\s*/u, '$1 พบได้ใน ')
+      .replace(/^([^:]+):\s*/u, '$1 ได้แก่ '))
+    .join('. ');
+}
+
+function prepareThaiParagraphSpeechText(value) {
+  return String(value || '')
+    .split(/\n+/u)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join('. ');
+}
+
+function getReaderSpeechParts(article, readerPage, linkedProducts, t, locale) {
   if (readerPage.kind === 'intro') {
-    return [readerPage.title, article.title, ...(article.summaryLines?.length ? article.summaryLines : [article.summary])];
+    const spokenTitle = locale === 'th' && article.productMeta
+      ? `${readerPage.title} มีดังนี้`
+      : readerPage.title;
+    return [spokenTitle, article.title, ...(article.summaryLines?.length ? article.summaryLines : [article.summary])];
   }
   if (readerPage.kind === 'benefits') return [readerPage.title, ...article.benefits];
   if (readerPage.kind === 'details') {
+    if (locale === 'th') {
+      const pagePosition = readerPage.title.match(/\s+(\d+)\s*\/\s*(\d+)\s*$/u);
+      const spokenTitle = readerPage.title.replace(/\s+\d+\s*\/\s*\d+\s*$/u, '').trim();
+      const sectionIntroduction = Number(pagePosition?.[1] || 1) > 1
+        ? 'ต่อไปเป็นรายละเอียดส่วนต่อเนื่อง'
+        : 'ต่อไปเป็นรายละเอียดผลิตภัณฑ์';
+      return [
+        spokenTitle,
+        sectionIntroduction,
+        prepareThaiDetailSpeechText(readerPage.detailsText),
+        ...(readerPage.showNotes
+          ? [
+            'แหล่งอาหารตามธรรมชาติที่เกี่ยวข้อง มีดังนี้',
+            prepareThaiSourceSpeechText(article.sources),
+            'ข้อควรรู้เพิ่มเติม มีดังนี้',
+            prepareThaiParagraphSpeechText(article.caution),
+          ]
+          : []),
+      ];
+    }
     return [
       readerPage.title,
       readerPage.detailsText,
@@ -583,6 +651,7 @@ function getReaderSpeechParts(article, readerPage, linkedProducts, t) {
 
 function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onClose }) {
   const t = useTranslations('encyclopedia');
+  const locale = useLocale();
   const [page, setPage] = useState(0);
   const [opened, setOpened] = useState(false);
   const [turningPage, setTurningPage] = useState(null);
@@ -687,7 +756,13 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
     return linkedProducts[0]?.name || article.sourceLabel;
   };
 
-  const currentSpeechParts = getReaderSpeechParts(article, currentReaderPage, linkedProducts, t);
+  const currentSpeechParts = getReaderSpeechParts(
+    article,
+    currentReaderPage,
+    linkedProducts,
+    t,
+    locale
+  );
 
   return (
     <div
@@ -1767,7 +1842,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
         return article.keywords.some((keyword) => haystack.includes(keyword.toLocaleLowerCase()));
       });
       getReaderPages(article, t).forEach((readerPage, page) => {
-        const parts = getReaderSpeechParts(article, readerPage, linkedProducts, t);
+        const parts = getReaderSpeechParts(article, readerPage, linkedProducts, t, locale);
         addText(`${article.id}-page-${page}`, joinSpeechParts(
           parts, article.productMeta ? article.title : ''
         ));

@@ -105,7 +105,7 @@ async function performGoogleCloudAudioRequest(text, locale) {
           speakingRate: 0.95,
         },
       }),
-      signal: AbortSignal.timeout(90000),
+      signal: AbortSignal.timeout(180000),
     });
     const data = await response.json();
     if (!response.ok) {
