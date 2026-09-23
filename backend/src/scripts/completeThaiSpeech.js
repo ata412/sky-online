@@ -66,11 +66,12 @@ async function main() {
   }
   start(process.execPath, ['src/index.js'], {
     cwd: backendDirectory,
-    env: {
-      ...process.env,
-      PORT: '5001',
-      SPEECH_AUDIO_DIR: path.join(backendDirectory, 'audio-library'),
-      SPEECH_GENERATION_ENABLED: 'true',
+      env: {
+        ...process.env,
+        PORT: '5001',
+        SPEECH_AUDIO_DIR: path.join(backendDirectory, 'audio-library'),
+        SPEECH_GENERATION_ENABLED: 'true',
+        SPEECH_PREGENERATION: 'true',
       TTS_MAX_REQUESTS_PER_HOUR: '10000',
       GOOGLE_CLOUD_TTS_ACCESS_TOKEN: accessToken,
       GOOGLE_CLOUD_PROJECT: googleCloudProject,

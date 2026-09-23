@@ -313,7 +313,11 @@ router.post('/', async (req, res) => {
     return res.status(503).json({ error: 'Saved speech audio is unavailable' });
   }
 
-  if (process.env.SPEECH_GENERATION_ENABLED !== 'true') {
+  // Thai narration is published as a permanent Chirp audio library. Do not
+  // generate a new Thai clip at request time, even when generation is enabled
+  // for other locales during maintenance.
+  if ((locale === 'th' && process.env.SPEECH_PREGENERATION !== 'true')
+    || process.env.SPEECH_GENERATION_ENABLED !== 'true') {
     return res.status(404).json({ error: 'Saved speech audio is not available for this text' });
   }
 

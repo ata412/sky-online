@@ -204,6 +204,36 @@ function prepareEnglishCardDescription(text) {
   return limitSpeechText(summary);
 }
 
+function getProductCardSpeechValues(product, locale) {
+  const productDescription = removeSpeechPhrase(
+    cleanEncyclopediaText(product.description, { removeBeautySupplement: true }),
+    product.name
+  );
+  const description = locale === 'en'
+    ? prepareEnglishCardDescription(productDescription)
+    : productDescription;
+
+  return {
+    name: product.name,
+    category: product.category || '',
+    description,
+    price: Number(product.price).toLocaleString(),
+  };
+}
+
+function getKnowledgeCardSpeechParts(article, locale, t) {
+  return [
+    article.title,
+    article.summary,
+    locale === 'th' ? t('whatItHelps') : '',
+    ...article.benefits,
+    locale === 'th' ? t('naturalSources') : '',
+    article.sources,
+    locale === 'th' ? t('importantNotes') : '',
+    article.caution,
+  ];
+}
+
 function limitSpeechText(text, maxLength = 460) {
   if (text.length <= maxLength) return text;
   const excerpt = text.slice(0, maxLength + 1);
@@ -583,6 +613,46 @@ function prepareThaiDetailSpeechText(value) {
     .replace(/\s+,/g, ',')
     .replace(/\s{2,}/g, ' ')
     .trim();
+}
+
+function prepareProductDetailText(value) {
+  const lines = String(value || '')
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => line
+      .replace(/[ \t]+/g, ' ')
+      .replace(/\s+([,:;])/g, '$1')
+      .replace(/([,:;])(?=\S)/g, '$1 ')
+      .replace(/\s+([)])/g, '$1')
+      .replace(/([(])\s+/g, '$1')
+      .replace(/(\d)\s*(ml|mg|g|กรัม|มิลลิกรัม|มิลลิลิตร)\b/giu, '$1 $2')
+      .trim())
+    .filter((line) => line && !/^[\-_=—–─\s]{4,}$/u.test(line));
+
+  const seen = new Set();
+  return lines
+    .filter((line) => {
+      const key = line
+        .replace(/^[^\p{L}\p{N}]+/u, '')
+        .replace(/\s+/g, '')
+        .toLocaleLowerCase('th');
+      if (key.length < 8 || !seen.has(key)) {
+        if (key.length >= 8) seen.add(key);
+        return true;
+      }
+      return false;
+    })
+    .map((line) => {
+      const plain = line.replace(/^[👉✅🔹•\s]+/u, '').trim();
+      if (/หยุดทุกปัญหา|รักษาโรค|รักษาอาการ|หายขาด|ป้องกันโรค|ล้างลำไส้|ลดสารพิษ|ขับสารพิษ/iu.test(plain)) {
+        return `${line} (ข้อมูลดังกล่าวไม่ใช่การรับรองผลและไม่ควรใช้แทนการวินิจฉัยหรือการรักษา)`;
+      }
+      if (/^(ช่วย|ลด|เพิ่ม|เสริม|บำรุง|กระตุ้น|ควบคุม|ฟื้นฟู|ชะลอ|ดูแล)/u.test(plain)) {
+        return line.replace(plain, `ข้อมูลบนฉลากระบุว่า${plain}`);
+      }
+      return line;
+    })
+    .join('\n');
 }
 
 function prepareThaiSourceSpeechText(value) {
@@ -1595,19 +1665,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
     speechSessionRef.current = speechSession;
     setSpeechError('');
     unlockAudioElement();
-    const productDescription = removeSpeechPhrase(
-      cleanEncyclopediaText(product.description, { removeBeautySupplement: true }),
-      product.name
-    );
-    const speechDescription = locale === 'en'
-      ? prepareEnglishCardDescription(productDescription)
-      : productDescription;
-    const speechText = t('speechText', {
-      name: product.name,
-      category: product.category || '',
-      description: speechDescription,
-      price: Number(product.price).toLocaleString(),
-    });
+    const speechText = t('speechText', getProductCardSpeechValues(product, locale));
     setSpeakingId(product.id);
     speakWithCloud(speechText, speechSession);
   };
@@ -1642,16 +1700,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
         haystack.includes(keyword.toLocaleLowerCase())
       );
     });
-    const fullArticleText = [
-      article.title,
-      article.summary,
-      locale === 'th' ? t('whatItHelps') : '',
-      ...article.benefits,
-      locale === 'th' ? t('naturalSources') : '',
-      article.sources,
-      locale === 'th' ? t('importantNotes') : '',
-      article.caution,
-    ];
+    const fullArticleText = getKnowledgeCardSpeechParts(article, locale, t);
     const overviewSummaryLines = locale === 'en' && article.productMeta
       ? [prepareEnglishCardDescription(article.summary)]
       : (article.summaryLines?.length ? article.summaryLines : [article.summary]);
@@ -1743,6 +1792,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
         : t('productSourceFallback'),
       caution: [
         ...new Set(knowledge.map((article) => article.caution)),
+        'ข้อมูลคุณสมบัติและผลลัพธ์อ้างอิงจากส่วนประกอบและข้อความบนฉลาก อาจแตกต่างกันตามแต่ละบุคคล ควรอ่านฉลากและปฏิบัติตามวิธีใช้',
         t('healthDisclaimer'),
       ].filter(Boolean).join('\n\n'),
       keywords: [
@@ -1754,10 +1804,10 @@ export default function EncyclopediaClient({ products, productTranslations = [],
       ].filter(Boolean),
       heroImageUrl: product.image_url,
       artPosition: theme.artPosition,
-      fullDetails: cleanEncyclopediaText(localizedProduct.full_description, {
+      fullDetails: prepareProductDetailText(cleanEncyclopediaText(localizedProduct.full_description, {
         preserveLines: true,
         removeBeautySupplement: true,
-      }),
+      })),
       introHint: t('productBookIntroHint'),
       productMeta: [
         { label: t('price'), value: `฿${Number(product.price).toLocaleString()}` },
@@ -1834,6 +1884,18 @@ export default function EncyclopediaClient({ products, productTranslations = [],
         return buildProductBook(source, product);
       }),
     ];
+
+    localizedProducts.forEach((product) => {
+      addText(
+        `product-card-${product.id}`,
+        t('speechText', getProductCardSpeechValues(product, locale))
+      );
+    });
+    ingredientKnowledge.forEach((article) => {
+      addText(`knowledge-card-${article.id}`, joinSpeechParts(
+        getKnowledgeCardSpeechParts(article, locale, t)
+      ));
+    });
 
     allArticles.forEach((article) => {
       const linkedProducts = article.relatedProducts || localizedProducts.filter((product) => {
