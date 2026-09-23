@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { getIngredientKnowledge } from '@/data/ingredientKnowledgeTranslations';
+import { getThaiEbookProductDetails } from '@/data/ebookProductDetails';
 import { generateSpeech, getProductTranslation } from '@/services/api';
 
 const speechLocales = {
@@ -205,16 +206,17 @@ function prepareEnglishCardDescription(text) {
 }
 
 function getProductCardSpeechValues(product, locale) {
+  const thaiDetails = locale === 'th' ? getThaiEbookProductDetails(product.id) : null;
   const productDescription = removeSpeechPhrase(
     cleanEncyclopediaText(product.description, { removeBeautySupplement: true }),
     product.name
   );
-  const description = locale === 'en'
+  const description = thaiDetails?.description || (locale === 'en'
     ? prepareEnglishCardDescription(productDescription)
-    : productDescription;
+    : productDescription);
 
   return {
-    name: product.name,
+    name: thaiDetails?.name || product.name,
     category: product.category || '',
     description,
     price: Number(product.price).toLocaleString(),
@@ -615,46 +617,6 @@ function prepareThaiDetailSpeechText(value) {
     .trim();
 }
 
-function prepareProductDetailText(value) {
-  const lines = String(value || '')
-    .replace(/\r/g, '')
-    .split('\n')
-    .map((line) => line
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\s+([,:;])/g, '$1')
-      .replace(/([,:;])(?=\S)/g, '$1 ')
-      .replace(/\s+([)])/g, '$1')
-      .replace(/([(])\s+/g, '$1')
-      .replace(/(\d)\s*(ml|mg|g|กรัม|มิลลิกรัม|มิลลิลิตร)\b/giu, '$1 $2')
-      .trim())
-    .filter((line) => line && !/^[\-_=—–─\s]{4,}$/u.test(line));
-
-  const seen = new Set();
-  return lines
-    .filter((line) => {
-      const key = line
-        .replace(/^[^\p{L}\p{N}]+/u, '')
-        .replace(/\s+/g, '')
-        .toLocaleLowerCase('th');
-      if (key.length < 8 || !seen.has(key)) {
-        if (key.length >= 8) seen.add(key);
-        return true;
-      }
-      return false;
-    })
-    .map((line) => {
-      const plain = line.replace(/^[👉✅🔹•\s]+/u, '').trim();
-      if (/หยุดทุกปัญหา|รักษาโรค|รักษาอาการ|หายขาด|ป้องกันโรค|ล้างลำไส้|ลดสารพิษ|ขับสารพิษ/iu.test(plain)) {
-        return `${line} (ข้อมูลดังกล่าวไม่ใช่การรับรองผลและไม่ควรใช้แทนการวินิจฉัยหรือการรักษา)`;
-      }
-      if (/^(ช่วย|ลด|เพิ่ม|เสริม|บำรุง|กระตุ้น|ควบคุม|ฟื้นฟู|ชะลอ|ดูแล)/u.test(plain)) {
-        return line.replace(plain, `ข้อมูลบนฉลากระบุว่า${plain}`);
-      }
-      return line;
-    })
-    .join('\n');
-}
-
 function prepareThaiSourceSpeechText(value) {
   return String(value || '')
     .split(/\n+/u)
@@ -695,7 +657,7 @@ function getReaderSpeechParts(article, readerPage, linkedProducts, t, locale) {
         prepareThaiDetailSpeechText(readerPage.detailsText),
         ...(readerPage.showNotes
           ? [
-            'แหล่งอาหารตามธรรมชาติที่เกี่ยวข้อง มีดังนี้',
+            article.productMeta ? 'แหล่งข้อมูลสินค้า มีดังนี้' : 'แหล่งอาหารตามธรรมชาติที่เกี่ยวข้อง มีดังนี้',
             prepareThaiSourceSpeechText(article.sources),
             'ข้อควรรู้เพิ่มเติม มีดังนี้',
             prepareThaiParagraphSpeechText(article.caution),
@@ -1035,7 +997,7 @@ function BookReader({ article, products, speakingId, onSpeak, onStopSpeech, onCl
                     {currentReaderPage.showNotes && (
                       <>
                         <div className="border-l-4 border-[#567565] bg-[#edf2ec] p-3 dark:bg-[#29312b]">
-                          <p className="text-xs font-bold text-[#315c47] dark:text-[#a9cfb8]">{t('naturalSources')}</p>
+                          <p className="text-xs font-bold text-[#315c47] dark:text-[#a9cfb8]">{article.productMeta && locale === 'th' ? 'แหล่งข้อมูลสินค้า' : t('naturalSources')}</p>
                           <p className="mt-1.5 text-xs leading-5 text-[#665c49] dark:text-[#c2b6a2]">{article.sources}</p>
                         </div>
                         <div className="border-l-4 border-[#b17a37] bg-[#f6eddb] p-3 dark:bg-[#332d23]">
@@ -1737,6 +1699,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
   };
 
   const buildProductBook = (product, localizedProduct = product) => {
+    const thaiDetails = locale === 'th' ? getThaiEbookProductDetails(product.id) : null;
     const productText = [product.name, product.description, product.full_description]
       .filter(Boolean)
       .join(' ')
@@ -1770,15 +1733,14 @@ export default function EncyclopediaClient({ products, productTranslations = [],
       ))
       .slice(0, 6);
     const theme = categoryThemes[product.category] || defaultTheme;
-    const productSummaryLines = createProductSummaryLines(
-      localizedProduct.description,
-      localizedProduct.name
-    );
+    const productSummaryLines = thaiDetails
+      ? [thaiDetails.description]
+      : createProductSummaryLines(localizedProduct.description, localizedProduct.name);
     const productSummary = productSummaryLines.join(' ') || t('productNoDescription');
 
     return {
       id: `product-${product.id}`,
-      title: cleanEncyclopediaText(localizedProduct.name),
+      title: thaiDetails?.name || cleanEncyclopediaText(localizedProduct.name),
       alias: cleanEncyclopediaText(
         [product.brand, localizedProduct.category].filter(Boolean).join(' · ')
       ),
@@ -1786,11 +1748,15 @@ export default function EncyclopediaClient({ products, productTranslations = [],
       summaryLines: productSummaryLines.length
         ? productSummaryLines
         : [t('productNoDescription')],
-      benefits: benefits.length ? benefits : [t('productBenefitFallback')],
-      sources: knowledge.length
+      benefits: thaiDetails
+        ? [thaiDetails.description]
+        : (benefits.length ? benefits : [t('productBenefitFallback')]),
+      sources: thaiDetails
+        ? 'รายละเอียดสินค้าที่บันทึกไว้ในระบบ'
+        : knowledge.length
         ? knowledge.map((article) => `${article.title}: ${article.sources}`).join('\n\n')
         : t('productSourceFallback'),
-      caution: [
+      caution: thaiDetails?.caution || [
         ...new Set(knowledge.map((article) => article.caution)),
         'ข้อมูลคุณสมบัติและผลลัพธ์อ้างอิงจากส่วนประกอบและข้อความบนฉลาก อาจแตกต่างกันตามแต่ละบุคคล ควรอ่านฉลากและปฏิบัติตามวิธีใช้',
         t('healthDisclaimer'),
@@ -1804,10 +1770,10 @@ export default function EncyclopediaClient({ products, productTranslations = [],
       ].filter(Boolean),
       heroImageUrl: product.image_url,
       artPosition: theme.artPosition,
-      fullDetails: prepareProductDetailText(cleanEncyclopediaText(localizedProduct.full_description, {
+      fullDetails: thaiDetails?.text || cleanEncyclopediaText(localizedProduct.full_description, {
         preserveLines: true,
         removeBeautySupplement: true,
-      })),
+      }) || t('productNoDescription'),
       introHint: t('productBookIntroHint'),
       productMeta: [
         { label: t('price'), value: `฿${Number(product.price).toLocaleString()}` },
@@ -1821,7 +1787,9 @@ export default function EncyclopediaClient({ products, productTranslations = [],
       ],
       relatedProducts: relatedProducts.map((item) => ({
         ...item,
-        name: cleanEncyclopediaText(item.name),
+        name: locale === 'th'
+          ? getThaiEbookProductDetails(item.id)?.name || cleanEncyclopediaText(item.name)
+          : cleanEncyclopediaText(item.name),
       })),
       relatedLabel: t('relatedProductsTitle'),
       sourceUrl: `/products/${product.id}`,
