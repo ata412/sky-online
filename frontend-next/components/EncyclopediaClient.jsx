@@ -1749,7 +1749,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
         ? productSummaryLines
         : [t('productNoDescription')],
       benefits: thaiDetails
-        ? [thaiDetails.description]
+        ? thaiDetails.benefits
         : (benefits.length ? benefits : [t('productBenefitFallback')]),
       sources: thaiDetails
         ? 'รายละเอียดสินค้าที่บันทึกไว้ในระบบ'
