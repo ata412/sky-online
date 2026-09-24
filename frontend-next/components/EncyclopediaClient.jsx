@@ -225,7 +225,7 @@ function getProductCardSpeechValues(product, locale) {
 
 function getKnowledgeCardSpeechParts(article, locale, t) {
   return [
-    article.title,
+    article.speechName || article.title,
     article.summary,
     locale === 'th' ? t('whatItHelps') : '',
     ...article.benefits,
@@ -641,7 +641,7 @@ function getReaderSpeechParts(article, readerPage, linkedProducts, t, locale) {
     const spokenTitle = locale === 'th' && article.productMeta
       ? `${readerPage.title} มีดังนี้`
       : readerPage.title;
-    return [spokenTitle, article.title, ...(article.summaryLines?.length ? article.summaryLines : [article.summary])];
+    return [spokenTitle, article.speechName || article.title, ...(article.summaryLines?.length ? article.summaryLines : [article.summary])];
   }
   if (readerPage.kind === 'benefits') return [readerPage.title, ...article.benefits];
   if (readerPage.kind === 'details') {
@@ -1692,7 +1692,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
     const speechParts = page === null
       ? fullArticleText
       : (pageSpeechOverride || pageSpeechText[page] || fullArticleText);
-    const repeatedProductName = article.productMeta ? article.title : '';
+    const repeatedProductName = article.productMeta ? (article.speechName || article.title) : '';
     const speechText = joinSpeechParts(speechParts, repeatedProductName);
     setSpeakingId(speechId);
     speakWithCloud(speechText, speechSession);
@@ -1741,6 +1741,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
     return {
       id: `product-${product.id}`,
       title: thaiDetails?.name || cleanEncyclopediaText(localizedProduct.name),
+      speechName: thaiDetails?.speechName || thaiDetails?.name || cleanEncyclopediaText(localizedProduct.name),
       alias: cleanEncyclopediaText(
         [product.brand, localizedProduct.category].filter(Boolean).join(' · ')
       ),
@@ -1874,7 +1875,7 @@ export default function EncyclopediaClient({ products, productTranslations = [],
       getReaderPages(article, t).forEach((readerPage, page) => {
         const parts = getReaderSpeechParts(article, readerPage, linkedProducts, t, locale);
         addText(`${article.id}-page-${page}`, joinSpeechParts(
-          parts, article.productMeta ? article.title : ''
+          parts, article.productMeta ? (article.speechName || article.title) : ''
         ));
       });
     });
