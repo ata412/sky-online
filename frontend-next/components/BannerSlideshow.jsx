@@ -3,9 +3,14 @@
 import { useState, useEffect } from 'react';
 
 const BANNERS = [
-  '/brands/brand-luck/banner.jpg',
-  '/brands/dietary-supplement/banner.jpg',
-  '/brands/SD%20brand/banner.jpg',
+  '/banners/1.jpg',
+  '/banners/2.jpg',
+  '/banners/3.jpg',
+  '/banners/4.jpg',
+  '/banners/5.jpg',
+  '/banners/6.jpg',
+  '/banners/7.jpg',
+  '/banners/8.jpg',
 ];
 
 export default function BannerSlideshow() {
@@ -24,7 +29,7 @@ export default function BannerSlideshow() {
   }, []);
 
   return (
-    <div className="relative w-full overflow-hidden bg-white dark:bg-navy-900" style={{ aspectRatio: '16/4' }}>
+    <div className="relative w-full overflow-hidden bg-white dark:bg-navy-900" style={{ aspectRatio: '3752/1260' }}>
       {BANNERS.map((src, i) => (
         <img
           key={src}

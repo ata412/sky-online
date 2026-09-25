@@ -123,12 +123,14 @@ export default async function PromotionsPage({ params }) {
                   </div>
                 )}
 
-                <Link
-                  href="/contact"
+                <a
+                  href="https://member.skyonline99.com/login.asp"
+                  target="_blank"
+                  rel="noreferrer"
                   className="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-400 text-navy-900 font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
                 >
                   {t('promotions.claimPromo')} <ArrowRight size={16} />
-                </Link>
+                </a>
               </div>
             </div>
           ))}

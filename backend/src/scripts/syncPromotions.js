@@ -2,11 +2,12 @@ require('dotenv').config();
 const pool = require('../db');
 
 const API_URL = 'https://api.skyonline99.com/getPromotion.php';
+const WEBSITE_URL = 'https://skyonline99.com/promotion.php';
 const IMAGE_BASE = 'https://member.skyonline99.com/images/ImgProd';
 
 async function fetchPromotions() {
   const token = process.env.SKYONLINE99_TOKEN;
-  if (!token) throw new Error('Missing SKYONLINE99_TOKEN in .env');
+  if (!token) return fetchPromotionsFromWebsite();
 
   const res = await fetch(API_URL, {
     method: 'POST',
@@ -22,6 +23,22 @@ async function fetchPromotions() {
   return Object.entries(data)
     .filter(([key]) => /^\d+$/.test(key))
     .map(([, item]) => item);
+}
+
+async function fetchPromotionsFromWebsite() {
+  const res = await fetch(WEBSITE_URL);
+  if (!res.ok) throw new Error(`Promotion page returned HTTP ${res.status}`);
+  const html = await res.text();
+  const itemPattern = /<img\s+src="(https:\/\/member\.skyonline99\.com\/images\/ImgProd\/([A-Za-z0-9_-]+)\.jpg)"[^>]*>[\s\S]*?<div>([^<]+)<\/div>\s*<div>\s*ราคา\s*([\d,.]+)\s*บาท\s*([\d,]+)\s*PV/gi;
+  const items = [...html.matchAll(itemPattern)].map((match) => ({
+    IDGroupProd: match[2],
+    NameGroup: match[3].trim(),
+    PriceNet: match[4],
+    PVNet: match[5],
+    image_url: match[1],
+  }));
+  if (!items.length) throw new Error('No promotions found on the source page');
+  return items;
 }
 
 async function syncPromotions() {
@@ -42,7 +59,7 @@ async function syncPromotions() {
            ELSE promotions.image_url
          END,
          is_active = true`,
-      [externalId, item.NameGroup, parseFloat(item.PriceNet), parseInt(item.PVNet, 10) || 0, `${IMAGE_BASE}/${externalId}.jpg`]
+      [externalId, item.NameGroup, parseFloat(item.PriceNet), parseInt(item.PVNet, 10) || 0, item.image_url || `${IMAGE_BASE}/${externalId}.jpg`]
     );
   }
 
