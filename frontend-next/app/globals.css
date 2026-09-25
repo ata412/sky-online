@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes activity-carousel-scroll {
+  to { transform: translateX(-50%); }
+}
+
+.activity-carousel-moving {
+  animation: activity-carousel-scroll linear infinite;
+}
+
+.activity-carousel:hover .activity-carousel-moving,
+.activity-carousel:focus-within .activity-carousel-moving {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activity-carousel-moving { animation: none; }
+  .activity-carousel { overflow-x: auto; }
+}
+
 html {
   font-size: 100%;
 }

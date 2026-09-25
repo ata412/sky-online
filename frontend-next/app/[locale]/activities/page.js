@@ -64,12 +64,13 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function ActivitiesPage({ params }) {
+export default async function ActivitiesPage({ params, searchParams }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const t = await getTranslations();
   const activities = (await getActivitiesServer()) ?? [];
+  const { activity } = (await searchParams) ?? {};
 
   return (
     <div>
@@ -123,7 +124,7 @@ export default async function ActivitiesPage({ params }) {
             <div className="mt-2 w-16 h-1 bg-gold-500 rounded-full" />
           </div>
 
-          <ActivityGrid activities={activities} />
+          <ActivityGrid activities={activities} selectedActivityId={activity} />
         </div>
       </section>
     </div>

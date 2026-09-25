@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Calendar, MapPin, X, ChevronLeft, ChevronRight, Images } from 'lucide-react';
 import { getActivityPhotos } from '@/services/api';
+import { useRouter } from '@/i18n/routing';
 
 const activityGradients = [
   'from-blue-500 to-blue-700',
@@ -105,11 +106,14 @@ function Lightbox({ activity, onClose }) {
   );
 }
 
-export default function ActivityGrid({ activities }) {
+export default function ActivityGrid({ activities, selectedActivityId }) {
   const t = useTranslations();
   const locale = useLocale();
+  const router = useRouter();
   const [imgErrors, setImgErrors] = useState({});
-  const [openActivity, setOpenActivity] = useState(null);
+  const [openActivity, setOpenActivity] = useState(() =>
+    activities.find((item) => String(item.id) === String(selectedActivityId)) ?? null
+  );
 
   if (activities.length === 0) {
     return <div className="text-center py-20 text-gray-400">{t('activities.noActivities')}</div>;
@@ -166,7 +170,10 @@ export default function ActivityGrid({ activities }) {
         })}
       </div>
 
-      {openActivity && <Lightbox activity={openActivity} onClose={() => setOpenActivity(null)} />}
+      {openActivity && <Lightbox activity={openActivity} onClose={() => {
+        setOpenActivity(null);
+        if (selectedActivityId) router.replace('/activities', { scroll: false });
+      }} />}
     </>
   );
 }

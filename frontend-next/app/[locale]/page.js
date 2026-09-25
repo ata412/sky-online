@@ -1,12 +1,12 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { ArrowRight } from 'lucide-react';
-import { getProductsServer, getPromotionsServer } from '@/services/api';
+import { getProductsServer, getPromotionsServer, getActivitiesServer } from '@/services/api';
 import HeroContent from '@/components/HeroContent';
 import HeroBackgroundSlideshow from '@/components/HeroBackgroundSlideshow';
 import BannerSlideshow from '@/components/BannerSlideshow';
-import FeaturesSection from '@/components/FeaturesSection';
 import HomeProductsGrid from '@/components/HomeProductsGrid';
+import HomeActivityCarousel from '@/components/HomeActivityCarousel';
 import { getSeoAlternates } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
@@ -26,9 +26,10 @@ export default async function HomePage({ params }) {
   setRequestLocale(locale);
 
   const t = await getTranslations();
-  const [products, promotionsAll] = await Promise.all([
+  const [products, promotionsAll, activities] = await Promise.all([
     getProductsServer({ featured: 'true' }),
     getPromotionsServer(),
+    getActivitiesServer(),
   ]);
   const promotions = (promotionsAll ?? []).slice(0, 2);
 
@@ -44,8 +45,21 @@ export default async function HomePage({ params }) {
       {/* Banner Slideshow */}
       <BannerSlideshow />
 
-      {/* Features */}
-      <FeaturesSection />
+      {/* Company Activities */}
+      {activities?.some((activity) => activity.image_url) && (
+        <section className="bg-white dark:bg-navy-900 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end justify-between gap-4 mb-10">
+            <div>
+              <h2 className="section-title">Company Activities</h2>
+              <p className="section-subtitle">{t('activities.photoActivities')}</p>
+            </div>
+            <Link href="/activities" className="text-gold-600 hover:text-gold-700 font-medium flex items-center gap-1 text-sm shrink-0">
+              {t('home.viewAll')} <ArrowRight size={16} />
+            </Link>
+          </div>
+          <HomeActivityCarousel activities={activities} />
+        </section>
+      )}
 
       {/* Featured Products */}
       {products && products.length > 0 && (
