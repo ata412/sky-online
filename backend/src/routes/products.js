@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const { CATEGORY_TRANSLATIONS } = require('../lib/productCategories');
+const { withTransparentProductImage } = require('../lib/productImage');
 
 const PRODUCT_TRANSLATION_MODEL =
   process.env.PRODUCT_TRANSLATION_MODEL || 'gemini-3.1-flash-lite';
@@ -188,7 +189,7 @@ router.get('/', async (req, res) => {
     query += ' ORDER BY created_at DESC';
 
     const result = await pool.query(query, params);
-    res.json(result.rows);
+    res.json(result.rows.map(withTransparentProductImage));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -351,7 +352,7 @@ router.get('/:id', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'ไม่พบสินค้า' });
-    res.json(result.rows[0]);
+    res.json(withTransparentProductImage(result.rows[0]));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
