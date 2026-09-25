@@ -250,7 +250,7 @@ export default function Navbar() {
       const y = window.scrollY;
       setScrolled(y > 10);
       setHidden(y > lastY && y > 180);
-      // Hero is min-h-[88vh]; treat "past the hero" once scrolled most of the way through it.
+      // Switch the navbar theme once the visitor has scrolled through most of the hero.
       setPastHero(y > window.innerHeight * 0.75);
       lastY = y;
     };

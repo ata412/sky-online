@@ -35,7 +35,7 @@ export default async function HomePage({ params }) {
   return (
     <div>
       {/* Hero */}
-      <section className="relative bg-hero-gradient min-h-[88vh] flex items-center overflow-hidden">
+      <section className="relative bg-hero-gradient min-h-[calc(100svh-4rem)] flex items-center overflow-hidden">
         <HeroBackgroundSlideshow />
         <div className="absolute inset-0 bg-gradient-to-b from-navy-900/80 via-navy-900/60 to-navy-900/85" />
         <HeroContent />
