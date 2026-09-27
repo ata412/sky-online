@@ -19,12 +19,19 @@ const LEVELS = [
   'Crown Diamond',
 ];
 
-const MYSTERY_PHOTO_LEVELS = new Set(['President', 'Vice President']);
+const MYSTERY_PHOTO_BY_LEVEL = {
+  President: '/imported/hall-of-fame/mystery-president.jpg',
+  'Vice President': '/imported/hall-of-fame/mystery-vice-president.jpg',
+};
 const REMOVED_IMAGE_PATHS = new Set([
   '/imported/hall-of-fame/all/374-director-555942-0.jpg',
   '/imported/hall-of-fame/all/375-director-555943-0.jpg',
   '/imported/hall-of-fame/all/24-sky-star-12.jpg',
   '/imported/hall-of-fame/all/113-sky-star-20.jpg',
+  '/imported/hall-of-fame/all/161-sky-star-216.jpg',
+  '/imported/hall-of-fame/all/162-sky-star-217.jpg',
+  '/imported/hall-of-fame/all/207-sky-star-30.jpg',
+  '/imported/hall-of-fame/all/216-sky-star-39.jpg',
 ]);
 
 const levelConfig = {
@@ -180,9 +187,9 @@ export default async function HallOfFamePage({ params }) {
                         key={member.id}
                         className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-navy-800 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                       >
-                        {MYSTERY_PHOTO_LEVELS.has(level) ? (
+                        {MYSTERY_PHOTO_BY_LEVEL[level] ? (
                           <Image
-                            src="/imported/hall-of-fame/mystery-person.jpg"
+                            src={MYSTERY_PHOTO_BY_LEVEL[level]}
                             alt={locale === 'th' ? 'ภาพแทนบุคคลปริศนา' : 'Mystery person placeholder'}
                             fill
                             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"

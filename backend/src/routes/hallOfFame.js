@@ -7,6 +7,10 @@ const REMOVED_IMAGE_PATHS = new Set([
   '/imported/hall-of-fame/all/375-director-555943-0.jpg',
   '/imported/hall-of-fame/all/24-sky-star-12.jpg',
   '/imported/hall-of-fame/all/113-sky-star-20.jpg',
+  '/imported/hall-of-fame/all/161-sky-star-216.jpg',
+  '/imported/hall-of-fame/all/162-sky-star-217.jpg',
+  '/imported/hall-of-fame/all/207-sky-star-30.jpg',
+  '/imported/hall-of-fame/all/216-sky-star-39.jpg',
 ]);
 
 const LEVEL_ORDER = [
