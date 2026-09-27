@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import Image from 'next/image';
 import { Crown, Star, Trophy } from 'lucide-react';
 import { getHallOfFameServer } from '@/services/api';
 import HofCanvasWrapper from '@/components/HofCanvasWrapper';
@@ -17,6 +18,14 @@ const LEVELS = [
   'Blue Diamond',
   'Crown Diamond',
 ];
+
+const MYSTERY_PHOTO_LEVELS = new Set(['President', 'Vice President']);
+const REMOVED_IMAGE_PATHS = new Set([
+  '/imported/hall-of-fame/all/374-director-555942-0.jpg',
+  '/imported/hall-of-fame/all/375-director-555943-0.jpg',
+  '/imported/hall-of-fame/all/24-sky-star-12.jpg',
+  '/imported/hall-of-fame/all/113-sky-star-20.jpg',
+]);
 
 const levelConfig = {
   'Crown Diamond': {
@@ -106,9 +115,14 @@ export default async function HallOfFamePage({ params }) {
 
   const t = await getTranslations();
   const members = (await getHallOfFameServer()) ?? [];
+  const visibleMembers = members.filter((member) => {
+    if (!member.image_url) return true;
+    const imagePath = new URL(member.image_url, 'https://skyonline99.online').pathname;
+    return !REMOVED_IMAGE_PATHS.has(imagePath);
+  });
 
   const groupedByLevel = LEVELS.slice().reverse().reduce((acc, level) => {
-    const group = members.filter((m) => m.level === level);
+    const group = visibleMembers.filter((m) => m.level === level);
     if (group.length > 0) acc[level] = group;
     return acc;
   }, {});
@@ -145,7 +159,7 @@ export default async function HallOfFamePage({ params }) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {members.length === 0 ? (
+        {visibleMembers.length === 0 ? (
           <div className="text-center py-20 text-gray-400">{t('hallOfFame.noData')}</div>
         ) : (
           <div className="space-y-12">
@@ -164,14 +178,24 @@ export default async function HallOfFamePage({ params }) {
                     {group.map((member) => (
                       <div
                         key={member.id}
-                        className="aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-navy-800 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                        className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-navy-800 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                       >
-                        <img
-                          src={member.image_url}
-                          alt={level}
-                          loading="lazy"
-                          className="w-full h-full object-cover"
-                        />
+                        {MYSTERY_PHOTO_LEVELS.has(level) ? (
+                          <Image
+                            src="/imported/hall-of-fame/mystery-person.jpg"
+                            alt={locale === 'th' ? 'ภาพแทนบุคคลปริศนา' : 'Mystery person placeholder'}
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <img
+                            src={member.image_url}
+                            alt={level}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
                       </div>
                     ))}
                   </div>
