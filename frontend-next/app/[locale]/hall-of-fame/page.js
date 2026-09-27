@@ -32,6 +32,15 @@ const REMOVED_IMAGE_PATHS = new Set([
   '/imported/hall-of-fame/all/162-sky-star-217.jpg',
   '/imported/hall-of-fame/all/207-sky-star-30.jpg',
   '/imported/hall-of-fame/all/216-sky-star-39.jpg',
+  '/imported/hall-of-fame/all/252-sky-star-71.jpg',
+  '/imported/hall-of-fame/all/257-sky-star-76.jpg',
+  '/imported/hall-of-fame/all/256-sky-star-75.jpg',
+  '/imported/hall-of-fame/all/266-sky-star-84.jpg',
+  '/imported/hall-of-fame/all/267-sky-star-85.jpg',
+  '/imported/hall-of-fame/all/271-sky-star-89.jpg',
+  '/imported/hall-of-fame/all/273-sky-star-90.jpg',
+  '/imported/hall-of-fame/all/275-sky-star-92.jpg',
+  '/imported/hall-of-fame/all/279-sky-star-96.jpg',
 ]);
 
 const levelConfig = {
@@ -172,22 +181,26 @@ export default async function HallOfFamePage({ params }) {
           <div className="space-y-12">
             {Object.entries(groupedByLevel).map(([level, group]) => {
               const cfg = levelConfig[level] || levelConfig['Sky Star'];
+              const isMysteryLevel = Boolean(MYSTERY_PHOTO_BY_LEVEL[level]);
+              const displayedGroup = isMysteryLevel ? group.slice(0, 1) : group;
               return (
                 <div key={level}>
                   <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-full ${cfg.bg} mb-6 shadow-lg`}>
                     {cfg.icon}
                     <h2 className={`text-lg font-bold ${cfg.text}`}>{level}</h2>
                     <span className={`text-sm ${cfg.text} opacity-75`}>({cfg.labelTh})</span>
-                    <span className={`ml-1 text-sm font-medium ${cfg.text} opacity-75`}>· {t('hallOfFame.persons', { count: group.length })}</span>
+                    {!isMysteryLevel && (
+                      <span className={`ml-1 text-sm font-medium ${cfg.text} opacity-75`}>· {t('hallOfFame.persons', { count: group.length })}</span>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {group.map((member) => (
+                    {displayedGroup.map((member) => (
                       <div
                         key={member.id}
                         className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-navy-800 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                       >
-                        {MYSTERY_PHOTO_BY_LEVEL[level] ? (
+                        {isMysteryLevel ? (
                           <Image
                             src={MYSTERY_PHOTO_BY_LEVEL[level]}
                             alt={locale === 'th' ? 'ภาพแทนบุคคลปริศนา' : 'Mystery person placeholder'}
