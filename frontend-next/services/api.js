@@ -49,5 +49,15 @@ export const getCategoriesServer = () => serverFetch('/products/categories', { n
 export const getPromotionsServer = () => serverFetch('/promotions', { next: { revalidate: 60 } });
 export const getHallOfFameServer = (params) => serverFetch('/hall-of-fame', { params, next: { revalidate: 60 } });
 export const getActivitiesServer = () => serverFetch('/activities', { next: { revalidate: 60 } });
-export const getContentTranslationsServer = (type, locale) =>
-  serverFetch('/content/translations', { params: { type, locale }, cache: 'no-store' });
+export async function getContentTranslationsServer(type, locale) {
+  try {
+    return await serverFetch('/content/translations', {
+      params: { type, locale },
+      cache: 'no-store',
+    });
+  } catch (error) {
+    // Keep public pages available if the translation service is temporarily down.
+    console.error(`[content] ${type} translations unavailable for ${locale}`, error);
+    return [];
+  }
+}
