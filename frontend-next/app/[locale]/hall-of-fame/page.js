@@ -188,7 +188,7 @@ export default async function HallOfFamePage({ params }) {
                   <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-full ${cfg.bg} mb-6 shadow-lg`}>
                     {cfg.icon}
                     <h2 className={`text-lg font-bold ${cfg.text}`}>{level}</h2>
-                    <span className={`text-sm ${cfg.text} opacity-75`}>({cfg.labelTh})</span>
+                    {locale === 'th' && <span className={`text-sm ${cfg.text} opacity-75`}>({cfg.labelTh})</span>}
                     {!isMysteryLevel && (
                       <span className={`ml-1 text-sm font-medium ${cfg.text} opacity-75`}>· {t('hallOfFame.persons', { count: group.length })}</span>
                     )}

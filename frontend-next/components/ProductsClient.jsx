@@ -43,8 +43,8 @@ const CATEGORY_ORDER = [
 
 function sortProductsByCategory(products) {
   return [...products].sort((left, right) => {
-    const leftCategory = CATEGORY_ORDER.indexOf(left.category);
-    const rightCategory = CATEGORY_ORDER.indexOf(right.category);
+    const leftCategory = CATEGORY_ORDER.indexOf(left.source_category || left.category);
+    const rightCategory = CATEGORY_ORDER.indexOf(right.source_category || right.category);
     const leftRank = leftCategory === -1 ? CATEGORY_ORDER.length : leftCategory;
     const rightRank = rightCategory === -1 ? CATEGORY_ORDER.length : rightCategory;
     return leftRank - rightRank || Number(left.id) - Number(right.id);
@@ -71,7 +71,7 @@ function ProductCard({ product }) {
         className={`relative flex h-48 cursor-pointer items-center justify-center overflow-hidden ${
           hasImage
             ? 'bg-white dark:bg-navy-800'
-            : `bg-gradient-to-br ${categoryColors[product.category] || 'from-gray-400 to-gray-600'}`
+            : `bg-gradient-to-br ${categoryColors[product.source_category || product.category] || 'from-gray-400 to-gray-600'}`
         }`}
         onClick={() => router.push(`/products/${product.id}`)}
       >
@@ -83,7 +83,7 @@ function ProductCard({ product }) {
             onError={() => setImgError(true)}
           />
         ) : (
-          <span className="text-6xl">{categoryEmojis[product.category] || '🌿'}</span>
+          <span className="text-6xl">{categoryEmojis[product.source_category || product.category] || '🌿'}</span>
         )}
         {product.pv > 0 && (
           <span className="absolute right-2 top-2 rounded-full bg-navy-900 px-2 py-0.5 text-[10px] font-bold text-gold-400">

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function SplashOverlay() {
+  const t = useTranslations('nav');
   const [visible, setVisible] = useState(true);
 
   if (!visible) return null;
@@ -17,11 +19,11 @@ export default function SplashOverlay() {
       <button
         type="button"
         onClick={() => setVisible(false)}
-        aria-label="เข้าสู่เว็บไซต์"
+        aria-label={t('enterSite')}
       >
         <img
           src="/splash-enter-button.png"
-          alt="เข้าสู่เว็บไซต์"
+          alt={t('enterSite')}
           className="h-24 w-auto hover:scale-105 transition-transform"
         />
       </button>

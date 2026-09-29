@@ -8,6 +8,10 @@ const {
 } = require('../lib/shipping');
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite';
+const REPLY_LANGUAGES = {
+  th: 'Thai', en: 'English', zh: 'Simplified Chinese',
+  lo: 'Lao', my: 'Burmese', vi: 'Vietnamese',
+};
 
 function asksForTotalProductCount(message) {
   const normalized = String(message || '')
@@ -165,41 +169,42 @@ async function buildProductContext() {
 
 router.post('/', async (req, res) => {
   const { message, history } = req.body;
+  const locale = REPLY_LANGUAGES[req.body.locale] ? req.body.locale : 'th';
   if (!message || !message.trim()) {
     return res.status(400).json({ error: 'กรุณาพิมพ์คำถาม' });
   }
 
   try {
-    if (asksForTotalProductCount(message)) {
+    if (locale === 'th' && asksForTotalProductCount(message)) {
       const total = await getProductCount();
       return res.json({ reply: `ปัจจุบัน Sky Online มีสินค้าทั้งหมด ${total} รายการครับ` });
     }
 
-    if (asksForProductList(message)) {
+    if (locale === 'th' && asksForProductList(message)) {
       return res.json({ reply: await buildProductListReply() });
     }
 
-    if (asksForShippingRates(message)) {
+    if (locale === 'th' && asksForShippingRates(message)) {
       return res.json({ reply: buildShippingRatesReply() });
     }
 
-    if (asksForDeliveryTime(message)) {
+    if (locale === 'th' && asksForDeliveryTime(message)) {
       return res.json({ reply: buildDeliveryEstimateReply() });
     }
 
-    if (asksForPersonalPv(message)) {
+    if (locale === 'th' && asksForPersonalPv(message)) {
       return res.json({
         reply: 'ขออภัยครับ chatbot ยังไม่สามารถเข้าถึงคะแนนส่วนตัวของสมาชิกได้ คุณสามารถดูยอด PV สะสมได้หลังเข้าสู่ระบบสมาชิก หรือติดต่อทีมงานผ่านหน้า "ติดต่อเรา"',
       });
     }
 
-    if (asksWhatPvMeans(message)) {
+    if (locale === 'th' && asksWhatPvMeans(message)) {
       return res.json({
         reply: 'PV คือคะแนนประจำสินค้าในระบบ Sky Online ครับ คะแนนจากคำสั่งซื้อคำนวณโดยนำ PV ต่อชิ้นคูณจำนวนที่ซื้อ แล้วรวมคะแนนของสินค้าทุกรายการ',
       });
     }
 
-    if (asksForProductPvList(message)) {
+    if (locale === 'th' && asksForProductPvList(message)) {
       return res.json({ reply: await buildProductPvListReply() });
     }
 
@@ -210,7 +215,7 @@ router.post('/', async (req, res) => {
     const { context: productContext, total: productCount } = await buildProductContext();
     const systemInstruction = {
       parts: [{
-        text: `คุณเป็นผู้ช่วยตอบคำถามเกี่ยวกับสินค้าของร้าน Sky Online เท่านั้น ตอบเป็นภาษาไทย กระชับ สุภาพ ห้ามแต่งข้อมูลสินค้าที่ไม่มีในรายการ ปัจจุบันมีสินค้าทั้งหมด ${productCount} รายการ ห้ามนับจำนวนรายการเอง เมื่อกล่าวถึงสินค้าให้ระบุขนาดบรรจุตามข้อมูลที่ให้ไว้ ค่า PV ของแต่ละสินค้าอยู่ในรายการด้านล่างและต้องตอบตามค่านั้นเท่านั้น หากลูกค้าระบุจำนวนสินค้า ให้คำนวณ PV รวมจาก PV ต่อชิ้นคูณจำนวน แล้วรวมทุกสินค้า พร้อมแสดงวิธีคำนวณสั้น ๆ หากไม่ทราบว่าสินค้าใดหรือจำนวนเท่าใด ให้ถามลูกค้าเพิ่มเติม ห้ามเดาค่า PV และห้ามอ้างว่าสามารถดู PV สะสมส่วนตัวของสมาชิกได้ ค่าส่ง 1–2 รายการ ${STANDARD_SHIPPING_FEE} บาท, 3 รายการขึ้นไป ${BULK_SHIPPING_FEE} บาท, ยอดสินค้า ${FREE_SHIPPING_THRESHOLD} บาทขึ้นไปส่งฟรี คำสั่งซื้อที่สั่งไม่เกิน 14:00 น. จัดส่งถึงภายใน 1–3 วันทำการ ยกเว้นพื้นที่ห่างไกลอาจใช้เวลานานกว่านั้น ห้ามระบุหรือคาดเดาจำนวนสินค้าคงเหลือ หากลูกค้าถามสต็อกหรือจำนวนคงเหลือ ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" ถ้าลูกค้าถามนอกเรื่องสินค้า ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" แทน\n\nรายการสินค้าปัจจุบัน:\n${productContext}`,
+        text: `คุณเป็นผู้ช่วยตอบคำถามเกี่ยวกับสินค้าของร้าน Sky Online เท่านั้น ตอบเป็นภาษา ${REPLY_LANGUAGES[locale]} กระชับ สุภาพ ${locale === 'th' ? '' : 'ห้ามใช้ตัวอักษรไทยในคำตอบ ให้แปลชื่อหมวดหมู่และคำอธิบายเป็นภาษาที่กำหนด แต่คงชื่อแบรนด์ ตัวเลข และเลข อย. ตามต้นฉบับ'} ห้ามแต่งข้อมูลสินค้าที่ไม่มีในรายการ ปัจจุบันมีสินค้าทั้งหมด ${productCount} รายการ ห้ามนับจำนวนรายการเอง เมื่อกล่าวถึงสินค้าให้ระบุขนาดบรรจุตามข้อมูลที่ให้ไว้ ค่า PV ของแต่ละสินค้าอยู่ในรายการด้านล่างและต้องตอบตามค่านั้นเท่านั้น หากลูกค้าระบุจำนวนสินค้า ให้คำนวณ PV รวมจาก PV ต่อชิ้นคูณจำนวน แล้วรวมทุกสินค้า พร้อมแสดงวิธีคำนวณสั้น ๆ หากไม่ทราบว่าสินค้าใดหรือจำนวนเท่าใด ให้ถามลูกค้าเพิ่มเติม ห้ามเดาค่า PV และห้ามอ้างว่าสามารถดู PV สะสมส่วนตัวของสมาชิกได้ ค่าส่ง 1–2 รายการ ${STANDARD_SHIPPING_FEE} บาท, 3 รายการขึ้นไป ${BULK_SHIPPING_FEE} บาท, ยอดสินค้า ${FREE_SHIPPING_THRESHOLD} บาทขึ้นไปส่งฟรี คำสั่งซื้อที่สั่งไม่เกิน 14:00 น. จัดส่งถึงภายใน 1–3 วันทำการ ยกเว้นพื้นที่ห่างไกลอาจใช้เวลานานกว่านั้น ห้ามระบุหรือคาดเดาจำนวนสินค้าคงเหลือ หากลูกค้าถามสต็อกหรือจำนวนคงเหลือ ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" ถ้าลูกค้าถามนอกเรื่องสินค้า ให้แนะนำให้ติดต่อทีมงานผ่านหน้า "ติดต่อเรา" แทน\n\nรายการสินค้าปัจจุบัน:\n${productContext}`,
       }],
     };
 
@@ -241,7 +246,7 @@ router.post('/', async (req, res) => {
 
     const reply = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '';
     const sanitizedReply = reply.replace(/\*/g, ' ');
-    res.json({ reply: sanitizedReply || 'ขออภัย ไม่สามารถตอบคำถามนี้ได้ในขณะนี้' });
+    res.json({ reply: sanitizedReply || (locale === 'th' ? 'ขออภัย ไม่สามารถตอบคำถามนี้ได้ในขณะนี้' : 'Sorry, I cannot answer this question right now.') });
   } catch (err) {
     console.error('[chatbot] error', err);
     res.status(500).json({ error: err.message });

@@ -79,6 +79,18 @@ CREATE TABLE IF NOT EXISTS activity_photos (
   sort_order INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS content_translations (
+  content_type VARCHAR(20) NOT NULL CHECK (content_type IN ('activities', 'promotions')),
+  content_id INTEGER NOT NULL,
+  locale VARCHAR(5) NOT NULL CHECK (locale IN ('en', 'zh', 'lo', 'my', 'vi')),
+  source_hash CHAR(64) NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  location TEXT,
+  updated_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (content_type, content_id, locale)
+);
+
 CREATE TABLE IF NOT EXISTS members (
   id SERIAL PRIMARY KEY,
   member_code VARCHAR(20) UNIQUE NOT NULL,

@@ -27,6 +27,7 @@ const my = {
 
   // Navbar
   nav: {
+    enterSite: 'ဝဘ်ဆိုက်သို့ ဝင်ရန်',
     home: 'ပင်မစာမျက်နှာ',
     products: 'ကုန်ပစ္စည်းများ',
     encyclopedia: 'စွယ်စုံကျမ်း',
@@ -45,6 +46,8 @@ const my = {
 
   // Footer
   footer: {
+    companyName: 'Sky Online Group ကုမ္ပဏီလီမိတက်',
+    companyAddress: '28/15 ဘူးင်ခမ်းဖရွိုင်း၊ လမ်လုကာ၊ ပထုမ်ဌာနီ 12150၊ ထိုင်းနိုင်ငံ',
     quickLinks: 'အမြန်လင့်ခ်များ',
     contactUs: 'ဆက်သွယ်ရန်',
     businessHours: 'လုပ်ငန်းချိန်',
@@ -216,6 +219,8 @@ const my = {
 
   // Chatbot
   chatbot: {
+    knowledgeTitle: 'ဘာသိချင်ပါသလဲ? ခေါင်းစဉ်တစ်ခု ရွေးပါ',
+    knowledgeSubtitle: 'AI မခေါ်ဘဲ ချက်ချင်းပြသသော အသင့်ဖြေကြားချက်များ',
     title: 'Sky Online လက်ထောက်',
     subtitle: 'ကျွန်ုပ်တို့၏ ကုန်ပစ္စည်းများအကြောင်း မေးမြန်းပါ',
     placeholder: 'မေးခွန်းရိုက်ထည့်ပါ...',
@@ -361,6 +366,10 @@ const my = {
 
   // Product Detail
   productDetail: {
+    previousImage: 'ယခင်ပုံ',
+    nextImage: 'နောက်ပုံ',
+    allImages: 'ထုတ်ကုန်ပုံအားလုံး',
+    viewImage: 'ထုတ်ကုန်ပုံ {number} ကိုကြည့်ရန်',
     back: 'နောက်သို့',
     stock: '{count} ခု ကျန်ရှိသည်',
     addToCart: 'ခြင်းထဲထည့်ရန်',
@@ -407,6 +416,7 @@ const my = {
 
   // Activities
   activities: {
+    noPhotos: 'ဓာတ်ပုံမရှိပါ',
     title: 'ကုမ္ပဏီလှုပ်ရှားမှုများ',
     subtitle: 'တစ်နိုင်ငံလုံးတွင် ကျင်းပသော Sky Online ၏ အရေးကြီး လှုပ်ရှားမှုများနှင့် ပွဲများကို ဆက်လက်လိုက်နာပါ။',
     videoSection: 'ကုမ္ပဏီလှုပ်ရှားမှုများ',

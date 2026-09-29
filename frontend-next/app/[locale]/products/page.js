@@ -1,7 +1,8 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { getProductsServer } from '@/services/api';
+import { getProductsServer, getProductTranslationsServer } from '@/services/api';
 import ProductsClient from '@/components/ProductsClient';
 import { getSeoAlternates } from '@/lib/seo';
+import { localizeProducts } from '@/lib/localizeProducts';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,10 @@ export default async function ProductsPage({ params }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const products = (await getProductsServer()) ?? [];
+  const [products, translations] = await Promise.all([
+    getProductsServer(),
+    locale === 'th' ? Promise.resolve([]) : getProductTranslationsServer(locale),
+  ]);
 
-  return <ProductsClient products={products} />;
+  return <ProductsClient products={localizeProducts(products ?? [], translations ?? [])} />;
 }

@@ -27,6 +27,7 @@ const vi = {
 
   // Navbar
   nav: {
+    enterSite: 'Vào trang web',
     home: 'Trang chủ',
     products: 'Sản phẩm',
     encyclopedia: 'E-book sản phẩm',
@@ -45,6 +46,8 @@ const vi = {
 
   // Footer
   footer: {
+    companyName: 'Công ty TNHH Sky Online Group',
+    companyAddress: '28/15 Bueng Kham Phroi, Lam Luk Ka, Pathum Thani 12150, Thái Lan',
     quickLinks: 'Liên kết nhanh',
     contactUs: 'Liên hệ với chúng tôi',
     businessHours: 'Giờ làm việc',
@@ -216,6 +219,8 @@ const vi = {
 
   // Chatbot
   chatbot: {
+    knowledgeTitle: 'Bạn muốn biết điều gì? Hãy chọn một chủ đề',
+    knowledgeSubtitle: 'Câu trả lời có sẵn, hiển thị ngay mà không gọi AI',
     title: 'Trợ lý Sky Online',
     subtitle: 'Hỏi tôi về sản phẩm của chúng tôi',
     placeholder: 'Nhập câu hỏi...',
@@ -361,6 +366,10 @@ const vi = {
 
   // Product Detail
   productDetail: {
+    previousImage: 'Ảnh trước',
+    nextImage: 'Ảnh tiếp theo',
+    allImages: 'Tất cả ảnh sản phẩm',
+    viewImage: 'Xem ảnh sản phẩm {number}',
     back: 'Quay lại',
     stock: 'Còn {count} sản phẩm',
     addToCart: 'Thêm vào giỏ',
@@ -407,6 +416,7 @@ const vi = {
 
   // Activities
   activities: {
+    noPhotos: 'Không có ảnh',
     title: 'Hoạt động công ty',
     subtitle: 'Theo dõi các hoạt động và sự kiện quan trọng của Sky Online được tổ chức trên toàn quốc.',
     videoSection: 'Hoạt động công ty',

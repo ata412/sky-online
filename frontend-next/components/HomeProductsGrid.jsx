@@ -39,7 +39,7 @@ function TiltCard({ p }) {
       className="card cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
       onClick={() => router.push(`/products/${p.id}`)}
     >
-      <div className={`h-48 relative flex items-center justify-center overflow-hidden ${hasImg ? 'bg-white dark:bg-navy-800' : `bg-gradient-to-br ${categoryColors[p.category] || 'from-gray-400 to-gray-600'}`}`}>
+      <div className={`h-48 relative flex items-center justify-center overflow-hidden ${hasImg ? 'bg-white dark:bg-navy-800' : `bg-gradient-to-br ${categoryColors[p.source_category || p.category] || 'from-gray-400 to-gray-600'}`}`}>
         {hasImg ? (
           <img
             src={p.image_url}
@@ -48,7 +48,7 @@ function TiltCard({ p }) {
             onError={() => setImgError(true)}
           />
         ) : (
-          <span className="text-6xl">{categoryEmojis[p.category] || '🌿'}</span>
+          <span className="text-6xl">{categoryEmojis[p.source_category || p.category] || '🌿'}</span>
         )}
         {p.pv > 0 && (
           <span className="absolute top-2 right-2 bg-navy-900 text-gold-400 text-[10px] font-bold px-2 py-0.5 rounded-full">

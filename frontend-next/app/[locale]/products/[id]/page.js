@@ -1,13 +1,22 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
-import { getProductServer } from '@/services/api';
+import { getProductServer, getProductTranslationServer } from '@/services/api';
 import ProductDetailTop from '@/components/ProductDetailTop';
 import ProductDescription from '@/components/ProductDescription';
 import { getSeoAlternates } from '@/lib/seo';
+import { localizeProduct } from '@/lib/localizeProducts';
+
+const loadLocalizedProduct = cache(async (id, locale) => {
+  const product = await getProductServer(id);
+  if (!product || locale === 'th') return product;
+  const translation = await getProductTranslationServer(id, locale);
+  return localizeProduct(product, translation);
+});
 
 export async function generateMetadata({ params }) {
   const { locale, id } = await params;
-  const product = await getProductServer(id);
+  const product = await loadLocalizedProduct(id, locale);
   if (!product) return {};
 
   return {
@@ -33,7 +42,7 @@ export default async function ProductDetailPage({ params }) {
   setRequestLocale(locale);
 
   const t = await getTranslations();
-  const product = await getProductServer(id);
+  const product = await loadLocalizedProduct(id, locale);
   if (!product) notFound();
 
   return (

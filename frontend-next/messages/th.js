@@ -27,6 +27,7 @@ const th = {
 
   // Navbar
   nav: {
+    enterSite: 'เข้าสู่เว็บไซต์',
     home: 'หน้าแรก',
     products: 'สินค้า',
     encyclopedia: 'e-bookสินค้า',
@@ -45,6 +46,8 @@ const th = {
 
   // Footer
   footer: {
+    companyName: 'บริษัท สกาย ออนไลน์ กรุ๊ป จำกัด',
+    companyAddress: '28/15 ตำบลบึงคำพร้อย อำเภอลำลูกกา ปทุมธานี 12150',
     quickLinks: 'ลิงก์ด่วน',
     contactUs: 'ติดต่อเรา',
     businessHours: 'เวลาทำการ',
@@ -216,6 +219,8 @@ const th = {
 
   // Chatbot
   chatbot: {
+    knowledgeTitle: 'อยากรู้อะไร กดเลือกได้เลย',
+    knowledgeSubtitle: 'คำตอบสำเร็จรูป แสดงทันทีโดยไม่เรียก AI',
     title: 'ผู้ช่วย Sky Online',
     subtitle: 'เลือกเมนูหรือพิมพ์คำถามได้เลย',
     placeholder: 'พิมพ์คำถาม...',
@@ -361,6 +366,10 @@ const th = {
 
   // Product Detail
   productDetail: {
+    previousImage: 'ภาพก่อนหน้า',
+    nextImage: 'ภาพถัดไป',
+    allImages: 'ภาพสินค้าทั้งหมด',
+    viewImage: 'ดูภาพสินค้า {number}',
     back: 'กลับ',
     stock: 'คงเหลือ {count} ชิ้น',
     addToCart: 'ใส่ตะกร้า',
@@ -407,6 +416,7 @@ const th = {
 
   // Activities
   activities: {
+    noPhotos: 'ไม่มีรูปภาพ',
     title: 'กิจกรรมบริษัท',
     subtitle: 'ติดตามกิจกรรมและงานอีเวนต์สำคัญของ Sky Online ที่จัดขึ้นทั่วประเทศ',
     videoSection: 'Company Activities',

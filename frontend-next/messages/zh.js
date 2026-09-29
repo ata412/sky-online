@@ -27,6 +27,7 @@ const zh = {
 
   // Navbar
   nav: {
+    enterSite: '进入网站',
     home: '首页',
     products: '产品',
     encyclopedia: '产品百科',
@@ -45,6 +46,8 @@ const zh = {
 
   // Footer
   footer: {
+    companyName: 'Sky Online 集团有限公司',
+    companyAddress: '泰国巴吞他尼府兰卢迦县 Bueng Kham Phroi 区 28/15，邮编 12150',
     quickLinks: '快速链接',
     contactUs: '联系我们',
     businessHours: '营业时间',
@@ -216,6 +219,8 @@ const zh = {
 
   // Chatbot
   chatbot: {
+    knowledgeTitle: '想了解什么？请选择主题',
+    knowledgeSubtitle: '预设答案，点击即看，无需调用 AI',
     title: 'Sky Online 助手',
     subtitle: '询问我们的产品信息',
     placeholder: '请输入问题...',
@@ -361,6 +366,10 @@ const zh = {
 
   // Product Detail
   productDetail: {
+    previousImage: '上一张图片',
+    nextImage: '下一张图片',
+    allImages: '所有产品图片',
+    viewImage: '查看产品图片 {number}',
     back: '返回',
     stock: '库存 {count} 件',
     addToCart: '加入购物车',
@@ -407,6 +416,7 @@ const zh = {
 
   // Activities
   activities: {
+    noPhotos: '暂无照片',
     title: '公司活动',
     subtitle: '关注 Sky Online 在全国各地举办的重要活动。',
     videoSection: '公司活动',

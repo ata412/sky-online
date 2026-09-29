@@ -35,7 +35,7 @@ export default function ContactForm() {
   const contactItems = [
     { icon: Phone, label: t('contact.labelPhone'), value: '02-690-1234', sub: t('contact.phoneHours') },
     { icon: Mail, label: t('contact.labelEmail'), value: 'info@skyonline.co.th', sub: t('contact.emailHours') },
-    { icon: MapPin, label: t('contact.labelAddress'), value: '123 ถนนสุขุมวิท เขตคลองเตย กรุงเทพฯ 10110', sub: '' },
+    { icon: MapPin, label: t('contact.labelAddress'), value: t('footer.companyAddress'), sub: '' },
   ];
 
   const dealerPerks = [

@@ -80,7 +80,7 @@ export default function ProductDetailTop({ product }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
         {/* Image */}
         <div className="self-start space-y-3">
-          <div className={`group relative flex min-h-[320px] items-center justify-center overflow-hidden rounded-2xl ${hasImg ? 'bg-white shadow-md dark:bg-navy-800' : `bg-gradient-to-br ${categoryColors[product.category] || 'from-gray-400 to-gray-600'}`}`}>
+          <div className={`group relative flex min-h-[320px] items-center justify-center overflow-hidden rounded-2xl ${hasImg ? 'bg-white shadow-md dark:bg-navy-800' : `bg-gradient-to-br ${categoryColors[product.source_category || product.category] || 'from-gray-400 to-gray-600'}`}`}>
             {hasImg ? (
               <img
                 src={activeImage}
@@ -89,14 +89,14 @@ export default function ProductDetailTop({ product }) {
                 onError={handleImageError}
               />
             ) : (
-              <span className="text-9xl">{categoryEmojis[product.category] || '🌿'}</span>
+              <span className="text-9xl">{categoryEmojis[product.source_category || product.category] || '🌿'}</span>
             )}
             {availableImages.length > 1 && (
               <>
                 <button
                   type="button"
                   onClick={() => moveImage(-1)}
-                  aria-label="ภาพก่อนหน้า"
+                  aria-label={t('productDetail.previousImage')}
                   className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-navy-900/75 text-white opacity-0 shadow-md transition-opacity hover:bg-navy-900 group-hover:opacity-100 focus:opacity-100"
                 >
                   <ChevronLeft size={22} />
@@ -104,7 +104,7 @@ export default function ProductDetailTop({ product }) {
                 <button
                   type="button"
                   onClick={() => moveImage(1)}
-                  aria-label="ภาพถัดไป"
+                  aria-label={t('productDetail.nextImage')}
                   className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-navy-900/75 text-white opacity-0 shadow-md transition-opacity hover:bg-navy-900 group-hover:opacity-100 focus:opacity-100"
                 >
                   <ChevronRight size={22} />
@@ -114,13 +114,13 @@ export default function ProductDetailTop({ product }) {
           </div>
 
           {availableImages.length > 1 && (
-            <div className="grid grid-cols-4 gap-2" aria-label="ภาพสินค้าทั้งหมด">
+            <div className="grid grid-cols-4 gap-2" aria-label={t('productDetail.allImages')}>
               {availableImages.map((image, index) => (
                 <button
                   key={image}
                   type="button"
                   onClick={() => selectImage(index)}
-                  aria-label={`ดูภาพสินค้า ${index + 1}`}
+                  aria-label={t('productDetail.viewImage', { number: index + 1 })}
                   aria-pressed={selectedImage === index}
                   className={`aspect-square overflow-hidden rounded-xl border-2 bg-white p-1 transition-colors dark:bg-navy-800 ${
                     selectedImage === index

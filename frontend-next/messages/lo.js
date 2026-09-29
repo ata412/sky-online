@@ -27,6 +27,7 @@ const lo = {
 
   // Navbar
   nav: {
+    enterSite: 'ເຂົ້າເວັບໄຊ',
     home: 'ໜ້າຫຼັກ',
     products: 'ສິນຄ້າ',
     encyclopedia: 'ສາລານຸກົມ',
@@ -45,6 +46,8 @@ const lo = {
 
   // Footer
   footer: {
+    companyName: 'ບໍລິສັດ ສະກາຍ ອອນລາຍ ກຣຸບ ຈຳກັດ',
+    companyAddress: '28/15 ຕຳບົນບຶງຄຳພຣ້ອຍ ອຳເພີລຳລູກກາ ປະທຸມທານີ 12150 ປະເທດໄທ',
     quickLinks: 'ລິ້ງດ່ວນ',
     contactUs: 'ຕິດຕໍ່ພວກເຮົາ',
     businessHours: 'ເວລາເຮັດວຽກ',
@@ -216,6 +219,8 @@ const lo = {
 
   // Chatbot
   chatbot: {
+    knowledgeTitle: 'ຢາກຮູ້ຫຍັງ? ເລືອກຫົວຂໍ້ໄດ້ເລີຍ',
+    knowledgeSubtitle: 'ຄຳຕອບສຳເລັດຮູບ ສະແດງທັນທີ ໂດຍບໍ່ໃຊ້ AI',
     title: 'ຜູ້ຊ່ວຍ Sky Online',
     subtitle: 'ຖາມກ່ຽວກັບສິນຄ້າຂອງພວກເຮົາ',
     placeholder: 'ພິມຄຳຖາມ...',
@@ -361,6 +366,10 @@ const lo = {
 
   // Product Detail
   productDetail: {
+    previousImage: 'ຮູບກ່ອນໜ້າ',
+    nextImage: 'ຮູບຖັດໄປ',
+    allImages: 'ຮູບສິນຄ້າທັງໝົດ',
+    viewImage: 'ເບິ່ງຮູບສິນຄ້າ {number}',
     back: 'ກັບຄືນ',
     stock: 'ເຫຼືອ {count} ຊິ້ນ',
     addToCart: 'ໃສ່ກະຕ່າ',
@@ -407,6 +416,7 @@ const lo = {
 
   // Activities
   activities: {
+    noPhotos: 'ບໍ່ມີຮູບພາບ',
     title: 'ກິດຈະກຳບໍລິສັດ',
     subtitle: 'ຕິດຕາມກິດຈະກຳ ແລະ ງານສຳຄັນຂອງ Sky Online ທີ່ຈັດຂຶ້ນທົ່ວປະເທດ.',
     videoSection: 'ກິດຈະກຳບໍລິສັດ',

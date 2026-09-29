@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ArrowRight, Bot, ChevronDown, RotateCcw, Send, Sparkles, User } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { CHATBOT_KNOWLEDGE_MENU } from '@/data/chatbotKnowledge';
+import { LOCALIZED_KNOWLEDGE_AND_VIDEOS } from '@/data/localizedKnowledgeAndVideos';
 import { sendChatMessage } from '@/services/api';
 
 function normalizeKnowledgeQuestion(value) {
@@ -18,6 +19,13 @@ function normalizeKnowledgeQuestion(value) {
 
 export default function ChatbotClient() {
   const t = useTranslations('chatbot');
+  const locale = useLocale();
+  const translatedMenu = LOCALIZED_KNOWLEDGE_AND_VIDEOS[locale]?.menu;
+  const translatedById = new Map(translatedMenu?.map((item) => [item.id, item]) || []);
+  const knowledgeMenu = CHATBOT_KNOWLEDGE_MENU.map((item) => ({
+    ...item,
+    ...translatedById.get(item.id),
+  }));
   const [messages, setMessages] = useState(() => [
     { role: 'assistant', text: t('greeting') },
   ]);
@@ -26,6 +34,15 @@ export default function ChatbotClient() {
   const [menuOpen, setMenuOpen] = useState(true);
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
+  const previousLocale = useRef(locale);
+
+  useEffect(() => {
+    if (previousLocale.current === locale) return;
+    previousLocale.current = locale;
+    setMessages([{ role: 'assistant', text: t('greeting') }]);
+    setInput('');
+    setMenuOpen(true);
+  }, [locale, t]);
 
   useEffect(() => {
     const messagesElement = messagesRef.current;
@@ -66,7 +83,7 @@ export default function ChatbotClient() {
     const text = input.trim();
     if (!text || loading) return;
 
-    const knowledgeItem = CHATBOT_KNOWLEDGE_MENU.find(
+    const knowledgeItem = knowledgeMenu.find(
       (item) => normalizeKnowledgeQuestion(item.title) === normalizeKnowledgeQuestion(text)
     );
     if (knowledgeItem) {
@@ -92,7 +109,7 @@ export default function ChatbotClient() {
     setLoading(true);
 
     try {
-      const response = await sendChatMessage({ message: text, history });
+      const response = await sendChatMessage({ message: text, history, locale });
       setMessages((current) => [
         ...current,
         { role: 'assistant', text: response.data.reply },
@@ -102,7 +119,7 @@ export default function ChatbotClient() {
         ...current,
         {
           role: 'assistant',
-          text: error.response?.data?.error || t('errorDefault'),
+          text: t('errorDefault'),
         },
       ]);
     } finally {
@@ -155,10 +172,10 @@ export default function ChatbotClient() {
             >
               <span>
                 <span className="block font-bold text-navy-900 dark:text-white">
-                  อยากรู้อะไร กดเลือกได้เลย
+                  {t('knowledgeTitle')}
                 </span>
                 <span className="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">
-                  คำตอบสำเร็จรูป แสดงทันทีโดยไม่เรียก AI
+                  {t('knowledgeSubtitle')}
                 </span>
               </span>
               <ChevronDown
@@ -172,7 +189,7 @@ export default function ChatbotClient() {
                 id="chatbot-knowledge-menu"
                 className="grid max-h-[360px] grid-cols-1 gap-2 overflow-y-auto px-4 pb-4 sm:grid-cols-2 sm:px-6"
               >
-                {CHATBOT_KNOWLEDGE_MENU.map((item, index) => (
+                {knowledgeMenu.map((item, index) => (
                   <button
                     key={item.id}
                     type="button"

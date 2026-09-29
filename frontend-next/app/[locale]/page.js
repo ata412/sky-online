@@ -1,13 +1,15 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { ArrowRight } from 'lucide-react';
-import { getProductsServer, getPromotionsServer, getActivitiesServer } from '@/services/api';
+import { getProductsServer, getProductTranslationsServer, getPromotionsServer, getActivitiesServer, getContentTranslationsServer } from '@/services/api';
 import HeroContent from '@/components/HeroContent';
 import HeroBackgroundSlideshow from '@/components/HeroBackgroundSlideshow';
 import BannerSlideshow from '@/components/BannerSlideshow';
 import HomeProductsGrid from '@/components/HomeProductsGrid';
 import HomeActivityCarousel from '@/components/HomeActivityCarousel';
 import { getSeoAlternates } from '@/lib/seo';
+import { localizeProducts } from '@/lib/localizeProducts';
+import { localizeContent } from '@/lib/localizeContent';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,12 +28,16 @@ export default async function HomePage({ params }) {
   setRequestLocale(locale);
 
   const t = await getTranslations();
-  const [products, promotionsAll, activities] = await Promise.all([
+  const [products, promotionsAll, activities, productTranslations, promotionTranslations, activityTranslations] = await Promise.all([
     getProductsServer({ featured: 'true' }),
     getPromotionsServer(),
     getActivitiesServer(),
+    locale === 'th' ? Promise.resolve([]) : getProductTranslationsServer(locale),
+    locale === 'th' ? Promise.resolve([]) : getContentTranslationsServer('promotions', locale),
+    locale === 'th' ? Promise.resolve([]) : getContentTranslationsServer('activities', locale),
   ]);
-  const promotions = (promotionsAll ?? []).slice(0, 2);
+  const promotions = localizeContent(promotionsAll ?? [], promotionTranslations ?? []).slice(0, 2);
+  const localizedActivities = localizeContent(activities ?? [], activityTranslations ?? []);
 
   return (
     <div>
@@ -46,7 +52,7 @@ export default async function HomePage({ params }) {
       <BannerSlideshow />
 
       {/* Company Activities */}
-      {activities?.some((activity) => activity.image_url) && (
+      {localizedActivities.some((activity) => activity.image_url) && (
         <section className="bg-white dark:bg-navy-900 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end justify-between gap-4 mb-10">
             <div>
@@ -57,7 +63,7 @@ export default async function HomePage({ params }) {
               {t('home.viewAll')} <ArrowRight size={16} />
             </Link>
           </div>
-          <HomeActivityCarousel activities={activities} />
+          <HomeActivityCarousel activities={localizedActivities} />
         </section>
       )}
 
@@ -74,7 +80,7 @@ export default async function HomePage({ params }) {
                 {t('home.viewAll')} <ArrowRight size={16} />
               </Link>
             </div>
-            <HomeProductsGrid products={products} />
+            <HomeProductsGrid products={localizeProducts(products, productTranslations ?? [])} />
           </div>
         </section>
       )}

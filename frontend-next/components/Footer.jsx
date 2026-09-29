@@ -63,15 +63,15 @@ export default function Footer() {
           <div className="mb-4 flex items-start gap-3">
             <MapPin size={18} className="mt-0.5 flex-shrink-0 text-gold-500" />
             <div>
-              <h4 className="font-semibold text-gold-400">บริษัท สกาย ออนไลน์ กรุ๊ป จำกัด</h4>
+              <h4 className="font-semibold text-gold-400">{t('footer.companyName')}</h4>
               <p className="mt-1 text-sm text-gray-400">
-                28/15 ตำบลบึงคำพร้อย อำเภอลำลูกกา ปทุมธานี 12150
+                {t('footer.companyAddress')}
               </p>
             </div>
           </div>
           <div className="overflow-hidden rounded-xl border border-navy-700">
             <iframe
-              title="แผนที่บริษัท สกาย ออนไลน์ กรุ๊ป จำกัด"
+              title={t('footer.companyName')}
               src="https://maps.google.com/maps?q=%E0%B8%9A%E0%B8%A3%E0%B8%B4%E0%B8%A9%E0%B8%B1%E0%B8%97+%E0%B8%AA%E0%B8%81%E0%B8%B2%E0%B8%A2+%E0%B8%AD%E0%B8%AD%E0%B8%99%E0%B9%84%E0%B8%A5%E0%B8%99%E0%B9%8C+%E0%B8%81%E0%B8%A3%E0%B8%B8%E0%B9%8A%E0%B8%9B+%E0%B8%88%E0%B8%B3%E0%B8%81%E0%B8%B1%E0%B8%94+28%2F15+%E0%B8%95%E0%B8%B3%E0%B8%9A%E0%B8%A5+%E0%B8%9A%E0%B8%B6%E0%B8%87%E0%B8%84%E0%B8%B3%E0%B8%9E%E0%B8%A3%E0%B9%89%E0%B8%AD%E0%B8%A2+%E0%B8%AD%E0%B8%B3%E0%B9%80%E0%B8%A0%E0%B8%AD%E0%B8%A5%E0%B8%B3%E0%B8%A5%E0%B8%B9%E0%B8%81%E0%B8%81%E0%B8%B2+%E0%B8%9B%E0%B8%97%E0%B8%B8%E0%B8%A1%E0%B8%98%E0%B8%B2%E0%B8%99%E0%B8%B5+12150&output=embed&z=16"
               width="100%"
               height="280"

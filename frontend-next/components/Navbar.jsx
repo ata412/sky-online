@@ -12,6 +12,7 @@ import { COMMERCE_ENABLED, VIDEO_STUDIO_ENABLED } from '@/lib/features';
 
 function CartIcon({ light }) {
   const { count, setIsOpen } = useCart();
+  const t = useTranslations('cart');
 
   const handleClick = () => {
     setIsOpen(true);
@@ -23,7 +24,7 @@ function CartIcon({ light }) {
       className={`relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
         light ? 'text-gray-700 hover:text-gold-600 hover:bg-gray-100' : 'text-gray-300 hover:text-gold-400 hover:bg-navy-800'
       }`}
-      aria-label="ตะกร้าสินค้า"
+      aria-label={t('title')}
     >
       <svg viewBox="0 0 20 20" fill="none" className="w-6 h-6" xmlns="http://www.w3.org/2000/svg">
         <path d="M16.3804 16.25H3.61947C3.46585 16.25 3.31752 16.1939 3.20241 16.0922C3.0873 15.9904 3.01334 15.8501 2.99447 15.6977L1.88119 6.32267C1.87089 6.2347 1.87941 6.14556 1.90617 6.06113C1.93294 5.9767 1.97734 5.89893 2.03644 5.83296C2.09553 5.767 2.16797 5.71434 2.24896 5.67849C2.32995 5.64264 2.41763 5.62441 2.50619 5.62501H17.4937C17.5823 5.62441 17.6699 5.64264 17.7509 5.67849C17.8319 5.71434 17.9044 5.767 17.9634 5.83296C18.0225 5.89893 18.0669 5.9767 18.0937 6.06113C18.1205 6.14556 18.129 6.2347 18.1187 6.32267L17.0054 15.6977C16.9865 15.8501 16.9126 15.9904 16.7975 16.0922C16.6824 16.1939 16.534 16.25 16.3804 16.25Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

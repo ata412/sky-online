@@ -1,8 +1,9 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { Tag, Calendar, ArrowRight, Zap } from 'lucide-react';
-import { getPromotionsServer } from '@/services/api';
+import { getPromotionsServer, getContentTranslationsServer } from '@/services/api';
 import { getSeoAlternates } from '@/lib/seo';
+import { localizeContent } from '@/lib/localizeContent';
 
 const promoGradients = [
   'from-navy-800 to-navy-900',
@@ -38,7 +39,11 @@ export default async function PromotionsPage({ params }) {
   setRequestLocale(locale);
 
   const t = await getTranslations();
-  const promotions = (await getPromotionsServer()) ?? [];
+  const [promotionsAll, translations] = await Promise.all([
+    getPromotionsServer(),
+    locale === 'th' ? Promise.resolve([]) : getContentTranslationsServer('promotions', locale),
+  ]);
+  const promotions = localizeContent(promotionsAll ?? [], translations ?? []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

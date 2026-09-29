@@ -27,6 +27,7 @@ const en = {
 
   // Navbar
   nav: {
+    enterSite: 'Enter website',
     home: 'Home',
     products: 'Products',
     encyclopedia: 'Encyclopedia',
@@ -45,6 +46,8 @@ const en = {
 
   // Footer
   footer: {
+    companyName: 'Sky Online Group Co., Ltd.',
+    companyAddress: '28/15 Bueng Kham Phroi, Lam Luk Ka, Pathum Thani 12150, Thailand',
     quickLinks: 'Quick Links',
     contactUs: 'Contact Us',
     businessHours: 'Business Hours',
@@ -216,6 +219,8 @@ const en = {
 
   // Chatbot
   chatbot: {
+    knowledgeTitle: 'What would you like to know? Choose a topic',
+    knowledgeSubtitle: 'Instant answers without an AI request',
     title: 'Sky Online Assistant',
     subtitle: 'Ask me about our products',
     placeholder: 'Type a question...',
@@ -361,6 +366,10 @@ const en = {
 
   // Product Detail
   productDetail: {
+    previousImage: 'Previous image',
+    nextImage: 'Next image',
+    allImages: 'All product images',
+    viewImage: 'View product image {number}',
     back: 'Back',
     stock: '{count} in stock',
     addToCart: 'Add to Cart',
@@ -407,6 +416,7 @@ const en = {
 
   // Activities
   activities: {
+    noPhotos: 'No photos',
     title: 'Company Activities',
     subtitle: 'Follow important activities and events of Sky Online held across the country.',
     videoSection: 'Company Activities',

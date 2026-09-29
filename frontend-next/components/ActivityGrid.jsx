@@ -26,6 +26,7 @@ function formatDate(dateStr, locale) {
 }
 
 function Lightbox({ activity, onClose }) {
+  const t = useTranslations('activities');
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
@@ -74,7 +75,7 @@ function Lightbox({ activity, onClose }) {
       {loading ? (
         <div className="text-white/60 text-sm">…</div>
       ) : photos.length === 0 ? (
-        <div className="text-white/60 text-sm">No photos</div>
+        <div className="text-white/60 text-sm">{t('noPhotos')}</div>
       ) : (
         <>
           <div className="relative w-full max-w-4xl flex items-center justify-center">

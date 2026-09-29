@@ -1759,7 +1759,9 @@ export default function EncyclopediaClient({ products, productTranslations = [],
         : t('productSourceFallback'),
       caution: thaiDetails?.caution || [
         ...new Set(knowledge.map((article) => article.caution)),
-        'ข้อมูลคุณสมบัติและผลลัพธ์อ้างอิงจากส่วนประกอบและข้อความบนฉลาก อาจแตกต่างกันตามแต่ละบุคคล ควรอ่านฉลากและปฏิบัติตามวิธีใช้',
+        locale === 'th'
+          ? 'ข้อมูลคุณสมบัติและผลลัพธ์อ้างอิงจากส่วนประกอบและข้อความบนฉลาก อาจแตกต่างกันตามแต่ละบุคคล ควรอ่านฉลากและปฏิบัติตามวิธีใช้'
+          : t('productBenefitFallback'),
         t('healthDisclaimer'),
       ].filter(Boolean).join('\n\n'),
       keywords: [

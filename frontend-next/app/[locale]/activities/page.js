@@ -1,55 +1,12 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Play } from 'lucide-react';
-import { getActivitiesServer } from '@/services/api';
+import { getActivitiesServer, getContentTranslationsServer } from '@/services/api';
 import ActivityGrid from '@/components/ActivityGrid';
 import { getSeoAlternates } from '@/lib/seo';
+import { localizeContent } from '@/lib/localizeContent';
 
-const VIDEOS = [
-  {
-    id: 'lAUbve-8Bok',
-    title: 'แนะนำ บริษัท บัวหลวงอินเตอร์ จำกัด และ บริษัท สกายออนไลน์กรุ๊ป จำกัด',
-  },
-  {
-    id: 'YT5gpg_YYKQ',
-    title: 'แนะนำบริษัท สกายออนไลน์กรุ๊ป จำกัด',
-  },
-  {
-    id: '0vSxjbOA7Hk',
-    title: 'แถลงข่าว "วันแห่งเกียรติยศ" พิธีประดับเข็มเกียรติยศให้กับนักธุรกิจ บริษัท สกายออนไลน์กรุ๊ป จำกัด ณ สโมสรตำรวจ กรุงเทพฯ เมื่อวันที่ 26 เมษายน 2568',
-  },
-  {
-    id: 'usJTtHnbOlE',
-    title: 'บรรยากาศงาน "วันแห่งเกียรติยศ" จาก NewsFEED พิธีประดับเข็มเกียรติยศให้กับนักธุรกิจ บริษัท สกายออนไลน์กรุ๊ป จำกัด ณ สโมสรตำรวจ กรุงเทพฯ เมื่อวันที่ 26 เมษายน 2568',
-  },
-  {
-    id: 'Lplk7yQpoRA',
-    title: 'ไฮไลท์ งาน "วันแห่งเกียรติยศ" ทีมออแกไนซ์ พิธีประดับเข็มเกียรติยศให้กับนักธุรกิจ บริษัท สกายออนไลน์กรุ๊ป จำกัด ณ สโมสรตำรวจ กรุงเทพฯ เมื่อวันที่ 26 เมษายน 2568',
-  },
-  {
-    id: '81hEqIh7Mo0',
-    title: 'วันแห่งเกียรติยศ ฉบับเต็ม พิธีประดับเข็มเกียรติยศให้กับนักธุรกิจ บริษัท สกายออนไลน์กรุ๊ป จำกัด ณ สโมสรตำรวจ กรุงเทพฯ เมื่อวันที่ 26 เมษายน 2568',
-  },
-  {
-    id: 'OihCLmtUOGw',
-    title: 'รวมกิจกรรม บริษัท สกายออนไลน์กรุ๊ป จำกัด',
-  },
-  {
-    id: 'EnQjyJobQcY',
-    title: 'Sky Online พาสมาชิกล่องเรือสำราญ ดื่มด่ำอาหารระดับภัตตาคาร ชมแม่น้ำเจ้าพระยายามราตรี เกือบ 300 ชีวิต',
-  },
-  {
-    id: '7npF16XbbY8',
-    title: 'พิธีประดับเข็มเกียรติยศและเปิดสำนักงานใหญ่ บริษัท สกายออนไลน์กรุ๊ป จำกัด วันที่ 8 กันยายน 2567',
-  },
-  {
-    id: 'Y_Xa6ySgjEY',
-    title: 'Sky Online สัญจรครั้งที่ 2 ณ โรงแรมวันโอวันแกรนด์ จังหวัดร้อยเอ็ด วันที่ 31 มีนาคม 2567',
-  },
-  {
-    id: 'tq4NaNp8FNo',
-    title: 'Sky Online จับมือคนรักไปพักทะเล พาสมาชิกดำน้ำดูปะการัง Sunset Beach Resort อำเภอสัตหีบ จังหวัดชลบุรี วันที่ 11–12 พฤษภาคม 2567',
-  },
-];
+import { ACTIVITY_VIDEOS } from '@/data/activityVideos';
+import { LOCALIZED_KNOWLEDGE_AND_VIDEOS } from '@/data/localizedKnowledgeAndVideos';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,7 +26,13 @@ export default async function ActivitiesPage({ params, searchParams }) {
   setRequestLocale(locale);
 
   const t = await getTranslations();
-  const activities = (await getActivitiesServer()) ?? [];
+  const videoTitles = new Map(
+    LOCALIZED_KNOWLEDGE_AND_VIDEOS[locale]?.videos.map((video) => [video.id, video.title]) || []
+  );
+  const [activities, translations] = await Promise.all([
+    getActivitiesServer(),
+    locale === 'th' ? Promise.resolve([]) : getContentTranslationsServer('activities', locale),
+  ]);
   const { activity } = (await searchParams) ?? {};
 
   return (
@@ -95,18 +58,18 @@ export default async function ActivitiesPage({ params, searchParams }) {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {VIDEOS.map((v) => (
+            {ACTIVITY_VIDEOS.map((v) => (
               <div key={v.id} className="flex flex-col gap-3">
                 <div className="relative w-full overflow-hidden rounded-xl shadow-lg" style={{ paddingTop: '56.25%' }}>
                   <iframe
                     src={`https://www.youtube.com/embed/${v.id}`}
-                    title={v.title}
+                    title={videoTitles.get(v.id) || v.title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="absolute inset-0 w-full h-full"
                   />
                 </div>
-                <p className="text-sm text-gray-300 leading-relaxed px-1">{v.title}</p>
+                <p className="text-sm text-gray-300 leading-relaxed px-1">{videoTitles.get(v.id) || v.title}</p>
               </div>
             ))}
           </div>
@@ -124,7 +87,7 @@ export default async function ActivitiesPage({ params, searchParams }) {
             <div className="mt-2 w-16 h-1 bg-gold-500 rounded-full" />
           </div>
 
-          <ActivityGrid activities={activities} selectedActivityId={activity} />
+          <ActivityGrid activities={localizeContent(activities ?? [], translations ?? [])} selectedActivityId={activity} />
         </div>
       </section>
     </div>
