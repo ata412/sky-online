@@ -6,6 +6,7 @@ const router = express.Router();
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 const TTS_MODEL = process.env.TTS_MODEL || 'gemini-2.5-flash-preview-tts';
+const LAO_TTS_MODEL = process.env.LAO_TTS_MODEL || 'gemini-3.8-flash-tts';
 const TTS_VOICE = process.env.TTS_VOICE || 'Sulafat';
 const GOOGLE_CLOUD_TTS_URL = 'https://texttospeech.googleapis.com/v1/text:synthesize';
 const GOOGLE_CLOUD_TTS_VOICE = process.env.GOOGLE_CLOUD_TTS_VOICE || 'th-TH-Chirp3-HD-Sulafat';
@@ -26,6 +27,10 @@ const pendingAudio = new Map();
 const requestHistory = new Map();
 let cachedBytes = 0;
 
+function ttsModelFor(locale) {
+  return locale === 'lo' ? LAO_TTS_MODEL : TTS_MODEL;
+}
+
 function normalizeText(value) {
   if (typeof value !== 'string') return '';
   return value
@@ -44,7 +49,7 @@ function createCacheKey(text, locale) {
   }
   return crypto
     .createHash('sha256')
-    .update(`gemini-file-v2\0${TTS_MODEL}\0${TTS_VOICE}\0${locale}\0${text}`)
+    .update(`gemini-file-v2\0${ttsModelFor(locale)}\0${TTS_VOICE}\0${locale}\0${text}`)
     .digest('hex');
 }
 
@@ -197,7 +202,7 @@ function buildPrompt(text, locale) {
 
 async function performGeminiAudioRequest(text, locale) {
   const response = await fetch(
-    `${GEMINI_BASE_URL}/models/${encodeURIComponent(TTS_MODEL)}:generateContent`,
+    `${GEMINI_BASE_URL}/models/${encodeURIComponent(ttsModelFor(locale))}:generateContent`,
     {
       method: 'POST',
       headers: {

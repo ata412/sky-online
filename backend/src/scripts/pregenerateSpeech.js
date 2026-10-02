@@ -13,7 +13,9 @@ const locale = process.argv[2] || 'th';
 const verifyOnly = process.argv.includes('--verify');
 const siteOrigin = process.env.SPEECH_SITE_ORIGIN || 'http://localhost:3000';
 const apiOrigin = process.env.SPEECH_API_ORIGIN || 'http://localhost:5001';
-const model = process.env.TTS_MODEL || 'gemini-2.5-flash-preview-tts';
+const model = locale === 'lo'
+  ? process.env.LAO_TTS_MODEL || 'gemini-3.8-flash-tts'
+  : process.env.TTS_MODEL || 'gemini-2.5-flash-preview-tts';
 const voice = process.env.TTS_VOICE || 'Sulafat';
 const googleCloudVoice = process.env.GOOGLE_CLOUD_TTS_VOICE || 'th-TH-Chirp3-HD-Sulafat';
 const pauseMs = Number(process.env.SPEECH_GENERATION_PAUSE_MS || 1200);
@@ -104,6 +106,14 @@ async function main() {
   const manifest = JSON.parse(match[1]);
   if (manifest.locale !== locale || !Array.isArray(manifest.entries)) {
     throw new Error('Speech manifest has an unexpected format or language');
+  }
+  if (locale === 'lo') {
+    const mixed = manifest.entries.filter((entry) =>
+      /[\u0E01-\u0E3A\u0E40-\u0E5B]/u.test(String(entry.text || ''))
+    );
+    if (mixed.length) {
+      throw new Error(`Lao speech manifest contains Thai text in ${mixed.length} entries: ${mixed.slice(0, 5).map((entry) => entry.id).join(', ')}`);
+    }
   }
 
   await fs.mkdir(BUNDLED_AUDIO_DIRECTORY, { recursive: true });

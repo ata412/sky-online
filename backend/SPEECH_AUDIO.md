@@ -1,7 +1,8 @@
 # E-book audio files
 
 Thai e-book narration is generated ahead of time with Google Cloud Text-to-Speech
-using `th-TH-Chirp3-HD-Sulafat`. Other languages retain the Gemini TTS setup. The
+using `th-TH-Chirp3-HD-Sulafat`. Lao narration uses Gemini 3.8 Flash TTS with
+the Sulafat voice; other languages retain the existing Gemini TTS setup. The
 generated MP3 files live in `backend/audio-library/` and can be committed with
 the application. This makes existing narration survive redeploys without a
 Railway Volume or another Gemini request. New or edited text needs a fresh
@@ -38,10 +39,12 @@ The command reads the exact speech chunks used by the e-book page at
 `/th/encyclopedia?speech_manifest=1`, calls the local speech endpoint, converts
 WAV to MP3 with `ffmpeg`, and skips existing files on subsequent runs. Set
 `SPEECH_SITE_ORIGIN` and `SPEECH_API_ORIGIN` if the servers are not at
-`http://localhost:3000` and `http://localhost:5001`. For other languages,
-replace `th` with `en`, `zh`, `lo`, `my`, or `vi`. Review translation content
-before generating non-Thai product books: their full descriptions are fetched
-separately when a reader opens a product.
+`http://localhost:3000` and `http://localhost:5001`. For Lao, use `lo` instead
+of `th`; its manifest loads translated full descriptions before creating audio
+and rejects any Thai text still present. For other languages, use `en`, `zh`,
+`my`, or `vi`. Review translation content before generating non-Thai product
+books: their full descriptions are fetched separately when a reader opens a
+product.
 Speech generation may consume billable quota. If the command stops on a
 rate limit, rerun it later; existing MP3s are skipped.
 Commit the completed `audio-library` files and deploy the backend to make them

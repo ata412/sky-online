@@ -1357,7 +1357,7 @@ function EncyclopediaEntry({ product, index, speakingId, onSpeak, onOpen, isOpen
   );
 }
 
-export default function EncyclopediaClient({ products, productTranslations = [], speechManifestMode = false }) {
+export default function EncyclopediaClient({ products, productTranslations = [], fullProductTranslations = [], speechManifestMode = false }) {
   const t = useTranslations('encyclopedia');
   const locale = useLocale();
   const [search, setSearch] = useState('');
@@ -1836,6 +1836,9 @@ export default function EncyclopediaClient({ products, productTranslations = [],
   // It uses the same page construction and chunking as the actual listen button.
   const speechManifest = speechManifestMode ? (() => {
     const entries = [];
+    const fullTranslationsById = new Map(
+      fullProductTranslations.map((translation) => [Number(translation.product_id), translation])
+    );
     const addText = (id, value) => {
       const text = prepareSpeechText(value, locale);
       groupCloudSpeechChunks(text).forEach((chunk, index) => {
@@ -1852,7 +1855,10 @@ export default function EncyclopediaClient({ products, productTranslations = [],
           description: product.source_description || product.description,
           full_description: product.source_full_description || product.full_description,
         };
-        return buildProductBook(source, product);
+        return buildProductBook(source, {
+          ...product,
+          ...fullTranslationsById.get(Number(product.id)),
+        });
       }),
     ];
 

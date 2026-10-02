@@ -14,6 +14,17 @@ const PRODUCT_TRANSLATION_LOCALES = {
   vi: 'Vietnamese',
 };
 const containsThai = (value) => /[\u0E01-\u0E3A\u0E40-\u0E5B]/u.test(String(value || ''));
+// Gemini occasionally emits Thai vowel/tone code points inside otherwise Lao
+// words. These marks have matching Lao code points at the same +0x80 offset.
+function normalizeLaoMarks(value) {
+  const withLaoMarks = String(value).replace(/[\u0E30-\u0E3A\u0E40-\u0E4E]/gu,
+    (character) => String.fromCharCode(character.charCodeAt(0) + 0x80));
+  return withLaoMarks.replace(/[\u0E80-\u0EFF]*[\u0E01-\u0E2E]+[\u0E80-\u0EFF]*/gu,
+    (token) => /[\u0E80-\u0EFF]/u.test(token)
+      ? token.replace(/[\u0E01-\u0E2E]/gu,
+        (character) => String.fromCharCode(character.charCodeAt(0) + 0x80))
+      : token);
+}
 
 function normalizeTranslatedField(value, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback || '';
@@ -86,6 +97,9 @@ async function translateProduct(product, locale) {
       product.full_description
     ),
   };
+  if (locale === 'lo') {
+    for (const field of Object.keys(result)) result[field] = normalizeLaoMarks(result[field]);
+  }
   if (Object.values(result).some(containsThai)) {
     throw new Error('Product translation still contains Thai text');
   }
