@@ -3,7 +3,9 @@
 Thai e-book narration is generated ahead of time with Google Cloud Text-to-Speech
 using `th-TH-Chirp3-HD-Sulafat`. Lao narration uses Gemini 3.8 Flash TTS with
 the Sulafat voice; other languages retain the existing Gemini TTS setup. The
-generated MP3 files live in `backend/audio-library/` and can be committed with
+Lao request sends only the transcript in `parts[].text`, because Gemini 3.8
+reads that field verbatim and will otherwise speak prompt instructions aloud.
+Generated MP3 files live in `backend/audio-library/` and can be committed with
 the application. This makes existing narration survive redeploys without a
 Railway Volume or another Gemini request. New or edited text needs a fresh
 pre-generation run; automatic creation is disabled by default.

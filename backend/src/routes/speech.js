@@ -196,6 +196,9 @@ function pcmToWav(pcm, sampleRate = 24000) {
 }
 
 function buildPrompt(text, locale) {
+  // Gemini 3.8 TTS treats parts[].text as the spoken transcript. Putting
+  // directions here makes it read "Generate speech..." into Lao audio.
+  if (locale === 'lo') return text;
   const language = SUPPORTED_LOCALES[locale];
   return `Generate speech that reads the transcript below exactly as written in ${language}. Use a clear, warm, natural product encyclopedia narration at a moderate pace. Do not translate, add, omit, summarize, or describe the transcript.\n\nTranscript:\n${text}`;
 }
