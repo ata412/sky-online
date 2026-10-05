@@ -283,6 +283,27 @@ async function generateAudio(text, locale, key) {
   return generation;
 }
 
+// Saved narration is a read-only file request. No transcript or generation
+// instructions need to be submitted when a visitor plays the Lao library.
+router.get('/files/:key', async (req, res) => {
+  const { key } = req.params;
+  if (!/^[a-f0-9]{64}$/.test(key)) {
+    return res.status(400).json({ error: 'Invalid saved speech key' });
+  }
+  try {
+    const stored = await readAudioFile(key);
+    if (!stored) return res.status(404).json({ error: 'Saved speech audio is not available' });
+    res.setHeader('X-TTS-Cache', 'FILE');
+    res.setHeader('X-TTS-Provider', stored.provider);
+    res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+    res.type(stored.mimeType);
+    return res.send(stored.audio);
+  } catch (error) {
+    console.error('[speech] unable to read saved audio', error);
+    return res.status(503).json({ error: 'Saved speech audio is unavailable' });
+  }
+});
+
 router.post('/', async (req, res) => {
   const locale = typeof req.body?.locale === 'string' ? req.body.locale.toLowerCase() : '';
   const text = normalizeText(req.body?.text);

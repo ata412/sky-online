@@ -36,7 +36,7 @@ const speechLocales = {
 const SPEECH_CACHE_NAME = 'sky-online-chirp-tts-v5';
 // Lao clips were re-recorded; use a new namespace so saved browser copies of
 // the old narration cannot shadow the corrected files on the server.
-const LAO_SPEECH_CACHE_NAME = 'sky-online-lao-tts-v3';
+const LAO_SPEECH_CACHE_NAME = 'sky-online-lao-tts-v4';
 // A complete e-book page stays below the backend's 1,600-character limit.
 // Keeping one file per page cuts TTS requests and lets the permanent MP3 play
 // without network gaps between many small clips.
@@ -1591,8 +1591,8 @@ export default function EncyclopediaClient({ products, productTranslations = [],
       if (speechSessionRef.current === speechSession) setSpeakingId(null);
     } catch (error) {
       if (controller.signal.aborted || speechSessionRef.current !== speechSession) return;
-      if (locale === 'th') {
-        console.warn('[speech] Thai Chirp audio unavailable; device fallback is disabled', error);
+      if (locale === 'th' || locale === 'lo') {
+        console.warn('[speech] Saved narration unavailable; device fallback is disabled', error);
         setSpeechError(t('speechServiceUnavailable'));
         setSpeakingId(null);
         return;

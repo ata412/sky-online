@@ -13,8 +13,23 @@ export const sendChatMessage = (data) => api.post('/chatbot', data);
 export const getActivityPhotos = (id) => api.get(`/activities/${id}/photos`);
 export const getProductTranslation = (id, locale) =>
   api.get(`/products/${id}/translation`, { params: { locale } });
-export const generateSpeech = (text, locale, signal) =>
-  api.post('/speech', { text, locale }, { responseType: 'arraybuffer', signal });
+export const generateSpeech = async (text, locale, signal) => {
+  if (locale === 'lo') {
+    // Match the permanent library identity used by the backend/pre-generation
+    // script. Playing a saved clip only needs its file key, not a TTS POST.
+    const normalized = text.normalize('NFKC')
+      .replace(/[\u0000-\u001F\u007F]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const identity = `gemini-file-v2\0gemini-3.8-flash-tts\0Sulafat\0lo\0${normalized}`;
+    const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(identity));
+    const key = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    return api.get(`/speech/files/${key}`, {
+      params: { v: 'lao-v4' }, responseType: 'arraybuffer', signal,
+    });
+  }
+  return api.post('/speech', { text, locale }, { responseType: 'arraybuffer', signal });
+};
 export const createImageJob = (data) => api.post('/image-studio/jobs', data, { timeout: 130000 });
 export const getGeneratedImageUrl = (id) => `/api/image-studio/jobs/${id}/image`;
 export const getGeneratedImageDownloadUrl = (id) => `${getGeneratedImageUrl(id)}?download=1`;
