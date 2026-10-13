@@ -4,6 +4,7 @@ import { getActivitiesServer, getContentTranslationsServer } from '@/services/ap
 import ActivityGrid from '@/components/ActivityGrid';
 import { getSeoAlternates } from '@/lib/seo';
 import { localizeContent } from '@/lib/localizeContent';
+import { withLocalActivities } from '@/data/localActivities';
 
 import { ACTIVITY_VIDEOS } from '@/data/activityVideos';
 import { LOCALIZED_KNOWLEDGE_AND_VIDEOS } from '@/data/localizedKnowledgeAndVideos';
@@ -87,7 +88,7 @@ export default async function ActivitiesPage({ params, searchParams }) {
             <div className="mt-2 w-16 h-1 bg-gold-500 rounded-full" />
           </div>
 
-          <ActivityGrid activities={localizeContent(activities ?? [], translations ?? [])} selectedActivityId={activity} />
+          <ActivityGrid activities={withLocalActivities(localizeContent(activities ?? [], translations ?? []), locale)} selectedActivityId={activity} />
         </div>
       </section>
     </div>

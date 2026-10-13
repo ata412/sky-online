@@ -10,6 +10,7 @@ import HomeActivityCarousel from '@/components/HomeActivityCarousel';
 import { getSeoAlternates } from '@/lib/seo';
 import { localizeProducts } from '@/lib/localizeProducts';
 import { localizeContent } from '@/lib/localizeContent';
+import { withLocalActivities } from '@/data/localActivities';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,7 @@ export default async function HomePage({ params }) {
     locale === 'th' ? Promise.resolve([]) : getContentTranslationsServer('activities', locale),
   ]);
   const promotions = localizeContent(promotionsAll ?? [], promotionTranslations ?? []).slice(0, 2);
-  const localizedActivities = localizeContent(activities ?? [], activityTranslations ?? []);
+  const localizedActivities = withLocalActivities(localizeContent(activities ?? [], activityTranslations ?? []), locale);
 
   return (
     <div>

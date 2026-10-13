@@ -27,11 +27,17 @@ function formatDate(dateStr, locale) {
 
 function Lightbox({ activity, onClose }) {
   const t = useTranslations('activities');
-  const [photos, setPhotos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [photos, setPhotos] = useState(() => activity.photos || []);
+  const [loading, setLoading] = useState(() => !Array.isArray(activity.photos));
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    setIndex(0);
+    if (Array.isArray(activity.photos)) {
+      setPhotos(activity.photos);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     getActivityPhotos(activity.id)
@@ -44,7 +50,7 @@ function Lightbox({ activity, onClose }) {
     return () => {
       cancelled = true;
     };
-  }, [activity.id]);
+  }, [activity.id, activity.photos]);
 
   const prev = useCallback(() => setIndex((i) => (i - 1 + photos.length) % photos.length), [photos.length]);
   const next = useCallback(() => setIndex((i) => (i + 1) % photos.length), [photos.length]);

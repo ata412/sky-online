@@ -23,6 +23,16 @@ const MYSTERY_PHOTO_BY_LEVEL = {
   President: '/imported/hall-of-fame/mystery-president.jpg',
   'Vice President': '/imported/hall-of-fame/mystery-vice-president.jpg',
 };
+const ADDITIONAL_MANAGER_MEMBERS = [1, 2, 3, 4].map((number) => ({
+  id: `manager-20261013-${number}`,
+  level: 'Manager',
+  image_url: `/imported/hall-of-fame/manager/20261013-${number}.jpg`,
+}));
+const ADDITIONAL_SUPER_STAR_MEMBERS = Array.from({ length: 29 }, (_, index) => ({
+  id: `super-star-20261013-${index + 1}`,
+  level: 'Super Star',
+  image_url: `/imported/hall-of-fame/superstar/20261013-${index + 1}.jpg`,
+}));
 const REMOVED_IMAGE_PATHS = new Set([
   '/imported/hall-of-fame/all/374-director-555942-0.jpg',
   '/imported/hall-of-fame/all/375-director-555943-0.jpg',
@@ -130,7 +140,11 @@ export default async function HallOfFamePage({ params }) {
   setRequestLocale(locale);
 
   const t = await getTranslations();
-  const members = (await getHallOfFameServer()) ?? [];
+  const members = [
+    ...((await getHallOfFameServer()) ?? []),
+    ...ADDITIONAL_MANAGER_MEMBERS,
+    ...ADDITIONAL_SUPER_STAR_MEMBERS,
+  ];
   const visibleMembers = members.filter((member) => {
     if (!member.image_url) return true;
     const imagePath = new URL(member.image_url, 'https://skyonline99.online').pathname;
