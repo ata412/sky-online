@@ -23,11 +23,14 @@ const MYSTERY_PHOTO_BY_LEVEL = {
   President: '/imported/hall-of-fame/mystery-president.jpg',
   'Vice President': '/imported/hall-of-fame/mystery-vice-president.jpg',
 };
-const ADDITIONAL_MANAGER_MEMBERS = [1, 2, 3, 4].map((number) => ({
-  id: `manager-20261013-${number}`,
+const ADDITIONAL_MANAGER_MEMBERS = [
+  { date: '20261013', count: 4 },
+  { date: '20261014', count: 2 },
+].flatMap(({ date, count }) => Array.from({ length: count }, (_, index) => ({
+  id: `manager-${date}-${index + 1}`,
   level: 'Manager',
-  image_url: `/imported/hall-of-fame/manager/20261013-${number}.jpg`,
-}));
+  image_url: `/imported/hall-of-fame/manager/${date}-${index + 1}.jpg`,
+})));
 const ADDITIONAL_SUPER_STAR_MEMBERS = Array.from({ length: 29 }, (_, index) => ({
   id: `super-star-20261013-${index + 1}`,
   level: 'Super Star',
