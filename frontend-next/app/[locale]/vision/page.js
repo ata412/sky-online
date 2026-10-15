@@ -18,11 +18,21 @@ export default async function VisionPage({ params }) {
 
   return (
     <div className="bg-gray-50 dark:bg-navy-950 min-h-screen py-10 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto space-y-6">
         <img
-          src="/vision.jpg"
-          alt="Sky Online Vision"
-          className="w-full rounded-2xl shadow-2xl"
+          src="/vision-1.jpg"
+          alt="Sky Online Vision 1"
+          width={1920}
+          height={1080}
+          className="w-full h-auto rounded-2xl shadow-2xl"
+        />
+        <img
+          src="/vision-2.jpg"
+          alt="Sky Online Vision 2"
+          width={1920}
+          height={1080}
+          loading="lazy"
+          className="w-full h-auto rounded-2xl shadow-2xl"
         />
       </div>
     </div>
